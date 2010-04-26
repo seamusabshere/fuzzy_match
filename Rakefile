@@ -5,12 +5,15 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "loose_tight_dictionary"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Allows iterative development of dictionaries for big data sets.}
+    gem.description = %Q{Create dictionaries that link rows between two tables (left and right) using loose matching (string similarity) by default and tight matching (regexp) by request.}
     gem.email = "seamus@abshere.net"
     gem.homepage = "http://github.com/seamusabshere/loose_tight_dictionary"
     gem.authors = ["Seamus Abshere"]
-    gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
+    gem.add_development_dependency "shoulda"
+    gem.add_dependency 'activesupport', '>=2.3.4'
+    gem.add_dependency 'andand', '>=1.3.1'
+    gem.add_dependency 'amatch', '>=0.2.5'
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
