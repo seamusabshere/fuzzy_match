@@ -1,5 +1,7 @@
 require 'helper'
 
+require 'remote_table'
+
 $logger = Logger.new STDERR
 $logger.level = Logger::INFO
 
@@ -16,11 +18,9 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     # dh 8 200
     @d_left, @d_right = 'DE HAVILLAND CANADA DHC8200 Dash 8', 'BOMBARDIER DEHAVILLAND DHC8-200Q DASH-8'
     
-    # good tightening for de havilland
-    @t_1 = /(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i
+    @t_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good tightening for de havilland' ]
     
-    # good restriction for de havilland
-    @d_1 = /(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i
+    @d_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good restriction for de havilland' ]
     
     @left = [
       @a_left,
@@ -52,69 +52,83 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     @_ltd ||= LooseTightDictionary.new @left, @right, @tightenings, @restrictions, :logger => $logger
   end
 
-  should "perform lookups left to right" do
-    assert_equal @a_right, ltd.left_to_right(@a_left)
+  if ENV['NEW'] == 'true'
   end
   
-  should "perform lookups right to left" do
-    assert_equal @a_left, ltd.right_to_left(@a_right)
-  end
+  if ENV['OLD'] == 'true'
+    should "perform lookups left to right" do
+      assert_equal @a_right, ltd.left_to_right(@a_left)
+    end
+  
+    should "perform lookups right to left" do
+      assert_equal @a_left, ltd.right_to_left(@a_right)
+    end
+  
+    should "succeed if there are no checks" do
+      assert_nothing_raised do
+        ltd.check @positives, @negatives
+      end
+    end
+  
+    should "succeed if the positive checks just work" do
+      @positives.push [ @a_left, @a_right ]
+    
+      assert_nothing_raised do
+        ltd.check @positives, @negatives
+      end
+    end
+  
+    should "fail if positive checks don't work" do
+      @positives.push [ @d_left, @d_right ]
+  
+      assert_raises(LooseTightDictionary::Mismatch) do
+        ltd.check @positives, @negatives
+      end
+    end
+  
+    should "succeed if proper tightening is applied" do
+      @positives.push [ @d_left, @d_right ]
+      @tightenings.push @t_1
+  
+      assert_nothing_raised do
+        ltd.check @positives, @negatives
+      end
+    end
+    
+    should "use a Google Docs spreadsheet as a source of tightenings" do
+      @positives.push [ @d_left, @d_right ]
+      @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw', :sheet => 'Tightenings', :headers => false
 
-  should "succeed if there are no checks" do
-    assert_nothing_raised do
-      ltd.check @positives, @negatives
+      assert_nothing_raised do
+        ltd.check @positives, @negatives
+      end
     end
-  end
-  
-  should "succeed if the positive checks just work" do
-    @positives.push [ @a_left, @a_right ]
     
-    assert_nothing_raised do
-      ltd.check @positives, @negatives
-    end
-  end
-  
-  should "fail if positive checks don't work" do
-    @positives.push [ @d_left, @d_right ]
-  
-    assert_raises(LooseTightDictionary::Mismatch) do
-      ltd.check @positives, @negatives
-    end
-  end
-  
-  should "succeed if proper tightening is applied" do
-    @positives.push [ @d_left, @d_right ]
-    @tightenings.push @t_1
-  
-    assert_nothing_raised do
-      ltd.check @positives, @negatives
-    end
-  end
-  
-  should "fail if negative checks don't work" do
-    @negatives.push [ @b_left, @c_right ]
+    should "fail if negative checks don't work" do
+      @negatives.push [ @b_left, @c_right ]
     
-    assert_raises(LooseTightDictionary::FalsePositive) do
-      ltd.check @positives, @negatives
+      assert_raises(LooseTightDictionary::FalsePositive) do
+        ltd.check @positives, @negatives
+      end
     end
-  end
   
-  should "fail if negative checks don't work, even with tightening" do
-    @negatives.push [ @b_left, @c_right ]
-    @tightenings.push @t_1
+    should "fail if negative checks don't work, even with tightening" do
+      @negatives.push [ @b_left, @c_right ]
+      @tightenings.push @t_1
     
-    assert_raises(LooseTightDictionary::FalsePositive) do
-      ltd.check @positives, @negatives
+      assert_raises(LooseTightDictionary::FalsePositive) do
+        ltd.check @positives, @negatives
+      end
     end
-  end
   
-  should "succeed if proper restriction is applied" do
-    @negatives.push [ @b_left, @c_right ]
-    @positives.push [ @d_left, @d_right ]
-    @restrictions.push @d_1
+    should "succeed if proper restriction is applied" do
+      @negatives.push [ @b_left, @c_right ]
+      @positives.push [ @d_left, @d_right ]
+      @restrictions.push @d_1
     
-    assert_nothing_raised do
-      ltd.check @positives, @negatives
+      assert_nothing_raised do
+        ltd.check @positives, @negatives
+      end
     end
   end
 end

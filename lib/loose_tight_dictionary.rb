@@ -95,9 +95,9 @@ class LooseTightDictionary
   end
   
   def restrict(str)
-    str = str.to_s.downcase
+    str = str.to_s
     restrictions.each do |restriction|
-      if restriction.match str
+      if literal_regexp(restriction[0]).match str
         return $~.captures.compact.join
       end
     end
@@ -105,12 +105,22 @@ class LooseTightDictionary
   end
     
   def tighten(str)
-    str = str.to_s.downcase
+    str = str.to_s
     tightenings.each do |tightening|
-      if tightening.match str
+      if literal_regexp(tightening[0]).match str
         return $~.captures.compact.join
       end
     end
     str
+  end
+  
+  def literal_regexp(str)
+    return @_literal_regexp[str] if @_literal_regexp.andand.has_key? str
+    @_literal_regexp ||= Hash.new
+    raw_regexp_options = str.split('/').last
+    i = raw_regexp_options.include?('i') ? Regexp::IGNORECASE : nil
+    m = raw_regexp_options.include?('m') ? Regexp::MULTILINE : nil
+    x = raw_regexp_options.include?('x') ? Regexp::EXTENDED : nil
+    @_literal_regexp[str] = Regexp.new str.gsub(/\A\/|\/([ixm]*)\z/, ''), (i||m||x), 'U'
   end
 end
