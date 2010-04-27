@@ -11,7 +11,7 @@ begin
     gem.homepage = "http://github.com/seamusabshere/loose_tight_dictionary"
     gem.authors = ["Seamus Abshere"]
     gem.add_development_dependency "shoulda"
-    gem.add_development_dependency "remote_table", ">=0.2.14"
+    gem.add_development_dependency "remote_table", ">=0.2.16"
     gem.add_dependency 'activesupport', '>=2.3.4'
     gem.add_dependency 'fastercsv', '>=1.5.3'
     gem.add_dependency 'andand', '>=1.3.1'
