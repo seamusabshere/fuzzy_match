@@ -53,6 +53,9 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
 
   if ENV['NEW'] == 'true' or ENV['ALL'] == 'true'
+  end
+  
+  if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
     should "use the best score from all of the tightenings" do
       x_left = "BOEING 737100"
       x_right = "BOEING BOEING 737-100/200"
@@ -64,9 +67,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       
       assert_equal x_right, ltd.left_to_right(x_left)
     end
-  end
-  
-  if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    
     should "compare using prefixes if tightened key is shorter than correct match" do
       x_left = "BOEING 720"
       x_right = "BOEING BOEING 720-000"
