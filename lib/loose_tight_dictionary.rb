@@ -68,18 +68,25 @@ class LooseTightDictionary
       if p = positives.detect { |p| p[0] == left }
         seen_positives.push p[0]
         correct_right = p[1]
+      else
+        correct_right = :ignore
       end
       
-      incorrect_right = negatives.detect { |n| n[0] == left }.andand[1]
+      if n = negatives.detect { |n| n[0] == left }
+        incorrect_right = n[1]
+      else
+        incorrect_right = :ignore
+      end
 
       right = left_to_right left
       
-      if correct_right.present? and right.present? and right != correct_right
+      
+      if correct_right != :ignore and right != correct_right
         logger.andand.debug "  Mismatch! (should be #{correct_right})"
         raise Mismatch
       end
       
-      if incorrect_right.present? and right.present? and right == incorrect_right
+      if incorrect_right != :ignore and right == incorrect_right
         logger.andand.debug "  FALSE POSITIVE! (should NOT be #{incorrect_right})"
         raise FalsePositive
       end
@@ -128,11 +135,7 @@ class LooseTightDictionary
     guess = read_right guess_row
     
     restricted_guess = restrict guess
-    
-    if restricted_left and restricted_guess and restricted_left != restricted_guess
-      return
-    end
-    
+    return if restricted_left and restricted_guess and restricted_left != restricted_guess
     guess
   ensure
     tee.andand.puts [ left, guess ].to_csv
