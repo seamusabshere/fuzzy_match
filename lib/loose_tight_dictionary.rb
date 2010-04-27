@@ -80,6 +80,7 @@ class LooseTightDictionary
 
       right = left_to_right left
       
+      tee.andand.puts [ left, right, $ltd_1 ].flatten.to_csv
       
       if correct_right != :ignore and right != correct_right
         logger.andand.debug "  Mismatch! (should be #{correct_right})"
@@ -100,14 +101,12 @@ class LooseTightDictionary
   def left_to_right(left)
     restricted_left = restrict left
     t_options_left = t_options left
-    
+    history = Hash.new
     guess_row = right_side_rows.max do |a_row, b_row|
       a = read_right a_row
       b = read_right b_row
-      
       restricted_a = restrict a
       restricted_b = restrict b
-      
       if restricted_left and restricted_a and restricted_b and restricted_left != restricted_a and restricted_left != restricted_b
         # neither would ever work, so randomly rank one over the other
         rand(2) == 1 ? -1 : 1
@@ -118,10 +117,10 @@ class LooseTightDictionary
       else
         t_left_a, t_a = optimize t_options_left, t_options(a)
         t_left_b, t_b = optimize t_options_left, t_options(b)
-
         a_prefix, a_score = t_left_a.prefix_and_score t_a
         b_prefix, b_score = t_left_b.prefix_and_score t_b
-
+        history[a_row] = [t_left_a.tightened_str, t_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
+        history[b_row] = [t_left_b.tightened_str, t_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
         if a_score != b_score
           a_score <=> b_score
         elsif a_prefix and b_prefix and a_prefix != b_prefix
@@ -131,14 +130,14 @@ class LooseTightDictionary
         end
       end
     end
-    
+    $ltd_1 = history[guess_row]
     guess = read_right guess_row
-    
     restricted_guess = restrict guess
+    z = 1
+    debugger if $ltd_right and $ltd_left and guess =~ $ltd_right and left =~ $ltd_left
+    z = 1
     return if restricted_left and restricted_guess and restricted_left != restricted_guess
     guess
-  ensure
-    tee.andand.puts [ left, guess ].to_csv
   end
   
   def optimize(t_options_x, t_options_y)
@@ -148,7 +147,19 @@ class LooseTightDictionary
     
       a_prefix, a_score = t_x_a.prefix_and_score t_y_a
       b_prefix, b_score = t_x_b.prefix_and_score t_y_b
-            
+      
+      if $ltd_inside_print
+        logger.andand.debug t_x_a.str
+        logger.andand.debug t_x_b.str
+        logger.andand.debug t_y_a.str
+        logger.andand.debug t_y_b.str
+        logger.andand.debug
+      end
+      
+      z = 1
+      debugger if $ltd_inside_right and $ltd_inside_left and [t_x_a, t_x_b].any? { |f| f.str =~ $ltd_inside_left } and [t_y_a, t_y_b].any? { |f| f.str =~ $ltd_inside_right } and (!$ltd_inside_left_not or [t_x_a, t_x_b].none? { |f| f.str =~ $ltd_inside_left_not })
+      z = 1
+      
       if a_score != b_score
         a_score <=> b_score
       elsif a_prefix and b_prefix and a_prefix != b_prefix
