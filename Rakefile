@@ -13,6 +13,7 @@ begin
     gem.add_development_dependency "shoulda"
     gem.add_development_dependency "remote_table", ">=0.2.14"
     gem.add_dependency 'activesupport', '>=2.3.4'
+    gem.add_dependency 'fastercsv', '>=1.5.3'
     gem.add_dependency 'andand', '>=1.3.1'
     gem.add_dependency 'amatch', '>=0.2.5'
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings

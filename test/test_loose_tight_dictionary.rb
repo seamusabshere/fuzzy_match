@@ -23,20 +23,20 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     @d_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good restriction for de havilland' ]
     
     @left = [
-      @a_left,
-      @b_left,
-      'DE HAVILLAND DH89 Dragon Rapide',
-      'DE HAVILLAND CANADA DHC8100 Dash 8 (E9, CT142, CC142)',
-      @d_left,
-      'DE HAVILLAND CANADA DHC8300 Dash 8',
-      'DE HAVILLAND DH90 Dragonfly'
+      [@a_left],
+      [@b_left],
+      ['DE HAVILLAND DH89 Dragon Rapide'],
+      ['DE HAVILLAND CANADA DHC8100 Dash 8 (E9, CT142, CC142)'],
+      [@d_left],
+      ['DE HAVILLAND CANADA DHC8300 Dash 8'],
+      ['DE HAVILLAND DH90 Dragonfly']
     ]
     @right = [
-      @a_right,
-      @c_right,
-      @d_right,
-      'DEHAVILLAND DEHAVILLAND DHC8-100 DASH-8',
-      'DEHAVILLAND DEHAVILLAND TWIN OTTER DHC-6'
+      [@a_right],
+      [@c_right],
+      [@d_right],
+      ['DEHAVILLAND DEHAVILLAND DHC8-100 DASH-8'],
+      ['DEHAVILLAND DEHAVILLAND TWIN OTTER DHC-6']
     ]
     @tightenings = []
     @restrictions = []
@@ -52,16 +52,48 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     @_ltd ||= LooseTightDictionary.new @left, @right, @tightenings, @restrictions, :logger => $logger
   end
 
-  if ENV['NEW'] == 'true'
+  if ENV['NEW'] == 'true' or ENV['ALL'] == 'true'
+    should "use the best score from all of the tightenings" do
+      x_left = "BOEING 737100"
+      x_right = "BOEING BOEING 737-100/200"
+      x_right_wrong = "BOEING BOEING 737-900"
+      @right.push [x_right]
+      @right.push [x_right_wrong]
+      @tightenings.push ['/(7\d)(7|0)-?\d{1,3}\/(\d\d\d)/i']
+      @tightenings.push ['/(7\d)(7|0)-?(\d{1,3}|[A-Z]{0,3})/i']
+      
+      assert_equal x_right, ltd.left_to_right(x_left)
+    end
   end
   
-  if ENV['OLD'] == 'true'
+  if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    should "compare using prefixes if tightened key is shorter than correct match" do
+      x_left = "BOEING 720"
+      x_right = "BOEING BOEING 720-000"
+      x_right_wrong = "BOEING BOEING 717-200"
+      @right.push [x_right]
+      @right.push [x_right_wrong]
+      @tightenings.push @t_1
+      @tightenings.push ['/(7\d)(7|0)-?\d{1,3}\/(\d\d\d)/i']
+      @tightenings.push ['/(7\d)(7|0)-?(\d{1,3}|[A-Z]{0,3})/i']
+      
+      assert_equal x_right, ltd.left_to_right(x_left)
+    end
+    
+    should "use the shortest original input" do
+      x_left = 'De Havilland DHC8-777 Dash-8 Superstar'
+      x_right = 'DEHAVILLAND DEHAVILLAND DHC8-777 DASH-8 Superstar'
+      x_right_long = 'DEHAVILLAND DEHAVILLAND DHC8-777 DASH-8 Superstar/Supernova'
+      
+      @right.push [x_right_long]
+      @right.push [x_right]
+      @tightenings.push @t_1
+      
+      assert_equal x_right, ltd.left_to_right(x_left)
+    end
+    
     should "perform lookups left to right" do
       assert_equal @a_right, ltd.left_to_right(@a_left)
-    end
-  
-    should "perform lookups right to left" do
-      assert_equal @a_left, ltd.right_to_left(@a_right)
     end
   
     should "succeed if there are no checks" do
