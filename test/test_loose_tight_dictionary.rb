@@ -129,7 +129,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     
     should "use a Google Docs spreadsheet as a source of tightenings" do
       @positives.push [ @d_left, @d_right ]
-      @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw', :sheet => 'Tightenings', :headers => false
+      @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=0&output=csv', :headers => false
 
       assert_nothing_raised do
         ltd.check @positives, @negatives
