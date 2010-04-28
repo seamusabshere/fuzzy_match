@@ -100,9 +100,11 @@ class LooseTightDictionary
       return
     end
     left_records.each do |left_record|
-      right_record = left_to_right left_record
-      inline_check left_record, right_record
-      tee.andand.puts [ read_left(left_record), read_right(right_record), $ltd_1 ].flatten.to_csv
+      begin
+        right_record = left_to_right left_record
+      ensure
+        tee.andand.puts [ read_left(left_record), read_right(right_record), $ltd_1 ].flatten.to_csv
+      end
     end
   end
   
