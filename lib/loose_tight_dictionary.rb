@@ -264,10 +264,10 @@ class LooseTightDictionary
     return @_literal_regexp[str] if @_literal_regexp.andand.has_key? str
     @_literal_regexp ||= Hash.new
     raw_regexp_options = str.split('/').last
-    i = (!case_sensitive or raw_regexp_options.include?('i')) ? Regexp::IGNORECASE : nil
-    m = raw_regexp_options.include?('m') ? Regexp::MULTILINE : nil
-    x = raw_regexp_options.include?('x') ? Regexp::EXTENDED : nil
-    @_literal_regexp[str] = Regexp.new str.gsub(/\A\/|\/([ixm]*)\z/, ''), (i||m||x), 'U'
+    ignore_case = (!case_sensitive or raw_regexp_options.include?('i')) ? Regexp::IGNORECASE : nil
+    multiline = raw_regexp_options.include?('m') ? Regexp::MULTILINE : nil
+    extended = raw_regexp_options.include?('x') ? Regexp::EXTENDED : nil
+    @_literal_regexp[str] = Regexp.new str.gsub(/\A\/|\/([ixm]*)\z/, ''), (ignore_case||multiline||extended)
   end
   
   def read_left(left_record)
