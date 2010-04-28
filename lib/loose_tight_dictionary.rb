@@ -38,7 +38,7 @@ class LooseTightDictionary
 
   include Amatch
 
-  attr_reader :right_side_rows
+  attr_reader :right_records
   attr_reader :tightenings
   attr_reader :restrictions
   attr_reader :blockings
@@ -46,28 +46,26 @@ class LooseTightDictionary
   attr_reader :tee
   attr_reader :case_sensitive
   
-  attr_accessor :left_input
-  attr_accessor :right_input
-  attr_accessor :right_output
+  attr_accessor :left_reader
+  attr_accessor :right_reader
 
-  def initialize(right_side_rows, options = {})
-    @right_side_rows = right_side_rows
+  def initialize(right_records, options = {})
+    @right_records = right_records
     @tightenings = options[:tightenings] || Array.new
     @restrictions = options[:restrictions] || Array.new
     @blockings = options[:blockings] || Array.new
-    @left_input = options[:left_input]
-    @right_input = options[:right_input]
-    @right_output = options[:right_output]
+    @left_reader = options[:left_reader]
+    @right_reader = options[:right_reader]
     @logger = options[:logger]
     @tee = options[:tee]
     @case_sensitive = options[:case_sensitive] || false
   end
 
-  def check(left_side_rows, positives, negatives, log = false)
+  def check(left_records, positives, negatives, log = false)
     seen_positives = Array.new
     
-    left_side_rows.each do |row|
-      left = read_left row
+    left_records.each do |left_record|
+      left = read_left left_record
       
       if p = positives.detect { |p| p[0] == left }
         seen_positives.push p[0]
@@ -82,7 +80,9 @@ class LooseTightDictionary
         incorrect_right = :ignore
       end
 
-      right = left_to_right left
+      right_record = left_to_right left_record
+      
+      right = read_right right_record
       
       tee.andand.puts [ left, right, $ltd_1 ].flatten.to_csv
       
@@ -102,14 +102,15 @@ class LooseTightDictionary
     end
   end
   
-  def left_to_right(left)
+  def left_to_right(left_record)
+    left = read_left left_record
     restricted_left = restrict left
     blocking_left = blocking left
     t_options_left = t_options left
     history = Hash.new
-    guess_row = right_side_rows.select { |row| blocking_left.nil? or blocking_left.match(read_right(row)) }.max do |a_row, b_row|
-      a = read_right a_row
-      b = read_right b_row
+    guess_record = right_records.select { |record| blocking_left.nil? or blocking_left.match(read_right(record)) }.max do |a_record, b_record|
+      a = read_right a_record
+      b = read_right b_record
       restricted_a = restrict a
       restricted_b = restrict b
       if restricted_left and restricted_a and restricted_b and restricted_left != restricted_a and restricted_left != restricted_b
@@ -124,8 +125,8 @@ class LooseTightDictionary
         t_left_b, t_right_b = optimize t_options_left, t_options(b)
         a_prefix, a_score = t_left_a.prefix_and_score t_right_a
         b_prefix, b_score = t_left_b.prefix_and_score t_right_b
-        history[a_row] = [t_left_a.tightened_str, t_right_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
-        history[b_row] = [t_left_b.tightened_str, t_right_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
+        history[a_record] = [t_left_a.tightened_str, t_right_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
+        history[b_record] = [t_left_b.tightened_str, t_right_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
         
         yep_dd = ($ltd_dd_right and $ltd_dd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_dd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_dd_right } and (!$ltd_dd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_dd_left_not }))
         
@@ -150,14 +151,14 @@ class LooseTightDictionary
         end
       end
     end
-    $ltd_1 = history[guess_row]
-    guess = read_right guess_row
+    $ltd_1 = history[guess_record]
+    guess = read_right guess_record
     restricted_guess = restrict guess
     z = 1
     debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(guess)
     z = 1
     return if restricted_left and restricted_guess and restricted_left != restricted_guess
-    write_right guess_row
+    guess_record
   end
   
   def optimize(t_options_left, t_options_right)
@@ -242,16 +243,14 @@ class LooseTightDictionary
     @_literal_regexp[str] = Regexp.new str.gsub(/\A\/|\/([ixm]*)\z/, ''), (i||m||x), 'U'
   end
   
-  def read_left(row)
-    left_input ? left_input.call(row) : row[0]
+  def read_left(left_record)
+    return if left_record.nil?
+    left_reader ? left_reader.call(left_record) : left_record[0]
   end
   
-  def read_right(row)
-    right_input ? right_input.call(row) : row[0]
-  end
-  
-  def write_right(row)
-    right_output ? right_output.call(row) : row[0]
+  def read_right(right_record)
+    return if right_record.nil?
+    right_reader ? right_reader.call(right_record) : right_record[0]
   end
   
   # Thanks William James!
