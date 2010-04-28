@@ -110,21 +110,23 @@ class LooseTightDictionary
   
   def left_to_right(left_record)
     left = read_left left_record
-    restricted_left = restrict left
+    r_options_left = r_options left
     blocking_left = blocking left
     t_options_left = t_options left
     history = Hash.new
     right_record = right_records.select { |record| blocking_left.nil? or blocking_left.match(read_right(record)) }.max do |a_record, b_record|
       a = read_right a_record
       b = read_right b_record
-      restricted_a = restrict a
-      restricted_b = restrict b
-      if restricted_left and restricted_a and restricted_b and restricted_left != restricted_a and restricted_left != restricted_b
+      r_options_a = r_options a
+      r_options_b = r_options b
+      collision_a = collision? r_options_left, r_options_a
+      collision_b = collision? r_options_left, r_options_b
+      if collision_a and collision_b
         # neither would ever work, so randomly rank one over the other
         rand(2) == 1 ? -1 : 1
-      elsif restricted_left and restricted_a and restricted_left != restricted_a
+      elsif collision_a
         -1
-      elsif restricted_left and restricted_b and restricted_left != restricted_b
+      elsif collision_b
         1
       else
         t_left_a, t_right_a = optimize t_options_left, t_options(a)
@@ -159,11 +161,11 @@ class LooseTightDictionary
     end
     $ltd_1 = history[right_record]
     right = read_right right_record
-    restricted_right = restrict right
+    r_options_right = r_options right
     z = 1
     debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(right)
     z = 1
-    return if restricted_left and restricted_right and restricted_left != restricted_right
+    return if collision? r_options_left, r_options_right
     inline_check left_record, right_record
     right_record
   end
@@ -207,12 +209,43 @@ class LooseTightDictionary
     @_t_options ||= Hash.new
     ary = Array.new
     ary << T.new(str, str)
-    tightenings.each do |tightening|
-      if literal_regexp(tightening[0]).match str
-        ary << T.new(str, $~.captures.compact.join)
+    tightenings.each do |i|
+      if match_data = literal_regexp(i[0]).match(str)
+        ary.push T.new(str, match_data.captures.compact.join)
       end
     end
     @_t_options[str] = ary
+  end
+  
+  class R
+    attr_reader :regexp, :str, :case_sensitive, :restricted_str
+    def initialize(regexp, str, case_sensitive)
+      @regexp = regexp
+      @str = str
+      @restricted_str = regexp.match(str).captures.compact.join
+      @restricted_str = @restricted_str.downcase if case_sensitive
+    end
+  end
+  
+  def collision?(r_options_left, r_options_right)
+    r_options_left.any? do |r_left|
+      r_options_right.any? do |r_right|
+        r_left.regexp == r_right.regexp and r_left.restricted_str != r_right.restricted_str
+      end
+    end
+  end
+  
+  def r_options(str)
+    return @_r_options[str] if @_r_options.andand.has_key?(str)
+    @_r_options ||= Hash.new
+    ary = Array.new
+    restrictions.each do |i|
+      regexp = literal_regexp i[0]
+      if regexp.match str
+        ary.push R.new(regexp, str, case_sensitive)
+      end
+    end
+    @_r_options[str] = ary
   end
   
   def blocking(str)
@@ -225,19 +258,6 @@ class LooseTightDictionary
       end
     end
     @_blocking[str] = nil
-  end
-  
-  def restrict(str)
-    return @_restrict[str] if @_restrict.andand.has_key?(str)
-    @_restrict ||= Hash.new
-    restrictions.each do |restriction|
-      if literal_regexp(restriction[0]).match str
-        retval = $~.captures.compact.join
-        retval = retval.downcase unless case_sensitive
-        return @_restrict[str] = retval
-      end
-    end
-    @_restrict[str] = nil
   end
   
   def literal_regexp(str)

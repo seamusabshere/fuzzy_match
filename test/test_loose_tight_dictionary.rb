@@ -24,7 +24,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     
     @t_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good tightening for de havilland' ]
     
-    @d_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good restriction for de havilland' ]
+    @r_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good restriction for de havilland' ]
     
     @left = [
       @a_left,
@@ -68,6 +68,17 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    should "only use restrictions if they stem from the same regexp" do
+      @restrictions.push @r_1
+      @restrictions.push [ '/(cessna)(?:.*?)(citation)/i' ]
+      @restrictions.push [ '/(cessna)(?:.*?)(\d\d\d)/i' ]
+      x_left = [ 'CESSNA D-333 CITATION V']
+      x_right = [ 'CESSNA D-333' ]
+      @right.push x_right
+      
+      assert_equal x_right, ltd.left_to_right(x_left)
+    end
+    
     should "have a false match without blocking" do
       # @d_left will be our victim
       @right.push @d_lookalike
@@ -201,7 +212,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     should "succeed if proper restriction is applied" do
       @negatives.push [ @b_left[0], @c_right[0] ]
       @positives.push [ @d_left[0], @d_right[0] ]
-      @restrictions.push @d_1
+      @restrictions.push @r_1
     
       assert_nothing_raised do
         ltd.check @left
