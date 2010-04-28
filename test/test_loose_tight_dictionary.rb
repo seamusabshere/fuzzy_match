@@ -2,8 +2,9 @@ require 'helper'
 
 require 'remote_table'
 
-$logger = Logger.new STDERR
-$logger.level = Logger::INFO
+# $logger = Logger.new STDERR
+# $logger.level = Logger::INFO
+# $tee = STDOUT
 
 class TestLooseTightDictionary < Test::Unit::TestCase
   def setup
@@ -53,7 +54,14 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   def ltd
-    @_ltd ||= LooseTightDictionary.new @right, :tightenings => @tightenings, :restrictions => @restrictions, :blockings => @blockings, :logger => $logger
+    @_ltd ||= LooseTightDictionary.new  @right,
+                                        :tightenings => @tightenings,
+                                        :restrictions => @restrictions,
+                                        :blockings => @blockings,
+                                        :positives => @positives,
+                                        :negatives => @negatives,
+                                        :logger => $logger,
+                                        :tee => $tee
   end
 
   if ENV['NEW'] == 'true' or ENV['ALL'] == 'true'
@@ -127,7 +135,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   
     should "succeed if there are no checks" do
       assert_nothing_raised do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
   
@@ -135,7 +143,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @positives.push [ @a_left[0], @a_right[0] ]
     
       assert_nothing_raised do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
   
@@ -143,7 +151,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @positives.push [ @d_left[0], @d_right[0] ]
   
       assert_raises(LooseTightDictionary::Mismatch) do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
   
@@ -152,7 +160,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @tightenings.push @t_1
   
       assert_nothing_raised do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
     
@@ -161,7 +169,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=0&output=csv', :headers => false
 
       assert_nothing_raised do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
     
@@ -169,7 +177,15 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @negatives.push [ @b_left[0], @c_right[0] ]
     
       assert_raises(LooseTightDictionary::FalsePositive) do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
+      end
+    end
+    
+    should "do inline checking" do
+      @negatives.push [ @b_left[0], @c_right[0] ]
+    
+      assert_raises(LooseTightDictionary::FalsePositive) do
+        ltd.left_to_right @b_left
       end
     end
   
@@ -178,7 +194,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @tightenings.push @t_1
     
       assert_raises(LooseTightDictionary::FalsePositive) do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
   
@@ -188,7 +204,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       @restrictions.push @d_1
     
       assert_nothing_raised do
-        ltd.check @left, @positives, @negatives
+        ltd.check @left
       end
     end
   end

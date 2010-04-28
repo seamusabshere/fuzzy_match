@@ -46,6 +46,8 @@ class LooseTightDictionary
   attr_reader :tee
   attr_reader :case_sensitive
   
+  attr_accessor :positives
+  attr_accessor :negatives
   attr_accessor :left_reader
   attr_accessor :right_reader
 
@@ -56,49 +58,51 @@ class LooseTightDictionary
     @blockings = options[:blockings] || Array.new
     @left_reader = options[:left_reader]
     @right_reader = options[:right_reader]
+    @positives = options[:positives]
+    @negatives = options[:negatives]
     @logger = options[:logger]
     @tee = options[:tee]
     @case_sensitive = options[:case_sensitive] || false
   end
 
-  def check(left_records, positives, negatives, log = false)
-    seen_positives = Array.new
+  def inline_check(left_record, right_record)
+    return unless positives.present? or negatives.present?
     
-    left_records.each do |left_record|
-      left = read_left left_record
-      
-      if p = positives.detect { |p| p[0] == left }
-        seen_positives.push p[0]
-        correct_right = p[1]
-      else
-        correct_right = :ignore
-      end
-      
-      if n = negatives.detect { |n| n[0] == left }
-        incorrect_right = n[1]
-      else
-        incorrect_right = :ignore
-      end
-
-      right_record = left_to_right left_record
-      
-      right = read_right right_record
-      
-      tee.andand.puts [ left, right, $ltd_1 ].flatten.to_csv
-      
-      if correct_right != :ignore and right != correct_right
-        logger.andand.debug "  Mismatch! (should be #{correct_right})"
-        raise Mismatch
-      end
-      
-      if incorrect_right != :ignore and right == incorrect_right
-        logger.andand.debug "  FALSE POSITIVE! (should NOT be #{incorrect_right})"
-        raise FalsePositive
-      end
+    left = read_left left_record
+    right = read_right right_record
+    
+    if p = positives.andand.detect { |record| record[0] == left }
+      correct_right = p[1]
+    else
+      correct_right = :ignore
     end
     
-    positives.reject { |p| seen_positives.include? p[0] }.each do |miss|
-      logger.andand.info "  MISSED POSITIVE: #{miss[0]} should be #{miss[1]}"
+    if n = negatives.andand.detect { |record| record[0] == left }
+      incorrect_right = n[1]
+    else
+      incorrect_right = :ignore
+    end
+    
+    if correct_right != :ignore and right != correct_right
+      logger.andand.debug "  Mismatch! (should be #{correct_right})"
+      raise Mismatch
+    end
+    
+    if incorrect_right != :ignore and right == incorrect_right
+      logger.andand.debug "  False positive! (should NOT be #{incorrect_right})"
+      raise FalsePositive
+    end
+  end
+
+  def check(left_records)
+    unless positives.present? or negatives.present?
+      logger.andand.info "You didn't define any positives or negatives, so running check doesn't do anything"
+      return
+    end
+    left_records.each do |left_record|
+      right_record = left_to_right left_record
+      inline_check left_record, right_record
+      tee.andand.puts [ read_left(left_record), read_right(right_record), $ltd_1 ].flatten.to_csv
     end
   end
   
@@ -108,7 +112,7 @@ class LooseTightDictionary
     blocking_left = blocking left
     t_options_left = t_options left
     history = Hash.new
-    guess_record = right_records.select { |record| blocking_left.nil? or blocking_left.match(read_right(record)) }.max do |a_record, b_record|
+    right_record = right_records.select { |record| blocking_left.nil? or blocking_left.match(read_right(record)) }.max do |a_record, b_record|
       a = read_right a_record
       b = read_right b_record
       restricted_a = restrict a
@@ -151,14 +155,15 @@ class LooseTightDictionary
         end
       end
     end
-    $ltd_1 = history[guess_record]
-    guess = read_right guess_record
-    restricted_guess = restrict guess
+    $ltd_1 = history[right_record]
+    right = read_right right_record
+    restricted_right = restrict right
     z = 1
-    debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(guess)
+    debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(right)
     z = 1
-    return if restricted_left and restricted_guess and restricted_left != restricted_guess
-    guess_record
+    return if restricted_left and restricted_right and restricted_left != restricted_right
+    inline_check left_record, right_record
+    right_record
   end
   
   def optimize(t_options_left, t_options_right)

@@ -52,5 +52,7 @@ end
   d = LooseTightDictionary.new @right, :tightenings => @tightenings, :restrictions => @restrictions, :blockings => @blockings, :logger => $logger, :tee => $tee
   d.left_reader = lambda { |record| record['Manufacturer'] + ' ' + record['Model'] }
   d.right_reader = lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] }
-  d.check @left, @positives, @negatives
+  d.positives = @positives
+  d.negatives = @negatives
+  d.check @left
 end
