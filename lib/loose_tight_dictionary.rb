@@ -46,16 +46,18 @@ class LooseTightDictionary
   attr_reader :tee
   attr_reader :case_sensitive
   
-  attr_accessor :left_reader
-  attr_accessor :right_reader
+  attr_accessor :left_input
+  attr_accessor :right_input
+  attr_accessor :right_output
 
   def initialize(right_side_rows, options = {})
     @right_side_rows = right_side_rows
     @tightenings = options[:tightenings] || Array.new
     @restrictions = options[:restrictions] || Array.new
     @blockings = options[:blockings] || Array.new
-    @left_reader = options[:left_reader]
-    @right_reader = options[:right_reader]
+    @left_input = options[:left_input]
+    @right_input = options[:right_input]
+    @right_output = options[:right_output]
     @logger = options[:logger]
     @tee = options[:tee]
     @case_sensitive = options[:case_sensitive] || false
@@ -155,7 +157,7 @@ class LooseTightDictionary
     debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(guess)
     z = 1
     return if restricted_left and restricted_guess and restricted_left != restricted_guess
-    guess
+    write_right guess_row
   end
   
   def optimize(t_options_left, t_options_right)
@@ -241,11 +243,15 @@ class LooseTightDictionary
   end
   
   def read_left(row)
-    left_reader ? left_reader.call(row) : row[0]
+    left_input ? left_input.call(row) : row[0]
   end
   
   def read_right(row)
-    right_reader ? right_reader.call(row) : row[0]
+    right_input ? right_input.call(row) : row[0]
+  end
+  
+  def write_right(row)
+    right_output ? right_output.call(row) : row[0]
   end
   
   # Thanks William James!

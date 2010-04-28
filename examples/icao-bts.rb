@@ -50,7 +50,8 @@ end
                          :column_xpath => 'td'
 
   d = LooseTightDictionary.new @right, :tightenings => @tightenings, :restrictions => @restrictions, :blockings => @blockings, :logger => $logger, :tee => $tee
-  d.left_reader = lambda { |row| row['Manufacturer'] + ' ' + row['Model'] }
-  d.right_reader = lambda { |row| row['Manufacturer'] + ' ' + row['Long Name'] }
+  d.left_input = lambda { |row| row['Manufacturer'] + ' ' + row['Model'] }
+  d.right_input = lambda { |row| row['Manufacturer'] + ' ' + row['Long Name'] }
+  d.right_output = lambda { |row| row['Manufacturer'] + ' ' + row['Long Name'] }
   d.check @left, @positives, @negatives
 end
