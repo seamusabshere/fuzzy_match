@@ -28,7 +28,7 @@ $tee = STDOUT
 
 @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=0&output=csv', :headers => false
 
-@restrictions = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=3&output=csv', :headers => false
+@identities = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=3&output=csv', :headers => false
 
 @blockings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=4&output=csv', :headers => false
 
@@ -36,7 +36,7 @@ $tee = STDOUT
 
 @negatives = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=2&output=csv', :headers => false
 
-%w{ tightenings restrictions blockings }.each do |name|
+%w{ tightenings identities blockings }.each do |name|
   $logger.info name
   $logger.info "\n" + instance_variable_get("@#{name}").to_a.map { |record| record[0] }.join("\n")
   $logger.info "\n"
@@ -49,7 +49,7 @@ end
                           :row_xpath => '//table/tr[2]/td/table/tr',
                           :column_xpath => 'td'
 
-  d = LooseTightDictionary.new @right, :tightenings => @tightenings, :restrictions => @restrictions, :blockings => @blockings, :logger => $logger, :tee => $tee
+  d = LooseTightDictionary.new @right, :tightenings => @tightenings, :identities => @identities, :blockings => @blockings, :logger => $logger, :tee => $tee
   d.left_reader = lambda { |record| record['Manufacturer'] + ' ' + record['Model'] }
   d.right_reader = lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] }
   d.positives = @positives

@@ -40,7 +40,7 @@ class LooseTightDictionary
 
   attr_reader :right_records
   attr_reader :tightenings
-  attr_reader :restrictions
+  attr_reader :identities
   attr_reader :blockings
   attr_reader :logger
   attr_reader :tee
@@ -54,7 +54,7 @@ class LooseTightDictionary
   def initialize(right_records, options = {})
     @right_records = right_records
     @tightenings = options[:tightenings] || Array.new
-    @restrictions = options[:restrictions] || Array.new
+    @identities = options[:identities] || Array.new
     @blockings = options[:blockings] || Array.new
     @left_reader = options[:left_reader]
     @right_reader = options[:right_reader]
@@ -110,17 +110,17 @@ class LooseTightDictionary
   
   def left_to_right(left_record)
     left = read_left left_record
-    r_options_left = r_options left
+    i_options_left = i_options left
     blocking_left = blocking left
     t_options_left = t_options left
     history = Hash.new
     right_record = right_records.select { |record| blocking_left.nil? or blocking_left.match(read_right(record)) }.max do |a_record, b_record|
       a = read_right a_record
       b = read_right b_record
-      r_options_a = r_options a
-      r_options_b = r_options b
-      collision_a = collision? r_options_left, r_options_a
-      collision_b = collision? r_options_left, r_options_b
+      i_options_a = i_options a
+      i_options_b = i_options b
+      collision_a = collision? i_options_left, i_options_a
+      collision_b = collision? i_options_left, i_options_b
       if collision_a and collision_b
         # neither would ever work, so randomly rank one over the other
         rand(2) == 1 ? -1 : 1
@@ -161,11 +161,11 @@ class LooseTightDictionary
     end
     $ltd_1 = history[right_record]
     right = read_right right_record
-    r_options_right = r_options right
+    i_options_right = i_options right
     z = 1
     debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(right)
     z = 1
-    return if collision? r_options_left, r_options_right
+    return if collision? i_options_left, i_options_right
     inline_check left_record, right_record
     right_record
   end
@@ -217,35 +217,35 @@ class LooseTightDictionary
     @_t_options[str] = ary
   end
   
-  class R
-    attr_reader :regexp, :str, :case_sensitive, :restricted_str
+  class I
+    attr_reader :regexp, :str, :case_sensitive, :identity
     def initialize(regexp, str, case_sensitive)
       @regexp = regexp
       @str = str
-      @restricted_str = regexp.match(str).captures.compact.join
-      @restricted_str = @restricted_str.downcase if case_sensitive
+      @identity = regexp.match(str).captures.compact.join
+      @identity = @identity.downcase if case_sensitive
     end
   end
   
-  def collision?(r_options_left, r_options_right)
-    r_options_left.any? do |r_left|
-      r_options_right.any? do |r_right|
-        r_left.regexp == r_right.regexp and r_left.restricted_str != r_right.restricted_str
+  def collision?(i_options_left, i_options_right)
+    i_options_left.any? do |r_left|
+      i_options_right.any? do |r_right|
+        r_left.regexp == r_right.regexp and r_left.identity != r_right.identity
       end
     end
   end
   
-  def r_options(str)
-    return @_r_options[str] if @_r_options.andand.has_key?(str)
-    @_r_options ||= Hash.new
+  def i_options(str)
+    return @_i_options[str] if @_i_options.andand.has_key?(str)
+    @_i_options ||= Hash.new
     ary = Array.new
-    restrictions.each do |i|
+    identities.each do |i|
       regexp = literal_regexp i[0]
       if regexp.match str
-        ary.push R.new(regexp, str, case_sensitive)
+        ary.push I.new(regexp, str, case_sensitive)
       end
     end
-    @_r_options[str] = ary
+    @_i_options[str] = ary
   end
   
   def blocking(str)

@@ -24,7 +24,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     
     @t_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good tightening for de havilland' ]
     
-    @r_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good restriction for de havilland' ]
+    @r_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good identity for de havilland' ]
     
     @left = [
       @a_left,
@@ -43,7 +43,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       ['DEHAVILLAND DEHAVILLAND TWIN OTTER DHC-6']
     ]
     @tightenings = []
-    @restrictions = []
+    @identities = []
     @blockings = []
     @positives = []
     @negatives = []
@@ -56,7 +56,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   def ltd
     @_ltd ||= LooseTightDictionary.new  @right,
                                         :tightenings => @tightenings,
-                                        :restrictions => @restrictions,
+                                        :identities => @identities,
                                         :blockings => @blockings,
                                         :positives => @positives,
                                         :negatives => @negatives,
@@ -68,10 +68,10 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
-    should "only use restrictions if they stem from the same regexp" do
-      @restrictions.push @r_1
-      @restrictions.push [ '/(cessna)(?:.*?)(citation)/i' ]
-      @restrictions.push [ '/(cessna)(?:.*?)(\d\d\d)/i' ]
+    should "only use identities if they stem from the same regexp" do
+      @identities.push @r_1
+      @identities.push [ '/(cessna)(?:.*?)(citation)/i' ]
+      @identities.push [ '/(cessna)(?:.*?)(\d\d\d)/i' ]
       x_left = [ 'CESSNA D-333 CITATION V']
       x_right = [ 'CESSNA D-333' ]
       @right.push x_right
@@ -209,10 +209,10 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       end
     end
   
-    should "succeed if proper restriction is applied" do
+    should "succeed if proper identity is applied" do
       @negatives.push [ @b_left[0], @c_right[0] ]
       @positives.push [ @d_left[0], @d_right[0] ]
-      @restrictions.push @r_1
+      @identities.push @r_1
     
       assert_nothing_raised do
         ltd.check @left
