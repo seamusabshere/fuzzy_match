@@ -39,9 +39,6 @@ class LooseTightDictionary
   include Amatch
 
   attr_reader :right_records
-  attr_reader :tightenings
-  attr_reader :identities
-  attr_reader :blockings
   attr_reader :logger
   attr_reader :tee
   attr_reader :case_sensitive
@@ -53,9 +50,9 @@ class LooseTightDictionary
 
   def initialize(right_records, options = {})
     @right_records = right_records
-    @tightenings = options[:tightenings] || Array.new
-    @identities = options[:identities] || Array.new
-    @blockings = options[:blockings] || Array.new
+    @_raw_tightenings = options[:tightenings] || Array.new
+    @_raw_identities = options[:identities] || Array.new
+    @_raw_blockings = options[:blockings] || Array.new
     @left_reader = options[:left_reader]
     @right_reader = options[:right_reader]
     @positives = options[:positives]
@@ -63,6 +60,20 @@ class LooseTightDictionary
     @logger = options[:logger]
     @tee = options[:tee]
     @case_sensitive = options[:case_sensitive] || false
+  end
+  
+  # def tightenings
+  # def identities
+  # def blockings
+  %w{ tightenings identities blockings }.each do |name|
+    module_eval %{
+      def #{name}
+        @#{name} ||= @_raw_#{name}.map do |i|
+          next if i[0].blank?
+          literal_regexp i[0]
+        end
+      end
+    }
   end
 
   def inline_check(left_record, right_record)
@@ -208,9 +219,9 @@ class LooseTightDictionary
     return @_t_options[str] if @_t_options.andand.has_key?(str)
     @_t_options ||= Hash.new
     ary = Array.new
-    ary << T.new(str, str)
-    tightenings.each do |i|
-      if match_data = literal_regexp(i[0]).match(str)
+    ary.push T.new(str, str)
+    tightenings.each do |regexp|
+      if match_data = regexp.match(str)
         ary.push T.new(str, match_data.captures.compact.join)
       end
     end
@@ -239,8 +250,7 @@ class LooseTightDictionary
     return @_i_options[str] if @_i_options.andand.has_key?(str)
     @_i_options ||= Hash.new
     ary = Array.new
-    identities.each do |i|
-      regexp = literal_regexp i[0]
+    identities.each do |regexp|
       if regexp.match str
         ary.push I.new(regexp, str, case_sensitive)
       end
@@ -251,8 +261,7 @@ class LooseTightDictionary
   def blocking(str)
     return @_blocking[str] if @_blocking.andand.has_key?(str)
     @_blocking ||= Hash.new
-    blockings.each do |blocking|
-      regexp = literal_regexp blocking[0]
+    blockings.each do |regexp|
       if regexp.match str
         return @_blocking[str] = regexp
       end
