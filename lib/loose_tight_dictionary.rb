@@ -114,7 +114,7 @@ class LooseTightDictionary
       begin
         right_record = left_to_right left_record
       ensure
-        tee.andand.puts [ read_left(left_record), read_right(right_record), $ltd_1 ].flatten.to_csv
+        tee.andand.puts [ read_left(left_record), read_right($ltd_0), $ltd_1 ].flatten.to_csv
       end
     end
   end
@@ -170,6 +170,7 @@ class LooseTightDictionary
         end
       end
     end
+    $ltd_0 = right_record
     $ltd_1 = history[right_record]
     right = read_right right_record
     i_options_right = i_options right
