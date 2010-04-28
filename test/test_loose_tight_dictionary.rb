@@ -17,6 +17,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     @c_right = 'ABCDEFG DH89 HIJKLMNOP'
     # dh 8 200
     @d_left, @d_right = 'DE HAVILLAND CANADA DHC8200 Dash 8', 'BOMBARDIER DEHAVILLAND DHC8-200Q DASH-8'
+    @d_lookalike = 'ABCD DHC8200 Dash 8'
     
     @t_1 = [ '/(dh)c?-?(\d{0,2})-?(\d{0,4})(?:.*?)(dash|\z)/i', 'good tightening for de havilland' ]
     
@@ -40,6 +41,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     ]
     @tightenings = []
     @restrictions = []
+    @blockings = []
     @positives = []
     @negatives = []
   end
@@ -49,13 +51,37 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   def ltd
-    @_ltd ||= LooseTightDictionary.new @left, @right, @tightenings, @restrictions, :logger => $logger
+    @_ltd ||= LooseTightDictionary.new @left, @right, @tightenings, @restrictions, @blockings, :logger => $logger
   end
 
   if ENV['NEW'] == 'true' or ENV['ALL'] == 'true'
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    should "have a false match without blocking" do
+      # @d_left will be our victim
+      @right.push [ @d_lookalike ]
+      @tightenings.push @t_1
+      
+      assert_equal @d_lookalike, ltd.left_to_right(@d_left)
+    end
+    
+    should "do blocking if the left matches a block" do
+      # @d_left will be our victim
+      @right.push [ @d_lookalike ]
+      @tightenings.push @t_1
+      @blockings.push ['/(bombardier|de ?havilland)/i']
+      
+      assert_equal @d_right, ltd.left_to_right(@d_left)
+    end
+    
+    should "not do blocking if the left doesn't match any blockings" do
+      @tightenings.push @t_1
+      @blockings.push ['/(bombardier|de ?havilland)/i']
+      
+      assert_equal @d_right, ltd.left_to_right(@d_lookalike)
+    end
+    
     should "use the best score from all of the tightenings" do
       x_left = "BOEING 737100"
       x_right = "BOEING BOEING 737-100/200"
