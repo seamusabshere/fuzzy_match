@@ -9,8 +9,8 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'loose_t
 $logger = Logger.new STDERR
 $logger.level = Logger::DEBUG
 $logger.datetime_format = "%H:%M:%S"
-$tee = File.open('tee.csv', 'w')
-# $tee = STDOUT
+# $tee = File.open('tee.csv', 'w')
+$tee = STDOUT
 
 # $ltd_left = /(super|bonanza)/i
 # $ltd_right = /bonanza d-35/i
@@ -49,8 +49,8 @@ end
                          :row_xpath => '//table/tr[2]/td/table/tr',
                          :column_xpath => 'td'
 
-  d = LooseTightDictionary.new @left, @right, @tightenings, @restrictions, @blockings, :logger => $logger, :tee => $tee
+  d = LooseTightDictionary.new @right, :tightenings => @tightenings, :restrictions => @restrictions, :blockings => @blockings, :logger => $logger, :tee => $tee
   d.left_reader = lambda { |row| row['Manufacturer'] + ' ' + row['Model'] }
   d.right_reader = lambda { |row| row['Manufacturer'] + ' ' + row['Long Name'] }
-  d.check @positives, @negatives
+  d.check @left, @positives, @negatives
 end

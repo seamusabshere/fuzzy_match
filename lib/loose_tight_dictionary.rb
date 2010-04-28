@@ -38,7 +38,6 @@ class LooseTightDictionary
 
   include Amatch
 
-  attr_reader :left_side_rows
   attr_reader :right_side_rows
   attr_reader :tightenings
   attr_reader :restrictions
@@ -50,18 +49,19 @@ class LooseTightDictionary
   attr_accessor :left_reader
   attr_accessor :right_reader
 
-  def initialize(left_side_rows, right_side_rows, tightenings, restrictions, blockings, options = {})
-    @left_side_rows = left_side_rows
+  def initialize(right_side_rows, options = {})
     @right_side_rows = right_side_rows
-    @tightenings = tightenings
-    @restrictions = restrictions
-    @blockings = blockings
+    @tightenings = options[:tightenings] || Array.new
+    @restrictions = options[:restrictions] || Array.new
+    @blockings = options[:blockings] || Array.new
+    @left_reader = options[:left_reader]
+    @right_reader = options[:right_reader]
     @logger = options[:logger]
     @tee = options[:tee]
     @case_sensitive = options[:case_sensitive] || false
   end
 
-  def check(positives, negatives, log = false)
+  def check(left_side_rows, positives, negatives, log = false)
     seen_positives = Array.new
     
     left_side_rows.each do |row|
