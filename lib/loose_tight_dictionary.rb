@@ -176,14 +176,18 @@ class LooseTightDictionary
         end
       end
     end
-    $ltd_0 = right_record
     $ltd_1 = history[right_record]
     right = read_right right_record
     i_options_right = i_options right
     z = 1
     debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(right)
     z = 1
-    return if collision? i_options_left, i_options_right
+    if collision? i_options_left, i_options_right
+      $ltd_0 = nil
+      return
+    else
+      $ltd_0 = right_record
+    end
     inline_check left_record, right_record
     right_record
   end
