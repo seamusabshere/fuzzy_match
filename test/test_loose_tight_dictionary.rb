@@ -68,17 +68,6 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
-    should "only use identities if they stem from the same regexp" do
-      @identities.push @r_1
-      @identities.push [ '/(cessna)(?:.*?)(citation)/i' ]
-      @identities.push [ '/(cessna)(?:.*?)(\d\d\d)/i' ]
-      x_left = [ 'CESSNA D-333 CITATION V']
-      x_right = [ 'CESSNA D-333' ]
-      @right.push x_right
-      
-      assert_equal x_right, ltd.left_to_right(x_left)
-    end
-    
     should "have a false match without blocking" do
       # @d_left will be our victim
       @right.push @d_lookalike
@@ -96,11 +85,23 @@ class TestLooseTightDictionary < Test::Unit::TestCase
       assert_equal @d_right, ltd.left_to_right(@d_left)
     end
     
-    should "not do blocking if the left doesn't match any blockings" do
+    should "treat blocks as exclusive" do
+      @right = [ @d_left ]
       @tightenings.push @t_1
       @blockings.push ['/(bombardier|de ?havilland)/i']
+
+      assert_equal nil, ltd.left_to_right(@d_lookalike)
+    end
+    
+    should "only use identities if they stem from the same regexp" do
+      @identities.push @r_1
+      @identities.push [ '/(cessna)(?:.*?)(citation)/i' ]
+      @identities.push [ '/(cessna)(?:.*?)(\d\d\d)/i' ]
+      x_left = [ 'CESSNA D-333 CITATION V']
+      x_right = [ 'CESSNA D-333' ]
+      @right.push x_right
       
-      assert_equal @d_right, ltd.left_to_right(@d_lookalike)
+      assert_equal x_right, ltd.left_to_right(x_left)
     end
     
     should "use the best score from all of the tightenings" do

@@ -125,7 +125,13 @@ class LooseTightDictionary
     blocking_left = blocking left
     t_options_left = t_options left
     history = Hash.new
-    right_record = right_records.select { |record| blocking_left.nil? or blocking_left.match(read_right(record)) }.max do |a_record, b_record|
+    right_record = right_records.select do |right_record|
+      right = read_right right_record
+      blocking_right = blocking right
+      (not blocking_left and not blocking_right) or
+        (blocking_right and blocking_right.match(left)) or
+        (blocking_left and blocking_left.match(right))
+    end.max do |a_record, b_record|
       a = read_right a_record
       b = read_right b_record
       i_options_a = i_options a
