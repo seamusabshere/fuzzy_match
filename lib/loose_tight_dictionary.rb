@@ -82,26 +82,26 @@ class LooseTightDictionary
     left = read_left left_record
     right = read_right right_record
     
-    if p = positives.andand.detect { |record| record[0] == left }
-      correct_right = p[1]
-    else
-      correct_right = :ignore
+    if positive_record = positives.andand.detect { |record| record[0] == left }
+      correct_right = positive_record[1]
+      if correct_right.blank? and right.present?
+        logger.andand.debug "  Mismatch! (should match SOMETHING)"
+        raise Mismatch
+      elsif right != correct_right
+        logger.andand.debug "  Mismatch! (should be #{correct_right})"
+        raise Mismatch
+      end
     end
     
-    if n = negatives.andand.detect { |record| record[0] == left }
-      incorrect_right = n[1]
-    else
-      incorrect_right = :ignore
-    end
-    
-    if correct_right != :ignore and right != correct_right
-      logger.andand.debug "  Mismatch! (should be #{correct_right})"
-      raise Mismatch
-    end
-    
-    if incorrect_right != :ignore and right == incorrect_right
-      logger.andand.debug "  False positive! (should NOT be #{incorrect_right})"
-      raise FalsePositive
+    if negative_record = negatives.andand.detect { |record| record[0] == left }
+      incorrect_right = negative_record[1]
+      if incorrect_right.blank? and right.present?
+        logger.andand.debug "  False positive! (should NOT match ANYTHING)"
+        raise FalsePositive
+      elsif right == incorrect_right
+        logger.andand.debug "  False positive! (should NOT be #{incorrect_right})"
+        raise FalsePositive
+      end
     end
   end
 

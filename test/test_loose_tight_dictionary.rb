@@ -68,6 +68,20 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    should "call it a mismatch if you hit a blank positive" do
+      @positives.push [@a_left[0], '']
+      assert_raises(LooseTightDictionary::Mismatch) do
+        ltd.left_to_right @a_left
+      end
+    end
+
+    should "call it a false positive if you hit a blank negative" do
+      @negatives.push [@a_left[0], '']
+      assert_raises(LooseTightDictionary::FalsePositive) do
+        ltd.left_to_right @a_left
+      end
+    end
+    
     should "have a false match without blocking" do
       # @d_left will be our victim
       @right.push @d_lookalike
