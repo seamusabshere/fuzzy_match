@@ -39,10 +39,11 @@ class LooseTightDictionary
   include Amatch
 
   attr_reader :right_records
-  attr_reader :logger
-  attr_reader :tee
   attr_reader :case_sensitive
-  
+
+  attr_accessor :logger
+  attr_accessor :tee
+  attr_accessor :tee_format  
   attr_accessor :positives
   attr_accessor :negatives
   attr_accessor :left_reader
@@ -59,6 +60,7 @@ class LooseTightDictionary
     @negatives = options[:negatives]
     @logger = options[:logger]
     @tee = options[:tee]
+    @tee_format = options[:tee_format] || :fixed_width
     @case_sensitive = options[:case_sensitive] || false
   end
   
@@ -106,15 +108,24 @@ class LooseTightDictionary
   end
 
   def check(left_records)
-    unless positives.present? or negatives.present?
-      logger.andand.info "You didn't define any positives or negatives, so running check doesn't do anything"
-      return
+    header = [ 'Left record (input)', 'Right record (output)', 'Prefix used (if any)', 'Score' ]
+    case tee_format
+    when :csv
+      tee.andand.puts header.flatten.to_csv
+    when :fixed_width
+      tee.andand.puts header.map { |i| i.to_s.ljust(30) }.join
     end
+
     left_records.each do |left_record|
       begin
         right_record = left_to_right left_record
       ensure
-        tee.andand.puts [ read_left(left_record), read_right($ltd_0), $ltd_1 ].flatten.to_csv
+        case tee_format
+        when :csv
+          tee.andand.puts $ltd_1.flatten.to_csv
+        when :fixed_width
+          tee.andand.puts $ltd_1.map { |i| i.to_s.ljust(30) }.join if $ltd_1
+        end
       end
     end
   end
@@ -292,12 +303,24 @@ class LooseTightDictionary
   
   def read_left(left_record)
     return if left_record.nil?
-    left_reader ? left_reader.call(left_record) : left_record[0]
+    if left_reader
+      left_reader.call(left_record)
+    elsif left_record.is_a?(String)
+      left_record
+    else
+      left_record[0]
+    end
   end
   
   def read_right(right_record)
     return if right_record.nil?
-    right_reader ? right_reader.call(right_record) : right_record[0]
+    if right_reader
+      right_reader.call(right_record)
+    elsif right_record.is_a?(String)
+      right_record
+    else
+      right_record[0]
+    end
   end
   
   # Thanks William James!

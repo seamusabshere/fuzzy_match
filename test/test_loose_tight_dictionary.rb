@@ -68,6 +68,28 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    # the example from the readme, considerably uglier here
+    should "check a simple table" do
+      @right = [ 'seamus', 'andy', 'ben' ]
+      @positives = [ [ 'seamus', 'Mr. Seamus Abshere' ] ]
+      left = [ 'Mr. Seamus Abshere', 'Sr. Andy Rossmeissl', 'Master BenT' ]
+    
+      assert_nothing_raised do
+        ltd.check left
+      end
+    end
+    
+    should "treat a String as a full record if passed through" do
+      dash = 'DHC8-400'
+      b747 = 'B747200/300'
+      dc9 = 'DC-9-10'
+      right_records = [ dash, b747, dc9 ]
+      simple_ltd = LooseTightDictionary.new right_records, :logger => $logger, :tee => $tee
+      assert_equal dash, simple_ltd.left_to_right('DeHavilland Dash-8 DHC-400')
+      assert_equal b747, simple_ltd.left_to_right('Boeing 747-300')
+      assert_equal dc9, simple_ltd.left_to_right('McDonnell Douglas MD81/DC-9')
+    end
+    
     should "call it a mismatch if you hit a blank positive" do
       @positives.push [@a_left[0], '']
       assert_raises(LooseTightDictionary::Mismatch) do
