@@ -63,6 +63,7 @@ class LooseTightDictionary
     @tee = options[:tee]
     @tee_format = options[:tee_format] || :fixed_width
     @case_sensitive = options[:case_sensitive] || false
+    @blocking_only = options[:blocking_only] || false
   end
   
   # def tightenings

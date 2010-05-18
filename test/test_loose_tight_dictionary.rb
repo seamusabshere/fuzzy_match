@@ -60,6 +60,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
                                         :blockings => @blockings,
                                         :positives => @positives,
                                         :negatives => @negatives,
+                                        :blocking_only => @blocking_only,
                                         :logger => $logger,
                                         :tee => $tee
   end
@@ -70,11 +71,14 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
     should "optionally only pay attention to things that match blockings" do
       assert_equal @a_right, ltd.left_to_right(@a_left)
-      ltd.blocking_only = true
-      assert_equal nil, ltd.left_to_right(@a_left)
+
       clear_ltd
+      @blocking_only = true
+      assert_equal nil, ltd.left_to_right(@a_left)
+
+      clear_ltd
+      @blocking_only = true
       @blockings.push ['/dash/i']
-      ltd.blocking_only = true
       assert_equal @a_right, ltd.left_to_right(@a_left)
     end
     
