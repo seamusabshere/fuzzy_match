@@ -48,6 +48,7 @@ class LooseTightDictionary
   attr_accessor :negatives
   attr_accessor :left_reader
   attr_accessor :right_reader
+  attr_accessor :blocking_only
 
   def initialize(right_records, options = {})
     @right_records = right_records
@@ -76,6 +77,10 @@ class LooseTightDictionary
         end
       end
     }
+  end
+  
+  def blocking_only?
+    !!blocking_only
   end
 
   def inline_check(left_record, right_record)
@@ -132,8 +137,9 @@ class LooseTightDictionary
   
   def left_to_right(left_record)
     left = read_left left_record
-    i_options_left = i_options left
     blocking_left = blocking left
+    return if blocking_only? and blocking_left.nil?
+    i_options_left = i_options left
     t_options_left = t_options left
     history = Hash.new
     right_record = right_records.select do |right_record|

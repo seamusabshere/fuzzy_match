@@ -68,6 +68,16 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   if ENV['OLD'] == 'true' or ENV['ALL'] == 'true'
+    should "optionally only pay attention to things that match blockings" do
+      assert_equal @a_right, ltd.left_to_right(@a_left)
+      ltd.blocking_only = true
+      assert_equal nil, ltd.left_to_right(@a_left)
+      clear_ltd
+      @blockings.push ['/dash/i']
+      ltd.blocking_only = true
+      assert_equal @a_right, ltd.left_to_right(@a_left)
+    end
+    
     # the example from the readme, considerably uglier here
     should "check a simple table" do
       @right = [ 'seamus', 'andy', 'ben' ]
