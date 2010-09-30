@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Seamus Abshere"]
-  s.date = %q{2010-09-27}
+  s.date = %q{2010-09-30}
   s.description = %q{Create dictionaries that link rows between two tables (left and right) using loose matching (string similarity) by default and tight matching (regexp) by request.}
   s.email = %q{seamus@abshere.net}
   s.extra_rdoc_files = [
@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
      "examples/icao-bts.rb",
      "examples/icao-bts.xls",
      "lib/loose_tight_dictionary.rb",
+     "loose_tight_dictionary.gemspec",
      "test/helper.rb",
      "test/test_loose_tight_dictionary.rb"
   ]
@@ -50,14 +51,12 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<remote_table>, [">= 0.2.19"])
       s.add_runtime_dependency(%q<activesupport>, [">= 2.3.4"])
-      s.add_runtime_dependency(%q<fastercsv>, [">= 1.5.3"])
       s.add_runtime_dependency(%q<andand>, [">= 1.3.1"])
       s.add_runtime_dependency(%q<amatch>, [">= 0.2.5"])
     else
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<remote_table>, [">= 0.2.19"])
       s.add_dependency(%q<activesupport>, [">= 2.3.4"])
-      s.add_dependency(%q<fastercsv>, [">= 1.5.3"])
       s.add_dependency(%q<andand>, [">= 1.3.1"])
       s.add_dependency(%q<amatch>, [">= 0.2.5"])
     end
@@ -65,7 +64,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<remote_table>, [">= 0.2.19"])
     s.add_dependency(%q<activesupport>, [">= 2.3.4"])
-    s.add_dependency(%q<fastercsv>, [">= 1.5.3"])
     s.add_dependency(%q<andand>, [">= 1.3.1"])
     s.add_dependency(%q<amatch>, [">= 0.2.5"])
   end

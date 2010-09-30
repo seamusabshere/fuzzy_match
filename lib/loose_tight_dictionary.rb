@@ -7,7 +7,16 @@ require 'active_support/version'
 end if ActiveSupport::VERSION::MAJOR == 3
 require 'amatch'
 require 'andand'
-require 'fastercsv'
+if RUBY_VERSION >= '1.9'
+  require 'csv'
+else
+  begin
+    require 'fastercsv'
+  rescue LoadError
+    $stderr.puts "[loose_tight_dictionary gem] You probably need to manually install the fastercsv gem."
+    raise $!
+  end
+end
 
 class LooseTightDictionary
   class MissedChecks < RuntimeError; end
