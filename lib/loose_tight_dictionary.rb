@@ -92,11 +92,11 @@ class LooseTightDictionary
     
     if positive_record = positives.andand.detect { |record| record[0] == left }
       correct_right = positive_record[1]
-      if correct_right.blank? and right.present?
+      if correct_right.present? and right.blank?
         logger.andand.debug "  Mismatch! (should match SOMETHING)"
         raise Mismatch
       elsif right != correct_right
-        logger.andand.debug "  Mismatch! (should be #{correct_right})"
+        logger.andand.debug "  Mismatch! (#{right} should be #{correct_right})"
         raise Mismatch
       end
     end
@@ -107,7 +107,7 @@ class LooseTightDictionary
         logger.andand.debug "  False positive! (should NOT match ANYTHING)"
         raise FalsePositive
       elsif right == incorrect_right
-        logger.andand.debug "  False positive! (should NOT be #{incorrect_right})"
+        logger.andand.debug "  False positive! (#{right} should NOT be #{incorrect_right})"
         raise FalsePositive
       end
     end
