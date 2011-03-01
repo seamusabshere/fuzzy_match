@@ -218,6 +218,7 @@ class LooseTightDictionary
     inline_check left_record, right_record
     right_record
   end
+  alias_method :find, :left_to_right
   
   def optimize(t_options_left, t_options_right)
     cart_prod(t_options_left, t_options_right).max do |a, b|

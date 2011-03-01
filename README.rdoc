@@ -4,13 +4,9 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
 = Quickstart
 
-    >> right_records = [ 'seamus', 'andy', 'ben' ]
+    >> d = LooseTightDictionary.new %w(seamus andy ben)
     => [...]
-    >> left_record = 'Shamus Heaney'
-    => [...]
-    >> d = LooseTightDictionary.new right_records
-    => [...]
-    >> puts d.left_to_right left_record
+    >> puts d.find 'Shamus Heaney'
     => 'seamus'
 
 Try running the included example file:
