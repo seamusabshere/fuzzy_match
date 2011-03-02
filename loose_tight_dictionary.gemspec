@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{loose_tight_dictionary}
-  s.version = "0.0.9"
+  s.version = "0.0.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Seamus Abshere"]
-  s.date = %q{2010-09-30}
+  s.date = %q{2011-03-02}
   s.description = %q{Create dictionaries that link rows between two tables (left and right) using loose matching (string similarity) by default and tight matching (regexp) by request.}
   s.email = %q{seamus@abshere.net}
   s.extra_rdoc_files = [
