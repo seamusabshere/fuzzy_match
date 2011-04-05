@@ -58,5 +58,5 @@ end
     :right_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },
     :positives => @positives,
     :negatives => @negatives
-  d.check @left
+  d.improver.check @left
 end

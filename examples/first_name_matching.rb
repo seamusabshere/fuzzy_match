@@ -21,4 +21,4 @@ puts
 puts "Results"
 puts "=" * 20
 d = LooseTightDictionary.new right_side, :tee => $stdout
-d.check left_side
+d.improver.check left_side

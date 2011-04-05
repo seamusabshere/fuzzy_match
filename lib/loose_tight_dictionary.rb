@@ -8,12 +8,12 @@ require 'active_support/version'
 end if ::ActiveSupport::VERSION::MAJOR == 3
 
 class LooseTightDictionary
-  class MissedChecks < RuntimeError; end
   class Mismatch < RuntimeError; end
   class FalsePositive < RuntimeError; end
 
   autoload :T, 'loose_tight_dictionary/t'
   autoload :I, 'loose_tight_dictionary/i'
+  autoload :Improver, 'loose_tight_dictionary/improver'
   
   attr_reader :options
   attr_reader :right_records
@@ -23,6 +23,10 @@ class LooseTightDictionary
     @right_records = right_records
   end
   
+  def improver
+    @improver ||= Improver.new self
+  end
+  
   def left_reader
     options[:left_reader]
   end
@@ -30,15 +34,7 @@ class LooseTightDictionary
   def right_reader
     options[:right_reader]
   end
-  
-  def positives
-    options[:positives]
-  end
-  
-  def negatives
-    options[:negatives]
-  end
-  
+    
   def case_sensitive
     options[:case_sensitive] || false
   end
@@ -80,49 +76,7 @@ class LooseTightDictionary
     options[:tee].puts str if options[:tee]
   end
 
-  def inline_check(left_record, right_record)
-    return unless positives.present? or negatives.present?
-
-    left = read_left left_record
-    right = read_right right_record
-
-    if positive_record = positives.try(:detect) { |record| record[0] == left }
-      correct_right = positive_record[1]
-      if correct_right.present? and right.blank?
-        log "  Mismatch! (should match SOMETHING)"
-        raise Mismatch
-      elsif right != correct_right
-        log "  Mismatch! (#{right} should be #{correct_right})"
-        raise Mismatch
-      end
-    end
-
-    if negative_record = negatives.try(:detect) { |record| record[0] == left }
-      incorrect_right = negative_record[1]
-      if incorrect_right.blank? and right.present?
-        log "  False positive! (should NOT match ANYTHING)"
-        raise FalsePositive
-      elsif right == incorrect_right
-        log "  False positive! (#{right} should NOT be #{incorrect_right})"
-        raise FalsePositive
-      end
-    end
-  end
-
-  def check(left_records)
-    header = [ 'Left record (input)', 'Right record (output)', 'Prefix used (if any)', 'Score' ]
-    tee header.map { |i| i.to_s.ljust(30) }.join
-
-    left_records.each do |left_record|
-      begin
-        right_record = left_to_right left_record
-      ensure
-        tee $ltd_1.map { |i| i.to_s.ljust(30) }.join if $ltd_1
-      end
-    end
-  end
-
-  def left_to_right(left_record)
+  def find(left_record)
     left = read_left left_record
     blocking_left = blocking left
     return if blocking_only? and blocking_left.nil?
@@ -192,10 +146,11 @@ class LooseTightDictionary
     else
       $ltd_0 = right_record
     end
-    inline_check left_record, right_record
     right_record
   end
-  alias_method :find, :left_to_right
+
+  # deprecated
+  alias :left_to_right :find
 
   def optimize(t_options_left, t_options_right)
     cart_prod(t_options_left, t_options_right).max do |a, b|
