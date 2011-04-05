@@ -44,22 +44,37 @@ class LooseTightDictionary
 
   def tightenings
     @tightenings ||= (options[:tightenings] || []).map do |i|
-      next if i[0].blank?
-      literal_regexp i[0]
+      if i.is_a?(::String)
+        next if i.blank?
+        literal_regexp i
+      else
+        next if i[0].blank?
+        literal_regexp i[0]
+      end
     end
   end
 
   def identities
     @identities ||= (options[:identities] || []).map do |i|
-      next if i[0].blank?
-      literal_regexp i[0]
+      if i.is_a?(::String)
+        next if i.blank?
+        literal_regexp i
+      else
+        next if i[0].blank?
+        literal_regexp i[0]
+      end
     end
   end
 
   def blockings
     @blockings ||= (options[:blockings] || []).map do |i|
-      next if i[0].blank?
-      literal_regexp i[0]
+      if i.is_a?(::String)
+        next if i.blank?
+        literal_regexp i
+      else
+        next if i[0].blank?
+        literal_regexp i[0]
+      end
     end
   end
   
@@ -221,7 +236,7 @@ class LooseTightDictionary
     elsif needle.is_a?(::String)
       case_sensitive ? needle : needle.downcase
     else
-      needle[0]
+      case_sensitive ? needle[0] : needle[0].downcase
     end
   end
 
@@ -232,7 +247,7 @@ class LooseTightDictionary
     elsif record.is_a?(::String)
       case_sensitive ? record : record.downcase
     else
-      record[0]
+      case_sensitive ? record[0] : record[0].downcase
     end
   end
 
