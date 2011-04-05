@@ -6,37 +6,15 @@ require 'active_support/version'
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ::ActiveSupport::VERSION::MAJOR == 3
-require 'amatch'
 
 class LooseTightDictionary
   class MissedChecks < RuntimeError; end
   class Mismatch < RuntimeError; end
   class FalsePositive < RuntimeError; end
 
-  class T
-    attr_reader :str, :tightened_str
-    def initialize(str, tightened_str)
-      @str = str
-      @tightened_str = tightened_str
-    end
-
-    def tightened?
-      str != tightened_str
-    end
-
-    def prefix_and_score(other)
-      prefix = [ tightened_str.length, other.tightened_str.length ].min if tightened? and other.tightened?
-      score = if prefix
-        tightened_str.first(prefix).pair_distance_similar other.tightened_str.first(prefix)
-      else
-        tightened_str.pair_distance_similar other.tightened_str
-      end
-      [ prefix, score ]
-    end
-  end
-
-  include ::Amatch
-
+  autoload :T, 'loose_tight_dictionary/t'
+  autoload :I, 'loose_tight_dictionary/i'
+  
   attr_reader :options
   attr_reader :right_records
 
@@ -264,16 +242,6 @@ class LooseTightDictionary
       end
     end
     @_t_options[str] = ary
-  end
-
-  class I
-    attr_reader :regexp, :str, :case_sensitive, :identity
-    def initialize(regexp, str, case_sensitive)
-      @regexp = regexp
-      @str = str
-      @identity = regexp.match(str).captures.compact.join
-      @identity = @identity.downcase if case_sensitive
-    end
   end
 
   def collision?(i_options_left, i_options_right)
