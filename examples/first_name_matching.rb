@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby
-require 'rubygems'
-# require 'loose_tight_dictionary'
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'loose_tight_dictionary.rb'))
+unless RUBY_VERSION >= '1.9'
+  require 'rubygems'
+end
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+require 'loose_tight_dictionary'
+
 right_side = [ 'seamus', 'andy', 'ben' ]
-left_side = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT' ]
+left_side = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT', 'Shamus Heaney' ]
 
 puts "Left side (input)"
 puts "=" * 20
@@ -19,5 +22,3 @@ puts "Results"
 puts "=" * 20
 d = LooseTightDictionary.new right_side, :tee => $stdout
 d.check left_side
-
-puts d.left_to_right 'Shamus Heaney'

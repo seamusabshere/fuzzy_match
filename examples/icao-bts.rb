@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
-
-require 'rubygems'
+unless RUBY_VERSION >= '1.9'
+  require 'rubygems'
+end
 require 'remote_table'
 require 'ruby-debug'
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'loose_tight_dictionary.rb'))
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+require 'loose_tight_dictionary'
 
 $log = $stderr
 # $tee = File.open('tee.csv', 'w')
