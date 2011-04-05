@@ -61,8 +61,8 @@ class LooseTightDictionary
     options[:negatives]
   end
   
-  def logger
-    options[:logger]
+  def verbose
+    options[:verbose] || false
   end
   
   def tee
@@ -106,6 +106,10 @@ class LooseTightDictionary
     !!blocking_only
   end
 
+  def log(msg = '')
+    $stderr.puts msg if verbose
+  end
+
   def inline_check(left_record, right_record)
     return unless positives.present? or negatives.present?
 
@@ -115,10 +119,10 @@ class LooseTightDictionary
     if positive_record = positives.try(:detect) { |record| record[0] == left }
       correct_right = positive_record[1]
       if correct_right.present? and right.blank?
-        logger.try :debug, "  Mismatch! (should match SOMETHING)"
+        log "  Mismatch! (should match SOMETHING)"
         raise Mismatch
       elsif right != correct_right
-        logger.try :debug, "  Mismatch! (#{right} should be #{correct_right})"
+        log "  Mismatch! (#{right} should be #{correct_right})"
         raise Mismatch
       end
     end
@@ -126,10 +130,10 @@ class LooseTightDictionary
     if negative_record = negatives.try(:detect) { |record| record[0] == left }
       incorrect_right = negative_record[1]
       if incorrect_right.blank? and right.present?
-        logger.try :debug, "  False positive! (should NOT match ANYTHING)"
+        log "  False positive! (should NOT match ANYTHING)"
         raise FalsePositive
       elsif right == incorrect_right
-        logger.try :debug, "  False positive! (#{right} should NOT be #{incorrect_right})"
+        log "  False positive! (#{right} should NOT be #{incorrect_right})"
         raise FalsePositive
       end
     end
@@ -192,11 +196,11 @@ class LooseTightDictionary
         yep_dd = ($ltd_dd_right and $ltd_dd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_dd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_dd_right } and (!$ltd_dd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_dd_left_not }))
 
         if $ltd_dd_print and yep_dd
-          logger.try :debug, t_left_a.inspect
-          logger.try :debug, t_right_a.inspect
-          logger.try :debug, t_left_b.inspect
-          logger.try :debug, t_right_b.inspect
-          logger.try :debug
+          log t_left_a.inspect
+          log t_right_a.inspect
+          log t_left_b.inspect
+          log t_right_b.inspect
+          log
         end
 
         z = 1
@@ -240,11 +244,11 @@ class LooseTightDictionary
       yep_ddd = ($ltd_ddd_right and $ltd_ddd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_ddd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_ddd_right } and (!$ltd_ddd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_ddd_left_not }))
 
       if $ltd_ddd_print and yep_ddd
-        logger.try :debug, t_left_a.inspect
-        logger.try :debug, t_right_a.inspect
-        logger.try :debug, t_left_b.inspect
-        logger.try :debug, t_right_b.inspect
-        logger.try :debug
+        log t_left_a.inspect
+        log t_right_a.inspect
+        log t_left_b.inspect
+        log t_right_b.inspect
+        log
       end
 
       z = 1

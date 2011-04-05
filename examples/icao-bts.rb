@@ -3,12 +3,8 @@
 require 'rubygems'
 require 'remote_table'
 require 'ruby-debug'
-require 'logger'
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'loose_tight_dictionary.rb'))
 
-$logger = Logger.new STDERR
-$logger.level = Logger::DEBUG
-$logger.datetime_format = "%H:%M:%S"
 # $tee = File.open('tee.csv', 'w')
 $tee = STDOUT
 
@@ -37,9 +33,9 @@ $tee = STDOUT
 @negatives = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=2&output=csv', :headers => false
 
 %w{ tightenings identities blockings }.each do |name|
-  $logger.info name
-  $logger.info "\n" + instance_variable_get("@#{name}").to_a.map { |record| record[0] }.join("\n")
-  $logger.info "\n"
+  $stderr.puts name
+  $stderr.puts "\n" + instance_variable_get("@#{name}").to_a.map { |record| record[0] }.join("\n")
+  $stderr.puts "\n"
 end
 
 ('A'..'Z').each do |letter|
@@ -49,10 +45,15 @@ end
                           :row_xpath => '//table/tr[2]/td/table/tr',
                           :column_xpath => 'td'
 
-  d = LooseTightDictionary.new @right, :tightenings => @tightenings, :identities => @identities, :blockings => @blockings, :logger => $logger, :tee => $tee
-  d.left_reader = lambda { |record| record['Manufacturer'] + ' ' + record['Model'] }
-  d.right_reader = lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] }
-  d.positives = @positives
-  d.negatives = @negatives
+  d = LooseTightDictionary.new @right,
+    :tightenings => @tightenings,
+    :identities => @identities,
+    :blockings => @blockings,
+    :verbose => true,
+    :tee => $tee,
+    :left_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Model'] },
+    :right_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },
+    :positives => @positives,
+    :negatives => @negatives
   d.check @left
 end
