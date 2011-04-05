@@ -2,27 +2,28 @@ require 'active_support'
 require 'active_support/version'
 %w{
   active_support/core_ext/string
+  active_support/core_ext/hash
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
-end if ActiveSupport::VERSION::MAJOR == 3
+end if ::ActiveSupport::VERSION::MAJOR == 3
 require 'amatch'
 
 class LooseTightDictionary
   class MissedChecks < RuntimeError; end
   class Mismatch < RuntimeError; end
   class FalsePositive < RuntimeError; end
-  
+
   class T
     attr_reader :str, :tightened_str
     def initialize(str, tightened_str)
       @str = str
       @tightened_str = tightened_str
     end
-    
+
     def tightened?
       str != tightened_str
     end
-    
+
     def prefix_and_score(other)
       prefix = [ tightened_str.length, other.tightened_str.length ].min if tightened? and other.tightened?
       score = if prefix
@@ -34,60 +35,83 @@ class LooseTightDictionary
     end
   end
 
-  include Amatch
+  include ::Amatch
 
+  attr_reader :options
   attr_reader :right_records
-  attr_reader :case_sensitive
-
-  attr_accessor :logger
-  attr_accessor :tee
-  attr_accessor :tee_format  
-  attr_accessor :positives
-  attr_accessor :negatives
-  attr_accessor :left_reader
-  attr_accessor :right_reader
-  attr_accessor :blocking_only
 
   def initialize(right_records, options = {})
+    @options = options.symbolize_keys
     @right_records = right_records
-    @_raw_tightenings = options[:tightenings] || Array.new
-    @_raw_identities = options[:identities] || Array.new
-    @_raw_blockings = options[:blockings] || Array.new
-    @left_reader = options[:left_reader]
-    @right_reader = options[:right_reader]
-    @positives = options[:positives]
-    @negatives = options[:negatives]
-    @logger = options[:logger]
-    @tee = options[:tee]
-    @tee_format = options[:tee_format] || :fixed_width
-    @case_sensitive = options[:case_sensitive] || false
-    @blocking_only = options[:blocking_only] || false
   end
   
-  # def tightenings
-  # def identities
-  # def blockings
-  %w{ tightenings identities blockings }.each do |name|
-    module_eval %{
-      def #{name}
-        @#{name} ||= @_raw_#{name}.map do |i|
-          next if i[0].blank?
-          literal_regexp i[0]
-        end
-      end
-    }
+  def left_reader
+    options[:left_reader]
   end
   
+  def right_reader
+    options[:right_reader]
+  end
+  
+  def positives
+    options[:positives]
+  end
+  
+  def negatives
+    options[:negatives]
+  end
+  
+  def logger
+    options[:logger]
+  end
+  
+  def tee
+    options[:tee]
+  end
+  
+  def tee_format
+    options[:tee_format] || :fixed_width
+  end
+  
+  def case_sensitive
+    options[:case_sensitive] || false
+  end
+  
+  def blocking_only
+    options[:blocking_only] || false
+  end
+
+  def tightenings
+    @tightenings ||= (options[:tightenings] || []).map do |i|
+      next if i[0].blank?
+      literal_regexp i[0]
+    end
+  end
+
+  def identities
+    @identities ||= (options[:identities] || []).map do |i|
+      next if i[0].blank?
+      literal_regexp i[0]
+    end
+  end
+
+  def blockings
+    @blockings ||= (options[:blockings] || []).map do |i|
+      next if i[0].blank?
+      literal_regexp i[0]
+    end
+  end
+
   def blocking_only?
     !!blocking_only
   end
 
   def inline_check(left_record, right_record)
     return unless positives.present? or negatives.present?
-    
+
     left = read_left left_record
     right = read_right right_record
-    
+
     if positive_record = positives.try(:detect) { |record| record[0] == left }
       correct_right = positive_record[1]
       if correct_right.present? and right.blank?
@@ -98,7 +122,7 @@ class LooseTightDictionary
         raise Mismatch
       end
     end
-    
+
     if negative_record = negatives.try(:detect) { |record| record[0] == left }
       incorrect_right = negative_record[1]
       if incorrect_right.blank? and right.present?
@@ -129,7 +153,7 @@ class LooseTightDictionary
       end
     end
   end
-  
+
   def left_to_right(left_record)
     left = read_left left_record
     blocking_left = blocking left
@@ -164,9 +188,9 @@ class LooseTightDictionary
         b_prefix, b_score = t_left_b.prefix_and_score t_right_b
         history[a_record] = [t_left_a.tightened_str, t_right_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
         history[b_record] = [t_left_b.tightened_str, t_right_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
-        
+
         yep_dd = ($ltd_dd_right and $ltd_dd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_dd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_dd_right } and (!$ltd_dd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_dd_left_not }))
-        
+
         if $ltd_dd_print and yep_dd
           logger.try :debug, t_left_a.inspect
           logger.try :debug, t_right_a.inspect
@@ -178,7 +202,7 @@ class LooseTightDictionary
         z = 1
         debugger if yep_dd
         z = 1
-        
+
         if a_score != b_score
           a_score <=> b_score
         elsif a_prefix and b_prefix and a_prefix != b_prefix
@@ -204,17 +228,17 @@ class LooseTightDictionary
     right_record
   end
   alias_method :find, :left_to_right
-  
+
   def optimize(t_options_left, t_options_right)
     cart_prod(t_options_left, t_options_right).max do |a, b|
       t_left_a, t_right_a = a
       t_left_b, t_right_b = b
-    
+
       a_prefix, a_score = t_left_a.prefix_and_score t_right_a
       b_prefix, b_score = t_left_b.prefix_and_score t_right_b
-      
+
       yep_ddd = ($ltd_ddd_right and $ltd_ddd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_ddd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_ddd_right } and (!$ltd_ddd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_ddd_left_not }))
-      
+
       if $ltd_ddd_print and yep_ddd
         logger.try :debug, t_left_a.inspect
         logger.try :debug, t_right_a.inspect
@@ -222,11 +246,11 @@ class LooseTightDictionary
         logger.try :debug, t_right_b.inspect
         logger.try :debug
       end
-      
+
       z = 1
       debugger if yep_ddd
       z = 1
-      
+
       if a_score != b_score
         a_score <=> b_score
       elsif a_prefix and b_prefix and a_prefix != b_prefix
@@ -238,7 +262,7 @@ class LooseTightDictionary
       end
     end
   end
-  
+
   def t_options(str)
     return @_t_options[str] if @_t_options.try(:has_key?, str)
     @_t_options ||= Hash.new
@@ -251,7 +275,7 @@ class LooseTightDictionary
     end
     @_t_options[str] = ary
   end
-  
+
   class I
     attr_reader :regexp, :str, :case_sensitive, :identity
     def initialize(regexp, str, case_sensitive)
@@ -261,7 +285,7 @@ class LooseTightDictionary
       @identity = @identity.downcase if case_sensitive
     end
   end
-  
+
   def collision?(i_options_left, i_options_right)
     i_options_left.any? do |r_left|
       i_options_right.any? do |r_right|
@@ -269,7 +293,7 @@ class LooseTightDictionary
       end
     end
   end
-  
+
   def i_options(str)
     return @_i_options[str] if @_i_options.try(:has_key?, str)
     @_i_options ||= Hash.new
@@ -281,7 +305,7 @@ class LooseTightDictionary
     end
     @_i_options[str] = ary
   end
-  
+
   def blocking(str)
     return @_blocking[str] if @_blocking.try(:has_key?, str)
     @_blocking ||= Hash.new
@@ -292,7 +316,7 @@ class LooseTightDictionary
     end
     @_blocking[str] = nil
   end
-  
+
   def literal_regexp(str)
     return @_literal_regexp[str] if @_literal_regexp.try(:has_key?, str)
     @_literal_regexp ||= Hash.new
@@ -302,7 +326,7 @@ class LooseTightDictionary
     extended = raw_regexp_options.include?('x') ? Regexp::EXTENDED : nil
     @_literal_regexp[str] = Regexp.new str.gsub(/\A\/|\/([ixm]*)\z/, ''), (ignore_case||multiline||extended)
   end
-  
+
   def read_left(left_record)
     return if left_record.nil?
     if left_reader
@@ -313,7 +337,7 @@ class LooseTightDictionary
       left_record[0]
     end
   end
-  
+
   def read_right(right_record)
     return if right_record.nil?
     if right_reader
@@ -324,7 +348,7 @@ class LooseTightDictionary
       right_record[0]
     end
   end
-  
+
   # Thanks William James!
   # http://www.ruby-forum.com/topic/95519#200484
   def cart_prod(*args)

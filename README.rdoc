@@ -49,4 +49,4 @@ Similarity matching will only get you so far.
 
 == Copyright
 
-Copyright (c) 2010 Seamus Abshere. See LICENSE for details.
+Copyright (c) 2011 Seamus Abshere. See LICENSE for details.
