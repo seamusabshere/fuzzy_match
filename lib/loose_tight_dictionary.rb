@@ -64,15 +64,7 @@ class LooseTightDictionary
   def verbose
     options[:verbose] || false
   end
-  
-  def tee
-    options[:tee]
-  end
-  
-  def tee_format
-    options[:tee_format] || :fixed_width
-  end
-  
+    
   def case_sensitive
     options[:case_sensitive] || false
   end
@@ -106,8 +98,12 @@ class LooseTightDictionary
     !!blocking_only
   end
 
-  def log(msg = '')
-    $stderr.puts msg if verbose
+  def log(str = '')
+    $stderr.puts str if verbose
+  end
+  
+  def tee(str = '')
+    options[:tee].puts str if options[:tee]
   end
 
   def inline_check(left_record, right_record)
@@ -141,19 +137,13 @@ class LooseTightDictionary
 
   def check(left_records)
     header = [ 'Left record (input)', 'Right record (output)', 'Prefix used (if any)', 'Score' ]
-    case tee_format
-    when :fixed_width
-      tee.try(:puts, header.map { |i| i.to_s.ljust(30) }.join)
-    end
+    tee header.map { |i| i.to_s.ljust(30) }.join
 
     left_records.each do |left_record|
       begin
         right_record = left_to_right left_record
       ensure
-        case tee_format
-        when :fixed_width
-          tee.try(:puts, $ltd_1.map { |i| i.to_s.ljust(30) }.join) if $ltd_1
-        end
+        tee $ltd_1.map { |i| i.to_s.ljust(30) }.join if $ltd_1
       end
     end
   end

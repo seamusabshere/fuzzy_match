@@ -6,7 +6,7 @@ require 'ruby-debug'
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'loose_tight_dictionary.rb'))
 
 # $tee = File.open('tee.csv', 'w')
-$tee = STDOUT
+$tee = $stdout
 
 # $ltd_left = /(super|bonanza)/i
 # $ltd_right = /bonanza d-35/i

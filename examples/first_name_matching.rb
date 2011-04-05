@@ -17,7 +17,7 @@ puts
 
 puts "Results"
 puts "=" * 20
-d = LooseTightDictionary.new right_side, :tee => STDOUT, :tee_format => :fixed_width
+d = LooseTightDictionary.new right_side, :tee => $stdout
 d.check left_side
 
 puts d.left_to_right 'Shamus Heaney'

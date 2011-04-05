@@ -3,7 +3,7 @@ require 'helper'
 require 'remote_table'
 
 $verbose = false
-# $tee = STDOUT
+# $tee = $stdout
 
 class TestLooseTightDictionary < Test::Unit::TestCase
   def setup
