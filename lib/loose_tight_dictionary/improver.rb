@@ -32,41 +32,41 @@ class LooseTightDictionary
     end
 
     def match(needle_record)
-      haystack_record = super
-      inline_check needle_record, haystack_record
-      haystack_record
+      record = super
+      inline_check needle_record, record
+      record
     end
     
-    def inline_check(needle_record, haystack_record)
+    def inline_check(needle_record, record)
       return unless positives.present? or negatives.present?
 
-      needle = read_needle needle_record
-      haystack = read_haystack haystack_record
+      needle_value = read_needle needle_record
+      value = read_haystack record
 
-      if positive_record = positives.try(:detect) { |record| record[0] == needle }
-        correct_haystack = positive_record[1]
-        if correct_haystack.present? and haystack.blank?
-          raise FalseNegative, "#{needle} should have matched #{correct_haystack}, but matched nothing"
-        elsif haystack != correct_haystack
-          raise Mismatch, "#{needle} should have matched #{correct_haystack}, but matched #{haystack}"
+      if positive_record = positives.try(:detect) { |record| record[0] == needle_value }
+        correct_value = positive_record[1]
+        if correct_value.present? and value.blank?
+          raise FalseNegative, "#{needle_value} should have matched #{correct_value}, but matched nothing"
+        elsif value != correct_value
+          raise Mismatch, "#{needle_value} should have matched #{correct_value}, but matched #{value}"
         end
       end
 
-      if negative_record = negatives.try(:detect) { |record| record[0] == needle }
-        incorrect_haystack = negative_record[1]
-        if incorrect_haystack.blank? and haystack.present?
-          raise FalsePositive, "#{needle} shouldn't have matched anything, but it matched #{haystack}"
-        elsif haystack == incorrect_haystack
-          raise FalsePositive, "#{needle} shouldn't have matched #{incorrect_haystack}, but it did!"
+      if negative_record = negatives.try(:detect) { |record| record[0] == needle_value }
+        incorrect_value = negative_record[1]
+        if incorrect_value.blank? and value.present?
+          raise FalsePositive, "#{needle_value} shouldn't have matched anything, but it matched #{value}"
+        elsif value == incorrect_value
+          raise FalsePositive, "#{needle_value} shouldn't have matched #{incorrect_value}, but it did!"
         end
       end
     end
 
-    def check(needle_records)
+    def check(needles)
       log Result::Record::HEADERS.map { |i| i.ljust(30) }.join
 
-      needle_records.each do |needle_record|
-        haystack_record = match needle_record
+      needles.each do |needle_record|
+        record = match needle_record
         log last_result.records.map { |_, r| r.to_s.ljust(30) }.join("\n")
         log
       end

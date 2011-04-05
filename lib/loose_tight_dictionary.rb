@@ -15,11 +15,11 @@ class LooseTightDictionary
   autoload :Improver, 'loose_tight_dictionary/improver'
   
   attr_reader :options
-  attr_reader :haystack_records
+  attr_reader :haystack
 
-  def initialize(haystack_records, options = {})
+  def initialize(haystack, options = {})
     @options = options.symbolize_keys
-    @haystack_records = haystack_records
+    @haystack = haystack
   end
   
   def improver
@@ -72,30 +72,29 @@ class LooseTightDictionary
     @last_result = nil
   end
   
-  def match(needle_record)
+  def match(needle)
     free_last_result
     
-    needle = read_needle needle_record
+    needle_value = read_needle needle
 
-    blocking_needle = blocking needle
+    blocking_needle = blocking needle_value
     return if blocking_only and blocking_needle.nil?
 
-    i_options_needle = i_options needle
-    t_options_needle = t_options needle
+    i_options_needle = i_options needle_value
+    t_options_needle = t_options needle_value
     
-    # ::Thread.current[:ltd_last_result] = {}
-    unblocked, blocked = haystack_records.partition do |haystack_record|
-      haystack = read_haystack haystack_record
-      blocking_haystack = blocking haystack
+    unblocked, blocked = haystack.partition do |record|
+      value = read_haystack record
+      blocking_haystack = blocking value
       (not blocking_needle and not blocking_haystack) or
-        (blocking_haystack and blocking_haystack.match(needle)) or
-        (blocking_needle and blocking_needle.match(haystack))
+        (blocking_haystack and blocking_haystack.match(needle_value)) or
+        (blocking_needle and blocking_needle.match(value))
     end
     
     last_result.register_blocked blocked
     last_result.register_unblocked unblocked
     
-    haystack_record = unblocked.max do |a_record, b_record|
+    match = unblocked.max do |a_record, b_record|
       a = read_haystack a_record
       b = read_haystack b_record
       i_options_a = i_options a
@@ -127,17 +126,17 @@ class LooseTightDictionary
       end
     end
     
-    haystack = read_haystack haystack_record
-    i_options_haystack = i_options haystack
+    value = read_haystack match
+    i_options_haystack = i_options value
     return if collision? i_options_needle, i_options_haystack
     
-    last_result.register_match haystack_record
+    last_result.register_match match
     
-    haystack_record
+    match
   end
 
-  def match_with_score(needle_record)
-    match = match needle_record
+  def match_with_score(needle)
+    match = match needle
     [ match, last_result.score ]
   end
 
@@ -218,25 +217,25 @@ class LooseTightDictionary
     @literal_regexp[str] = ::Regexp.new str.gsub(%r{\A/|/([ixm]*)\z}, ''), (ignore_case||multiline||extended)
   end
 
-  def read_needle(needle_record)
-    return if needle_record.nil?
+  def read_needle(needle)
+    return if needle.nil?
     if needle_reader
-      needle_reader.call(needle_record)
-    elsif needle_record.is_a?(::String)
-      case_sensitive ? needle_record : needle_record.downcase
+      needle_reader.call(needle)
+    elsif needle.is_a?(::String)
+      case_sensitive ? needle : needle.downcase
     else
-      needle_record[0]
+      needle[0]
     end
   end
 
-  def read_haystack(haystack_record)
-    return if haystack_record.nil?
+  def read_haystack(record)
+    return if record.nil?
     if haystack_reader
-      haystack_reader.call(haystack_record)
-    elsif haystack_record.is_a?(::String)
-      case_sensitive ? haystack_record : haystack_record.downcase
+      haystack_reader.call(record)
+    elsif record.is_a?(::String)
+      case_sensitive ? record : record.downcase
     else
-      haystack_record[0]
+      record[0]
     end
   end
 
