@@ -140,9 +140,6 @@ class LooseTightDictionary
     [ match, last_result.score ]
   end
 
-  # deprecated
-  alias :needle_to_haystack :match
-
   def optimize(t_options_needle, t_options_haystack)
     cart_prod(t_options_needle, t_options_haystack).max do |a, b|
       t_needle_a, t_haystack_a = a

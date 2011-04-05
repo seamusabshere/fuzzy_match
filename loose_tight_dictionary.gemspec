@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["seamus@abshere.net"]
   s.homepage    = "https://github.com/seamusabshere/loose_tight_dictionary"
   s.summary     = %Q{Allows iterative development of dictionaries for big data sets.}
-  s.description = %Q{Create dictionaries that link rows between two tables (left and right) using loose matching (string similarity) by default and tight matching (regexp) by request.}
+  s.description = %Q{Create dictionaries that link rows between two tables using loose matching (string similarity) by default and tight matching (regexp) by request.}
 
   s.rubyforge_project = "loose_tight_dictionary"
 
