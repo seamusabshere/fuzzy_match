@@ -3,7 +3,6 @@ require 'helper'
 require 'shoulda'
 
 $log = false
-$tee = false
 
 class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
   def setup
@@ -60,21 +59,20 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
                                         :positives => @positives,
                                         :negatives => @negatives,
                                         :blocking_only => @blocking_only,
-                                        :log => $log,
-                                        :tee => $tee
+                                        :log => $log
   end
 
   should "optionally only pay attention to things that match blockings" do
-    assert_equal @a_haystack, ltd.improver.find(@a_needle)
+    assert_equal @a_haystack, ltd.improver.match(@a_needle)
 
     clear_ltd
     @blocking_only = true
-    assert_equal nil, ltd.improver.find(@a_needle)
+    assert_equal nil, ltd.improver.match(@a_needle)
 
     clear_ltd
     @blocking_only = true
     @blockings.push ['/dash/i']
-    assert_equal @a_haystack, ltd.improver.find(@a_needle)
+    assert_equal @a_haystack, ltd.improver.match(@a_needle)
   end
   
   # the example from the readme, considerably uglier here
@@ -93,23 +91,23 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     b747 = 'B747200/300'
     dc9 = 'DC-9-10'
     haystack_records = [ dash, b747, dc9 ]
-    simple_ltd = LooseTightDictionary.new haystack_records, :log => $log, :tee => $tee
-    assert_equal dash, simple_ltd.improver.find('DeHavilland Dash-8 DHC-400')
-    assert_equal b747, simple_ltd.improver.find('Boeing 747-300')
-    assert_equal dc9, simple_ltd.improver.find('McDonnell Douglas MD81/DC-9')
+    simple_ltd = LooseTightDictionary.new haystack_records, :log => $log
+    assert_equal dash, simple_ltd.improver.match('DeHavilland Dash-8 DHC-400')
+    assert_equal b747, simple_ltd.improver.match('Boeing 747-300')
+    assert_equal dc9, simple_ltd.improver.match('McDonnell Douglas MD81/DC-9')
   end
   
   should "call it a mismatch if you hit a blank positive" do
     @positives.push [@a_needle[0], '']
     assert_raises(LooseTightDictionary::Improver::Mismatch) do
-      ltd.improver.find @a_needle
+      ltd.improver.match @a_needle
     end
   end
 
   should "call it a false positive if you hit a blank negative" do
     @negatives.push [@a_needle[0], '']
     assert_raises(LooseTightDictionary::Improver::FalsePositive) do
-      ltd.improver.find @a_needle
+      ltd.improver.match @a_needle
     end
   end
   
@@ -118,7 +116,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @haystack.push @d_lookalike
     @tightenings.push @t_1
     
-    assert_equal @d_lookalike, ltd.improver.find(@d_needle)
+    assert_equal @d_lookalike, ltd.improver.match(@d_needle)
   end
   
   should "do blocking if the needle matches a block" do
@@ -127,7 +125,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @tightenings.push @t_1
     @blockings.push ['/(bombardier|de ?havilland)/i']
     
-    assert_equal @d_haystack, ltd.improver.find(@d_needle)
+    assert_equal @d_haystack, ltd.improver.match(@d_needle)
   end
   
   should "treat blocks as exclusive" do
@@ -135,7 +133,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @tightenings.push @t_1
     @blockings.push ['/(bombardier|de ?havilland)/i']
 
-    assert_equal nil, ltd.improver.find(@d_lookalike)
+    assert_equal nil, ltd.improver.match(@d_lookalike)
   end
   
   should "only use identities if they stem from the same regexp" do
@@ -146,7 +144,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     x_haystack = [ 'CESSNA D-333' ]
     @haystack.push x_haystack
     
-    assert_equal x_haystack, ltd.improver.find(x_needle)
+    assert_equal x_haystack, ltd.improver.match(x_needle)
   end
   
   should "use the best score from all of the tightenings" do
@@ -158,7 +156,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @tightenings.push ['/(7\d)(7|0)-?\d{1,3}\/(\d\d\d)/i']
     @tightenings.push ['/(7\d)(7|0)-?(\d{1,3}|[A-Z]{0,3})/i']
     
-    assert_equal x_haystack, ltd.improver.find(x_needle)
+    assert_equal x_haystack, ltd.improver.match(x_needle)
   end
   
   should "compare using prefixes if tightened key is shorter than correct match" do
@@ -171,7 +169,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @tightenings.push ['/(7\d)(7|0)-?\d{1,3}\/(\d\d\d)/i']
     @tightenings.push ['/(7\d)(7|0)-?(\d{1,3}|[A-Z]{0,3})/i']
     
-    assert_equal x_haystack, ltd.improver.find(x_needle)
+    assert_equal x_haystack, ltd.improver.match(x_needle)
   end
   
   should "use the shortest original input" do
@@ -183,11 +181,11 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @haystack.push x_haystack
     @tightenings.push @t_1
     
-    assert_equal x_haystack, ltd.improver.find(x_needle)
+    assert_equal x_haystack, ltd.improver.match(x_needle)
   end
   
   should "perform lookups needle to haystack" do
-    assert_equal @a_haystack, ltd.improver.find(@a_needle)
+    assert_equal @a_haystack, ltd.improver.match(@a_needle)
   end
 
   should "succeed if there are no checks" do
@@ -245,7 +243,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @negatives.push [ @b_needle[0], @c_haystack[0] ]
   
     assert_raises(LooseTightDictionary::Improver::FalsePositive) do
-      ltd.improver.find @b_needle
+      ltd.improver.match @b_needle
     end
   end
 

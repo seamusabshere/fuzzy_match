@@ -10,7 +10,7 @@ end if ::ActiveSupport::VERSION::MAJOR == 3
 class LooseTightDictionary
   autoload :T, 'loose_tight_dictionary/t'
   autoload :I, 'loose_tight_dictionary/i'
-  autoload :Match, 'loose_tight_dictionary/match'
+  autoload :Result, 'loose_tight_dictionary/result'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
   attr_reader :options
@@ -62,17 +62,17 @@ class LooseTightDictionary
     end
   end
   
-  def last_match
-    @last_match ||= Match.new
+  def last_result
+    @last_result ||= Result.new
   end
   
-  def free_last_match
-    @last_match.try :free
-    @last_match = nil
+  def free_last_result
+    @last_result.try :free
+    @last_result = nil
   end
   
-  def find(needle_record)
-    free_last_match
+  def match(needle_record)
+    free_last_result
     
     needle = read_needle needle_record
 
@@ -82,7 +82,7 @@ class LooseTightDictionary
     i_options_needle = i_options needle
     t_options_needle = t_options needle
     
-    # ::Thread.current[:ltd_last_find] = {}
+    # ::Thread.current[:ltd_last_result] = {}
     unblocked, blocked = haystack_records.partition do |haystack_record|
       haystack = read_haystack haystack_record
       blocking_haystack = blocking haystack
@@ -91,10 +91,10 @@ class LooseTightDictionary
         (blocking_needle and blocking_needle.match(haystack))
     end
     
-    last_match.blocked = blocked
-    last_match.unblocked = unblocked
+    last_result.register_blocked blocked
+    last_result.register_unblocked unblocked
     
-    sorted = unblocked.sort do |a_record, b_record|
+    haystack_record = unblocked.max do |a_record, b_record|
       a = read_haystack a_record
       b = read_haystack b_record
       i_options_a = i_options a
@@ -113,8 +113,8 @@ class LooseTightDictionary
         t_needle_b, t_haystack_b = optimize t_options_needle, t_options(b)
         a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
         b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
-        last_match.register_record a_record, t_needle_a, t_haystack_a, a_prefix, a_score
-        last_match.register_record b_record, t_needle_b, t_haystack_b, b_prefix, b_score
+        last_result.register_score a_record, t_needle_a, t_haystack_a, a_prefix, a_score
+        last_result.register_score b_record, t_needle_b, t_haystack_b, b_prefix, b_score
 
         if a_score != b_score
           a_score <=> b_score
@@ -126,26 +126,22 @@ class LooseTightDictionary
       end
     end
     
-    last_match.sorted = sorted
-    
-    haystack_record = sorted[-1]
-    
     haystack = read_haystack haystack_record
     i_options_haystack = i_options haystack
     return if collision? i_options_needle, i_options_haystack
     
-    last_match.match = haystack_record
+    last_result.register_match haystack_record
     
     haystack_record
   end
 
-  def find_with_score(needle_record)
-    match = find needle_record
-    [ match, last_match.score ]
+  def match_with_score(needle_record)
+    match = match needle_record
+    [ match, last_result.score ]
   end
 
   # deprecated
-  alias :needle_to_haystack :find
+  alias :needle_to_haystack :match
 
   def optimize(t_options_needle, t_options_haystack)
     cart_prod(t_options_needle, t_options_haystack).max do |a, b|

@@ -8,8 +8,6 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'loose_tight_dictionary'
 
 $log = $stderr
-# $tee = File.open('tee.csv', 'w')
-$tee = $stdout
 
 @haystack = RemoteTable.new :url => 'http://www.bts.gov/programs/airline_information/accounting_and_reporting_directives/csv/number_260.csv',
                         :select => lambda { |record| record['Aircraft Type'].to_i.between?(1, 998) and record['Manufacturer'].present? }
@@ -42,7 +40,6 @@ end
     :identities => @identities,
     :blockings => @blockings,
     :log => $log,
-    :tee => $tee,
     :needle_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Model'] },
     :haystack_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },
     :positives => @positives,

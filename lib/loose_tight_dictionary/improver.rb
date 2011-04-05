@@ -23,10 +23,6 @@ class LooseTightDictionary
       (options[:log] || $stderr).puts str unless options[:log] == false
     end
   
-    def tee(str = '')
-      (options[:tee] || $stdout).puts str unless options[:tee] == false
-    end
-
     def positives
       options[:positives]
     end
@@ -35,12 +31,10 @@ class LooseTightDictionary
       options[:negatives]
     end
 
-    def find(needle_record)
+    def match(needle_record)
       haystack_record = super
       inline_check needle_record, haystack_record
       haystack_record
-    ensure
-      # tee ::Thread.current[:ltd_last_find][haystack_record].map { |i| i.to_s.ljust(30) }.join if ::Thread.current[:ltd_last_find][haystack_record]
     end
     
     def inline_check(needle_record, haystack_record)
@@ -69,11 +63,12 @@ class LooseTightDictionary
     end
 
     def check(needle_records)
-      header = [ 'Needle (left record)', 'Haystack (right record)', 'Prefix used (if any)', 'Score' ]
-      tee header.map { |i| i.to_s.ljust(30) }.join
+      log Result::Record::HEADERS.map { |i| i.ljust(30) }.join
 
       needle_records.each do |needle_record|
-        haystack_record = find needle_record
+        haystack_record = match needle_record
+        log last_result.records.map { |_, r| r.to_s.ljust(30) }.join("\n")
+        log
       end
     end
   end

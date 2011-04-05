@@ -6,19 +6,20 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
     >> d = LooseTightDictionary.new %w(seamus andy ben)
     => [...]
-    >> puts d.find 'Shamus Heaney'
+    >> puts d.match 'Shamus Heaney'
     => 'seamus'
 
 Try running the included example file:
 
     $ ruby examples/first_name_matching.rb 
-    Left side (input)
+    Needles
     ====================
     Mr. Seamus
     Sr. Andy
     Master BenT
+    Shamus Heaney
 
-    Right side (output)
+    Haystack
     ====================
     seamus
     andy
@@ -26,10 +27,22 @@ Try running the included example file:
 
     Results
     ====================
-    Left record (input)           Right record (output)         Prefix used (if any)          Score                         
-    Mr. Seamus                    seamus                        NULL                          0.666666666666667             
-    Sr. Andy                      andy                          NULL                          0.5                           
-    Master BenT                   ben                           NULL                          0.2                           
+    Needle                        Haystack                      Score                         Prefix used (if any)          
+    mr. seamus                    andy                          0.0                                                         
+    mr. seamus                    seamus                        0.8333333333333334                                          
+    mr. seamus                    ben                           0.0                                                         
+
+    sr. andy                      andy                          0.75                                                        
+    sr. andy                      seamus                        0.0                                                         
+    sr. andy                      ben                           0.0                                                         
+
+    master bent                   andy                          0.0                                                         
+    master bent                   seamus                        0.0                                                         
+    master bent                   ben                           0.4                                                         
+
+    shamus heaney                 andy                          0.15384615384615385                                         
+    shamus heaney                 seamus                        0.5333333333333333                                          
+    shamus heaney                 ben                           0.0
 
 = Improving dictionaries
 

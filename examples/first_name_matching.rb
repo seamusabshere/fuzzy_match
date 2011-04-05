@@ -5,20 +5,20 @@ end
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'loose_tight_dictionary'
 
-haystack_side = [ 'seamus', 'andy', 'ben' ]
-needle_side = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT', 'Shamus Heaney' ]
+haystack = [ 'seamus', 'andy', 'ben' ]
+needles = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT', 'Shamus Heaney' ]
 
-puts "Needle side (input)"
+puts "Needles"
 puts "=" * 20
-puts needle_side
+puts needles
 puts
 
-puts "Haystack side (output)"
+puts "Haystack"
 puts "=" * 20
-puts haystack_side
+puts haystack
 puts
 
-puts "Matchs"
+puts "Results"
 puts "=" * 20
-d = LooseTightDictionary.new haystack_side
-d.improver.check needle_side
+d = LooseTightDictionary.new haystack
+d.improver.check needles
