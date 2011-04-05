@@ -5,6 +5,7 @@ require 'remote_table'
 require 'ruby-debug'
 require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'loose_tight_dictionary.rb'))
 
+$log = $stderr
 # $tee = File.open('tee.csv', 'w')
 $tee = $stdout
 
@@ -49,7 +50,7 @@ end
     :tightenings => @tightenings,
     :identities => @identities,
     :blockings => @blockings,
-    :verbose => true,
+    :log => $log,
     :tee => $tee,
     :left_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Model'] },
     :right_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },

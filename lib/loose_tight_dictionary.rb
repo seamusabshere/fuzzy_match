@@ -61,10 +61,6 @@ class LooseTightDictionary
     options[:negatives]
   end
   
-  def verbose
-    options[:verbose] || false
-  end
-    
   def case_sensitive
     options[:case_sensitive] || false
   end
@@ -99,7 +95,7 @@ class LooseTightDictionary
   end
 
   def log(str = '')
-    $stderr.puts str if verbose
+    options[:log].puts str if options[:log]
   end
   
   def tee(str = '')

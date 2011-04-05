@@ -2,7 +2,7 @@ require 'helper'
 
 require 'remote_table'
 
-$verbose = false
+# $log = $stderr
 # $tee = $stdout
 
 class TestLooseTightDictionary < Test::Unit::TestCase
@@ -60,7 +60,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
                                         :positives => @positives,
                                         :negatives => @negatives,
                                         :blocking_only => @blocking_only,
-                                        :verbose => $verbose,
+                                        :log => $log,
                                         :tee => $tee
   end
 
@@ -93,7 +93,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     b747 = 'B747200/300'
     dc9 = 'DC-9-10'
     right_records = [ dash, b747, dc9 ]
-    simple_ltd = LooseTightDictionary.new right_records, :verbose => $verbose, :tee => $tee
+    simple_ltd = LooseTightDictionary.new right_records, :log => $log, :tee => $tee
     assert_equal dash, simple_ltd.left_to_right('DeHavilland Dash-8 DHC-400')
     assert_equal b747, simple_ltd.left_to_right('Boeing 747-300')
     assert_equal dc9, simple_ltd.find('McDonnell Douglas MD81/DC-9')
