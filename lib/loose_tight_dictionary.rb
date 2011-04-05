@@ -80,8 +80,8 @@ class LooseTightDictionary
     blocking_needle = blocking needle_value
     return if blocking_only and blocking_needle.nil?
 
-    i_options_needle = i_options needle_value
-    t_options_needle = t_options needle_value
+    i_map_needle = i_map needle_value
+    t_map_needle = t_map needle_value
     
     unblocked, blocked = haystack.partition do |record|
       value = read_haystack record
@@ -97,10 +97,10 @@ class LooseTightDictionary
     match = unblocked.max do |a_record, b_record|
       a = read_haystack a_record
       b = read_haystack b_record
-      i_options_a = i_options a
-      i_options_b = i_options b
-      collision_a = collision? i_options_needle, i_options_a
-      collision_b = collision? i_options_needle, i_options_b
+      i_map_a = i_map a
+      i_map_b = i_map b
+      collision_a = collision? i_map_needle, i_map_a
+      collision_b = collision? i_map_needle, i_map_b
       if collision_a and collision_b
         # neither would ever work, so randomly rank one over the other
         rand(2) == 1 ? -1 : 1
@@ -109,8 +109,8 @@ class LooseTightDictionary
       elsif collision_b
         1
       else
-        t_needle_a, t_haystack_a = optimize t_options_needle, t_options(a)
-        t_needle_b, t_haystack_b = optimize t_options_needle, t_options(b)
+        t_needle_a, t_haystack_a = optimize t_map_needle, t_map(a)
+        t_needle_b, t_haystack_b = optimize t_map_needle, t_map(b)
         a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
         b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
         last_result.register_score a_record, t_needle_a, t_haystack_a, a_prefix, a_score
@@ -127,8 +127,8 @@ class LooseTightDictionary
     end
     
     value = read_haystack match
-    i_options_haystack = i_options value
-    return if collision? i_options_needle, i_options_haystack
+    i_map_haystack = i_map value
+    return if collision? i_map_needle, i_map_haystack
     
     last_result.register_match match
     
@@ -140,8 +140,8 @@ class LooseTightDictionary
     [ match, last_result.score ]
   end
 
-  def optimize(t_options_needle, t_options_haystack)
-    cart_prod(t_options_needle, t_options_haystack).max do |a, b|
+  def optimize(t_map_needle, t_map_haystack)
+    cart_prod(t_map_needle, t_map_haystack).max do |a, b|
       t_needle_a, t_haystack_a = a
       t_needle_b, t_haystack_b = b
 
@@ -160,9 +160,9 @@ class LooseTightDictionary
     end
   end
 
-  def t_options(str)
-    return @t_options[str] if @t_options.try(:has_key?, str)
-    @t_options ||= {}
+  def t_map(str)
+    return @t_map[str] if @t_map.try(:has_key?, str)
+    @t_map ||= {}
     ary = []
     ary.push T.new(str, str)
     tightenings.each do |regexp|
@@ -170,27 +170,27 @@ class LooseTightDictionary
         ary.push T.new(str, match_data.captures.compact.join)
       end
     end
-    @t_options[str] = ary
+    @t_map[str] = ary
   end
 
-  def collision?(i_options_needle, i_options_haystack)
-    i_options_needle.any? do |r_needle|
-      i_options_haystack.any? do |r_haystack|
+  def collision?(i_map_needle, i_map_haystack)
+    i_map_needle.any? do |r_needle|
+      i_map_haystack.any? do |r_haystack|
         r_needle.regexp == r_haystack.regexp and r_needle.identity != r_haystack.identity
       end
     end
   end
 
-  def i_options(str)
-    return @i_options[str] if @i_options.try(:has_key?, str)
-    @i_options ||= {}
+  def i_map(str)
+    return @i_map[str] if @i_map.try(:has_key?, str)
+    @i_map ||= {}
     ary = []
     identities.each do |regexp|
       if regexp.match str
         ary.push I.new(regexp, str, case_sensitive)
       end
     end
-    @i_options[str] = ary
+    @i_map[str] = ary
   end
 
   def blocking(str)
