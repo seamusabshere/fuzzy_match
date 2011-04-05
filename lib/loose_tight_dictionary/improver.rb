@@ -2,6 +2,9 @@ require 'delegate'
 class LooseTightDictionary
   class Improver < ::Delegator
     class MissedChecks < RuntimeError; end
+    class Mismatch < RuntimeError; end
+    class FalseNegative < RuntimeError; end
+    class FalsePositive < RuntimeError; end
 
     def initialize(obj)
       super
@@ -39,22 +42,18 @@ class LooseTightDictionary
       if positive_record = positives.try(:detect) { |record| record[0] == left }
         correct_right = positive_record[1]
         if correct_right.present? and right.blank?
-          log "  Mismatch! (should match SOMETHING)"
-          raise Mismatch
+          raise FalseNegative, "#{left} should have matched #{correct_right}, but matched nothing"
         elsif right != correct_right
-          log "  Mismatch! (#{right} should be #{correct_right})"
-          raise Mismatch
+          raise Mismatch, "#{left} should have matched #{correct_right}, but matched #{right}"
         end
       end
 
       if negative_record = negatives.try(:detect) { |record| record[0] == left }
         incorrect_right = negative_record[1]
         if incorrect_right.blank? and right.present?
-          log "  False positive! (should NOT match ANYTHING)"
-          raise FalsePositive
+          raise FalsePositive, "#{left} shouldn't have matched anything, but it matched #{right}"
         elsif right == incorrect_right
-          log "  False positive! (#{right} should NOT be #{incorrect_right})"
-          raise FalsePositive
+          raise FalsePositive, "#{left} shouldn't have matched #{incorrect_right}, but it did!"
         end
       end
     end
@@ -67,7 +66,7 @@ class LooseTightDictionary
         begin
           right_record = find left_record
         ensure
-          tee $ltd_1.map { |i| i.to_s.ljust(30) }.join if $ltd_1
+          tee ::Thread.current[:ltd_last_run][right_record].map { |i| i.to_s.ljust(30) }.join if ::Thread.current[:ltd_last_run][right_record]
         end
       end
     end

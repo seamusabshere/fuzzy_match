@@ -101,14 +101,14 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   
   should "call it a mismatch if you hit a blank positive" do
     @positives.push [@a_left[0], '']
-    assert_raises(LooseTightDictionary::Mismatch) do
+    assert_raises(LooseTightDictionary::Improver::Mismatch) do
       ltd.improver.find @a_left
     end
   end
 
   should "call it a false positive if you hit a blank negative" do
     @negatives.push [@a_left[0], '']
-    assert_raises(LooseTightDictionary::FalsePositive) do
+    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
       ltd.improver.find @a_left
     end
   end
@@ -207,7 +207,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   should "fail if positive checks don't work" do
     @positives.push [ @d_left[0], @d_right[0] ]
 
-    assert_raises(LooseTightDictionary::Mismatch) do
+    assert_raises(LooseTightDictionary::Improver::Mismatch) do
       ltd.improver.check @left
     end
   end
@@ -228,7 +228,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     # sabshere 9/30/10 this shouldn't raise anything
     # but the tightenings have been changed... we should be using test-only tightenings, not production ones
     # assert_nothing_raised do
-    assert_raises(LooseTightDictionary::Mismatch) do
+    assert_raises(LooseTightDictionary::Improver::Mismatch) do
       ltd.improver.check @left
     end
   end
@@ -236,7 +236,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   should "fail if negative checks don't work" do
     @negatives.push [ @b_left[0], @c_right[0] ]
   
-    assert_raises(LooseTightDictionary::FalsePositive) do
+    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
       ltd.improver.check @left
     end
   end
@@ -244,7 +244,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   should "do inline checking" do
     @negatives.push [ @b_left[0], @c_right[0] ]
   
-    assert_raises(LooseTightDictionary::FalsePositive) do
+    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
       ltd.improver.find @b_left
     end
   end
@@ -253,7 +253,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     @negatives.push [ @b_left[0], @c_right[0] ]
     @tightenings.push @t_1
   
-    assert_raises(LooseTightDictionary::FalsePositive) do
+    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
       ltd.improver.check @left
     end
   end

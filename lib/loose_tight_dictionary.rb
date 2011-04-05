@@ -8,9 +8,6 @@ require 'active_support/version'
 end if ::ActiveSupport::VERSION::MAJOR == 3
 
 class LooseTightDictionary
-  class Mismatch < RuntimeError; end
-  class FalsePositive < RuntimeError; end
-
   autoload :T, 'loose_tight_dictionary/t'
   autoload :I, 'loose_tight_dictionary/i'
   autoload :Improver, 'loose_tight_dictionary/improver'
@@ -82,7 +79,7 @@ class LooseTightDictionary
     return if blocking_only? and blocking_left.nil?
     i_options_left = i_options left
     t_options_left = t_options left
-    history = Hash.new
+    ::Thread.current[:ltd_last_run] = {}
     right_record = right_records.select do |right_record|
       right = read_right right_record
       blocking_right = blocking right
@@ -108,22 +105,8 @@ class LooseTightDictionary
         t_left_b, t_right_b = optimize t_options_left, t_options(b)
         a_prefix, a_score = t_left_a.prefix_and_score t_right_a
         b_prefix, b_score = t_left_b.prefix_and_score t_right_b
-        history[a_record] = [t_left_a.tightened_str, t_right_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
-        history[b_record] = [t_left_b.tightened_str, t_right_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
-
-        yep_dd = ($ltd_dd_right and $ltd_dd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_dd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_dd_right } and (!$ltd_dd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_dd_left_not }))
-
-        if $ltd_dd_print and yep_dd
-          log t_left_a.inspect
-          log t_right_a.inspect
-          log t_left_b.inspect
-          log t_right_b.inspect
-          log
-        end
-
-        z = 1
-        debugger if yep_dd
-        z = 1
+        ::Thread.current[:ltd_last_run][a_record] = [t_left_a.tightened_str, t_right_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
+        ::Thread.current[:ltd_last_run][b_record] = [t_left_b.tightened_str, t_right_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
 
         if a_score != b_score
           a_score <=> b_score
@@ -134,18 +117,9 @@ class LooseTightDictionary
         end
       end
     end
-    $ltd_1 = history[right_record]
     right = read_right right_record
     i_options_right = i_options right
-    z = 1
-    debugger if $ltd_left.try(:match, left) or $ltd_right.try(:match, right)
-    z = 1
-    if collision? i_options_left, i_options_right
-      $ltd_0 = nil
-      return
-    else
-      $ltd_0 = right_record
-    end
+    return if collision? i_options_left, i_options_right
     right_record
   end
 
@@ -159,20 +133,6 @@ class LooseTightDictionary
 
       a_prefix, a_score = t_left_a.prefix_and_score t_right_a
       b_prefix, b_score = t_left_b.prefix_and_score t_right_b
-
-      yep_ddd = ($ltd_ddd_right and $ltd_ddd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_ddd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_ddd_right } and (!$ltd_ddd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_ddd_left_not }))
-
-      if $ltd_ddd_print and yep_ddd
-        log t_left_a.inspect
-        log t_right_a.inspect
-        log t_left_b.inspect
-        log t_right_b.inspect
-        log
-      end
-
-      z = 1
-      debugger if yep_ddd
-      z = 1
 
       if a_score != b_score
         a_score <=> b_score

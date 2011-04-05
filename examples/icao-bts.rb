@@ -11,17 +11,6 @@ $log = $stderr
 # $tee = File.open('tee.csv', 'w')
 $tee = $stdout
 
-# $ltd_left = /(super|bonanza)/i
-# $ltd_right = /bonanza d-35/i
-# $ltd_dd_left = /bonanza/i
-# $ltd_dd_right = /musk/i
-# $ltd_dd_left_not = /allison/i
-# $ltd_dd_print = true
-# $ltd_ddd_left = /bonanza/i
-# $ltd_ddd_right = /musk/i
-# $ltd_ddd_left_not = /allison/i
-# $ltd_ddd_print = true
-
 @right = RemoteTable.new :url => 'http://www.bts.gov/programs/airline_information/accounting_and_reporting_directives/csv/number_260.csv',
                         :select => lambda { |record| record['Aircraft Type'].to_i.between?(1, 998) and record['Manufacturer'].present? }
 
