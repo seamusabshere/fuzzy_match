@@ -31,16 +31,16 @@ class LooseTightDictionary
       options[:negatives]
     end
 
-    def match(needle_record)
+    def match(needle)
       record = super
-      inline_check needle_record, record
+      inline_check needle, record
       record
     end
     
-    def inline_check(needle_record, record)
+    def inline_check(needle, record)
       return unless positives.present? or negatives.present?
 
-      needle_value = read_needle needle_record
+      needle_value = read_needle needle
       value = read_haystack record
 
       if positive_record = positives.try(:detect) { |record| record[0] == needle_value }
@@ -63,13 +63,41 @@ class LooseTightDictionary
     end
 
     def check(needles)
-      log Result::Record::HEADERS.map { |i| i.ljust(30) }.join
+      log Result::TT::HEADERS.map { |i| i.ljust(30) }.join
 
-      needles.each do |needle_record|
-        record = match needle_record
-        log last_result.records.map { |_, r| r.to_s.ljust(30) }.join("\n")
-        log
+      needles.each do |needle|
+        match needle
       end
+    end
+    
+    def explain(needle)
+      match = match needle
+      log "#" * 150
+      log "# Match #{needle.inspect} => #{match.inspect}"
+      log "#" * 150
+      log
+      log "Needle"
+      log '(needle_reader proc not defined, so downcasing everything)' unless needle_reader
+      log "-" * 150
+      log read_needle(needle).inspect
+      log
+      log "Haystack"
+      log '(haystack_reader proc not defined, so downcasing everything)' unless haystack_reader
+      log "-" * 150
+      log haystack.map { |record| read_haystack(record).inspect }.join("\n")
+      log
+      log "Tightenings"
+      log "-" * 150
+      log tightenings.empty? ? '(none)' : tightenings.map { |tightening| tightening.inspect }.join("\n")
+      log
+      log "Comparisons"
+      log Result::TT::HEADERS.map { |i| i.ljust(50) }.join
+      log '-' * 150
+      log last_result.tts.uniq.sort.map { |tt| tt.inspect }.join("\n")
+      log
+      log "Match"
+      log "-" * 150
+      log match.inspect
     end
   end
 end

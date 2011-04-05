@@ -128,8 +128,9 @@ class LooseTightDictionary
         t_needle_b, t_haystack_b = optimize t_map_needle, t_map(b)
         a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
         b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
-        last_result.register_score a_record, t_needle_a, t_haystack_a, a_prefix, a_score
-        last_result.register_score b_record, t_needle_b, t_haystack_b, b_prefix, b_score
+
+        last_result.register_tt t_needle_a, t_haystack_a, a_prefix, a_score
+        last_result.register_tt t_needle_b, t_haystack_b, b_prefix, b_score
 
         if a_score != b_score
           a_score <=> b_score
@@ -162,6 +163,9 @@ class LooseTightDictionary
 
       a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
       b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
+
+      last_result.register_tt t_needle_a, t_haystack_a, a_prefix, a_score
+      last_result.register_tt t_needle_b, t_haystack_b, b_prefix, b_score
 
       if a_score != b_score
         a_score <=> b_score

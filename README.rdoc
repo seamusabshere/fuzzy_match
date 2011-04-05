@@ -2,7 +2,7 @@
 
 Match things based on string similarity (using the Pair Distance algorithm) and regular expressions.
 
-= Quickstart
+== Quickstart
 
     >> d = LooseTightDictionary.new %w(seamus andy ben)
     => [...]
@@ -12,39 +12,79 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 Try running the included example file:
 
     $ ruby examples/first_name_matching.rb 
-    Needles
-    ====================
-    Mr. Seamus
-    Sr. Andy
-    Master BenT
-    Shamus Heaney
+    ######################################################################################################################################################
+    # Match "Mr. Seamus" => "seamus"
+    ######################################################################################################################################################
+
+    Needle
+    (needle_reader proc not defined, so downcasing everything)
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    "mr. seamus"
 
     Haystack
-    ====================
-    seamus
-    andy
-    ben
+    (haystack_reader proc not defined, so downcasing everything)
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    "seamus"
+    "andy"
+    "ben"
 
-    Results
-    ====================
-    Needle                        Haystack                      Score                         Prefix used (if any)          
-    mr. seamus                    andy                          0.0                                                         
-    mr. seamus                    seamus                        0.8333333333333334                                          
-    mr. seamus                    ben                           0.0                                                         
+    Tightenings
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    (none)
 
-    sr. andy                      andy                          0.75                                                        
-    sr. andy                      seamus                        0.0                                                         
-    sr. andy                      ben                           0.0                                                         
+    Comparisons
+    Score                                             t_haystack [=> tightened/prefixed]                t_needle [=> tightened/prefixed]                  
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    0.8333333333333334                                "seamus"                                          "mr. seamus"
+    0.0                                               "andy"                                            "mr. seamus"
+    0.0                                               "ben"                                             "mr. seamus"
 
-    master bent                   andy                          0.0                                                         
-    master bent                   seamus                        0.0                                                         
-    master bent                   ben                           0.4                                                         
+    Match
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    "seamus"
 
-    shamus heaney                 andy                          0.15384615384615385                                         
-    shamus heaney                 seamus                        0.5333333333333333                                          
-    shamus heaney                 ben                           0.0
+    # [... there's more output ...]
 
-= Improving dictionaries
+== The Boeing example
+
+From the tests:
+
+    ######################################################################################################################################################
+    # Match "BOEING 737100" => "BOEING BOEING 737-100/200"
+    ######################################################################################################################################################
+
+    Needle
+    (needle_reader proc not defined, so downcasing everything)
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    "boeing 737100"
+
+    Haystack
+    (haystack_reader proc not defined, so downcasing everything)
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    "boeing boeing 737-100/200"
+    "boeing boeing 737-900"
+
+    Tightenings
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    /(7\d)(7|0)-?(\d{1,3})/i
+
+    Comparisons
+    Score                                             t_haystack [=> tightened/prefixed]                t_needle [=> tightened/prefixed]                  
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    1.0                                               "boeing boeing 737-100/200" => "737100"           "boeing 737100" => "737100"
+    0.6666666666666666                                "boeing boeing 737-100/200" => "737100"           "boeing 737100"
+    0.6153846153846154                                "boeing boeing 737-900"                           "boeing 737100"
+    0.6                                               "boeing boeing 737-900" => "737900"               "boeing 737100" => "737100"
+    0.6                                               "boeing boeing 737-100/200"                       "boeing 737100"
+    0.4                                               "boeing boeing 737-900" => "737900"               "boeing 737100"
+    0.32                                              "boeing boeing 737-100/200"                       "boeing 737100" => "737100"
+    0.2857142857142857                                "boeing boeing 737-900"                           "boeing 737100" => "737100"
+
+    Match
+    ------------------------------------------------------------------------------------------------------------------------------------------------------
+    "BOEING BOEING 737-100/200"
+
+== Improving dictionaries
 
 Similarity matching will only get you so far.
 

@@ -8,17 +8,8 @@ require 'loose_tight_dictionary'
 haystack = [ 'seamus', 'andy', 'ben' ]
 needles = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT', 'Shamus Heaney' ]
 
-puts "Needles"
-puts "=" * 20
-puts needles
-puts
-
-puts "Haystack"
-puts "=" * 20
-puts haystack
-puts
-
-puts "Results"
-puts "=" * 20
-d = LooseTightDictionary.new haystack
-d.improver.check needles
+d = LooseTightDictionary.new haystack, :log => $stdout
+needles.each do |needle|
+  d.improver.explain needle
+  puts
+end

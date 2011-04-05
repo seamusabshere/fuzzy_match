@@ -4,8 +4,8 @@ class LooseTightDictionary
     attr_reader :blocked
     attr_reader :match
     
-    def records
-      @records ||= {}
+    def tts
+      @tts ||= []
     end
     
     def register_unblocked(unblocked)
@@ -16,8 +16,8 @@ class LooseTightDictionary
       @blocked = blocked
     end
         
-    def register_score(record, t_needle, t_haystack, prefix, score)
-      records[record] = Record.new(t_needle, t_haystack, prefix, score)
+    def register_tt(t_needle, t_haystack, prefix, score)
+      tts.push TT.new(t_needle, t_haystack, prefix, score)
     end
     
     def register_match(match)
@@ -25,19 +25,20 @@ class LooseTightDictionary
     end
     
     def score
-      records[match].score
+      tts.map { |tt| tt.score }.max
     end
     
     def free
-      records.try :clear
-      @records = nil
+      tts.try :clear
+      @tts = nil
       @unblocked = nil
       @blocked = nil
       @match = nil
+      @score = nil
     end
         
-    class Record
-      HEADERS = [ 'Needle', 'Haystack', 'Score', 'Prefix used (if any)']
+    class TT
+      HEADERS = [ 'Score', 't_haystack [=> tightened/prefixed]', 't_needle [=> tightened/prefixed]' ]
 
       attr_reader :t_needle
       attr_reader :t_haystack
@@ -50,11 +51,28 @@ class LooseTightDictionary
         @prefix = prefix
         @score = score
       end
-            
+      
       def inspect
-        [ t_needle.tightened_str, t_haystack.tightened_str, score, prefix ].map { |i| i.to_s.ljust(30) }.join 
+        [
+          score,
+          (t_haystack.tightened? ? "#{t_haystack.str.inspect} => #{t_haystack.tightened_str.inspect}" : t_haystack.str.inspect),
+          (t_needle.tightened? ? "#{t_needle.str.inspect} => #{t_needle.tightened_str.inspect}" : t_needle.str.inspect),
+        ].map { |i| i.to_s.ljust(50) }.join.strip
       end
+      
       alias :to_s :inspect
+      
+      def <=>(other)
+        other.score <=> score
+      end
+      
+      def eql?(other)
+        hash == other.hash
+      end
+      
+      def hash
+        [ t_needle.tightened_str, t_haystack.tightened_str, score ].hash
+      end
     end
   end
 end
