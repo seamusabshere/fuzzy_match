@@ -11,7 +11,7 @@ $log = $stderr
 # $tee = File.open('tee.csv', 'w')
 $tee = $stdout
 
-@right = RemoteTable.new :url => 'http://www.bts.gov/programs/airline_information/accounting_and_reporting_directives/csv/number_260.csv',
+@haystack = RemoteTable.new :url => 'http://www.bts.gov/programs/airline_information/accounting_and_reporting_directives/csv/number_260.csv',
                         :select => lambda { |record| record['Aircraft Type'].to_i.between?(1, 998) and record['Manufacturer'].present? }
 
 @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=0&output=csv', :headers => false
@@ -32,20 +32,20 @@ end
 
 ('A'..'Z').each do |letter|
 # %w{ E }.each do |letter|
-  @left = RemoteTable.new :url => "http://www.faa.gov/air_traffic/publications/atpubs/CNT/5-2-#{letter}.htm",
+  @needle = RemoteTable.new :url => "http://www.faa.gov/air_traffic/publications/atpubs/CNT/5-2-#{letter}.htm",
                           :encoding => 'US-ASCII',
                           :row_xpath => '//table/tr[2]/td/table/tr',
                           :column_xpath => 'td'
 
-  d = LooseTightDictionary.new @right,
+  d = LooseTightDictionary.new @haystack,
     :tightenings => @tightenings,
     :identities => @identities,
     :blockings => @blockings,
     :log => $log,
     :tee => $tee,
-    :left_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Model'] },
-    :right_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },
+    :needle_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Model'] },
+    :haystack_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },
     :positives => @positives,
     :negatives => @negatives
-  d.improver.check @left
+  d.improver.check @needle
 end

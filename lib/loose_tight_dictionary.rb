@@ -10,26 +10,27 @@ end if ::ActiveSupport::VERSION::MAJOR == 3
 class LooseTightDictionary
   autoload :T, 'loose_tight_dictionary/t'
   autoload :I, 'loose_tight_dictionary/i'
+  autoload :Match, 'loose_tight_dictionary/match'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
   attr_reader :options
-  attr_reader :right_records
+  attr_reader :haystack_records
 
-  def initialize(right_records, options = {})
+  def initialize(haystack_records, options = {})
     @options = options.symbolize_keys
-    @right_records = right_records
+    @haystack_records = haystack_records
   end
   
   def improver
     @improver ||= Improver.new self
   end
   
-  def left_reader
-    options[:left_reader]
+  def needle_reader
+    options[:needle_reader]
   end
   
-  def right_reader
-    options[:right_reader]
+  def haystack_reader
+    options[:haystack_reader]
   end
     
   def case_sensitive
@@ -60,39 +61,46 @@ class LooseTightDictionary
       literal_regexp i[0]
     end
   end
-
-  def blocking_only?
-    !!blocking_only
-  end
-
-  def log(str = '')
-    options[:log].puts str if options[:log]
+  
+  def last_match
+    @last_match ||= Match.new
   end
   
-  def tee(str = '')
-    options[:tee].puts str if options[:tee]
+  def free_last_match
+    @last_match.try :free
+    @last_match = nil
   end
+  
+  def find(needle_record)
+    free_last_match
+    
+    needle = read_needle needle_record
 
-  def find(left_record)
-    left = read_left left_record
-    blocking_left = blocking left
-    return if blocking_only? and blocking_left.nil?
-    i_options_left = i_options left
-    t_options_left = t_options left
-    ::Thread.current[:ltd_last_run] = {}
-    right_record = right_records.select do |right_record|
-      right = read_right right_record
-      blocking_right = blocking right
-      (not blocking_left and not blocking_right) or
-        (blocking_right and blocking_right.match(left)) or
-        (blocking_left and blocking_left.match(right))
-    end.max do |a_record, b_record|
-      a = read_right a_record
-      b = read_right b_record
+    blocking_needle = blocking needle
+    return if blocking_only and blocking_needle.nil?
+
+    i_options_needle = i_options needle
+    t_options_needle = t_options needle
+    
+    # ::Thread.current[:ltd_last_find] = {}
+    unblocked, blocked = haystack_records.partition do |haystack_record|
+      haystack = read_haystack haystack_record
+      blocking_haystack = blocking haystack
+      (not blocking_needle and not blocking_haystack) or
+        (blocking_haystack and blocking_haystack.match(needle)) or
+        (blocking_needle and blocking_needle.match(haystack))
+    end
+    
+    last_match.blocked = blocked
+    last_match.unblocked = unblocked
+    
+    sorted = unblocked.sort do |a_record, b_record|
+      a = read_haystack a_record
+      b = read_haystack b_record
       i_options_a = i_options a
       i_options_b = i_options b
-      collision_a = collision? i_options_left, i_options_a
-      collision_b = collision? i_options_left, i_options_b
+      collision_a = collision? i_options_needle, i_options_a
+      collision_b = collision? i_options_needle, i_options_b
       if collision_a and collision_b
         # neither would ever work, so randomly rank one over the other
         rand(2) == 1 ? -1 : 1
@@ -101,12 +109,12 @@ class LooseTightDictionary
       elsif collision_b
         1
       else
-        t_left_a, t_right_a = optimize t_options_left, t_options(a)
-        t_left_b, t_right_b = optimize t_options_left, t_options(b)
-        a_prefix, a_score = t_left_a.prefix_and_score t_right_a
-        b_prefix, b_score = t_left_b.prefix_and_score t_right_b
-        ::Thread.current[:ltd_last_run][a_record] = [t_left_a.tightened_str, t_right_a.tightened_str, a_prefix ? a_prefix : 'NULL', a_score]
-        ::Thread.current[:ltd_last_run][b_record] = [t_left_b.tightened_str, t_right_b.tightened_str, b_prefix ? b_prefix : 'NULL', b_score]
+        t_needle_a, t_haystack_a = optimize t_options_needle, t_options(a)
+        t_needle_b, t_haystack_b = optimize t_options_needle, t_options(b)
+        a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
+        b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
+        last_match.register_record a_record, t_needle_a, t_haystack_a, a_prefix, a_score
+        last_match.register_record b_record, t_needle_b, t_haystack_b, b_prefix, b_score
 
         if a_score != b_score
           a_score <=> b_score
@@ -117,22 +125,35 @@ class LooseTightDictionary
         end
       end
     end
-    right = read_right right_record
-    i_options_right = i_options right
-    return if collision? i_options_left, i_options_right
-    right_record
+    
+    last_match.sorted = sorted
+    
+    haystack_record = sorted[-1]
+    
+    haystack = read_haystack haystack_record
+    i_options_haystack = i_options haystack
+    return if collision? i_options_needle, i_options_haystack
+    
+    last_match.match = haystack_record
+    
+    haystack_record
+  end
+
+  def find_with_score(needle_record)
+    match = find needle_record
+    [ match, last_match.score ]
   end
 
   # deprecated
-  alias :left_to_right :find
+  alias :needle_to_haystack :find
 
-  def optimize(t_options_left, t_options_right)
-    cart_prod(t_options_left, t_options_right).max do |a, b|
-      t_left_a, t_right_a = a
-      t_left_b, t_right_b = b
+  def optimize(t_options_needle, t_options_haystack)
+    cart_prod(t_options_needle, t_options_haystack).max do |a, b|
+      t_needle_a, t_haystack_a = a
+      t_needle_b, t_haystack_b = b
 
-      a_prefix, a_score = t_left_a.prefix_and_score t_right_a
-      b_prefix, b_score = t_left_b.prefix_and_score t_right_b
+      a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
+      b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
 
       if a_score != b_score
         a_score <=> b_score
@@ -147,78 +168,78 @@ class LooseTightDictionary
   end
 
   def t_options(str)
-    return @_t_options[str] if @_t_options.try(:has_key?, str)
-    @_t_options ||= Hash.new
-    ary = Array.new
+    return @t_options[str] if @t_options.try(:has_key?, str)
+    @t_options ||= {}
+    ary = []
     ary.push T.new(str, str)
     tightenings.each do |regexp|
       if match_data = regexp.match(str)
         ary.push T.new(str, match_data.captures.compact.join)
       end
     end
-    @_t_options[str] = ary
+    @t_options[str] = ary
   end
 
-  def collision?(i_options_left, i_options_right)
-    i_options_left.any? do |r_left|
-      i_options_right.any? do |r_right|
-        r_left.regexp == r_right.regexp and r_left.identity != r_right.identity
+  def collision?(i_options_needle, i_options_haystack)
+    i_options_needle.any? do |r_needle|
+      i_options_haystack.any? do |r_haystack|
+        r_needle.regexp == r_haystack.regexp and r_needle.identity != r_haystack.identity
       end
     end
   end
 
   def i_options(str)
-    return @_i_options[str] if @_i_options.try(:has_key?, str)
-    @_i_options ||= Hash.new
-    ary = Array.new
+    return @i_options[str] if @i_options.try(:has_key?, str)
+    @i_options ||= {}
+    ary = []
     identities.each do |regexp|
       if regexp.match str
         ary.push I.new(regexp, str, case_sensitive)
       end
     end
-    @_i_options[str] = ary
+    @i_options[str] = ary
   end
 
   def blocking(str)
-    return @_blocking[str] if @_blocking.try(:has_key?, str)
-    @_blocking ||= Hash.new
+    return @blocking[str] if @blocking.try(:has_key?, str)
+    @blocking ||= {}
     blockings.each do |regexp|
       if regexp.match str
-        return @_blocking[str] = regexp
+        return @blocking[str] = regexp
       end
     end
-    @_blocking[str] = nil
+    @blocking[str] = nil
   end
 
   def literal_regexp(str)
-    return @_literal_regexp[str] if @_literal_regexp.try(:has_key?, str)
-    @_literal_regexp ||= Hash.new
+    return @literal_regexp[str] if @literal_regexp.try(:has_key?, str)
+    @literal_regexp ||= {}
     raw_regexp_options = str.split('/').last
-    ignore_case = (!case_sensitive or raw_regexp_options.include?('i')) ? Regexp::IGNORECASE : nil
-    multiline = raw_regexp_options.include?('m') ? Regexp::MULTILINE : nil
-    extended = raw_regexp_options.include?('x') ? Regexp::EXTENDED : nil
-    @_literal_regexp[str] = Regexp.new str.gsub(/\A\/|\/([ixm]*)\z/, ''), (ignore_case||multiline||extended)
+    ignore_case = (!case_sensitive or raw_regexp_options.include?('i')) ? ::Regexp::IGNORECASE : nil
+    multiline = raw_regexp_options.include?('m') ? ::Regexp::MULTILINE : nil
+    extended = raw_regexp_options.include?('x') ? ::Regexp::EXTENDED : nil
+    @literal_regexp[str] = ::Regexp.new str.gsub(%r{\A/|/([ixm]*)\z}, ''), (ignore_case||multiline||extended)
   end
 
-  def read_left(left_record)
-    return if left_record.nil?
-    if left_reader
-      left_reader.call(left_record)
-    elsif left_record.is_a?(String)
-      left_record
+  def read_needle(needle_record)
+    return if needle_record.nil?
+    if needle_reader
+      needle_reader.call(needle_record)
+    elsif needle_record.is_a?(::String)
+      case_sensitive ? needle_record : needle_record.downcase
     else
-      left_record[0]
+      needle_record[0]
     end
   end
 
-  def read_right(right_record)
-    return if right_record.nil?
-    if right_reader
-      right_reader.call(right_record)
-    elsif right_record.is_a?(String)
-      right_record
+  def read_haystack(haystack_record)
+    return if haystack_record.nil?
+    if haystack_reader
+      haystack_reader.call(haystack_record)
+    elsif haystack_record.is_a?(::String)
+      case_sensitive ? haystack_record : haystack_record.downcase
     else
-      right_record[0]
+      haystack_record[0]
     end
   end
 
