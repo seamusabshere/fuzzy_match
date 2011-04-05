@@ -6,17 +6,6 @@ require 'active_support/version'
   require active_support_3_requirement
 end if ActiveSupport::VERSION::MAJOR == 3
 require 'amatch'
-require 'andand'
-if RUBY_VERSION >= '1.9'
-  require 'csv'
-else
-  begin
-    require 'fastercsv'
-  rescue LoadError
-    $stderr.puts "[loose_tight_dictionary gem] You probably need to manually install the fastercsv gem."
-    raise $!
-  end
-end
 
 class LooseTightDictionary
   class MissedChecks < RuntimeError; end
@@ -99,24 +88,24 @@ class LooseTightDictionary
     left = read_left left_record
     right = read_right right_record
     
-    if positive_record = positives.andand.detect { |record| record[0] == left }
+    if positive_record = positives.try(:detect) { |record| record[0] == left }
       correct_right = positive_record[1]
       if correct_right.present? and right.blank?
-        logger.andand.debug "  Mismatch! (should match SOMETHING)"
+        logger.try :debug, "  Mismatch! (should match SOMETHING)"
         raise Mismatch
       elsif right != correct_right
-        logger.andand.debug "  Mismatch! (#{right} should be #{correct_right})"
+        logger.try :debug, "  Mismatch! (#{right} should be #{correct_right})"
         raise Mismatch
       end
     end
     
-    if negative_record = negatives.andand.detect { |record| record[0] == left }
+    if negative_record = negatives.try(:detect) { |record| record[0] == left }
       incorrect_right = negative_record[1]
       if incorrect_right.blank? and right.present?
-        logger.andand.debug "  False positive! (should NOT match ANYTHING)"
+        logger.try :debug, "  False positive! (should NOT match ANYTHING)"
         raise FalsePositive
       elsif right == incorrect_right
-        logger.andand.debug "  False positive! (#{right} should NOT be #{incorrect_right})"
+        logger.try :debug, "  False positive! (#{right} should NOT be #{incorrect_right})"
         raise FalsePositive
       end
     end
@@ -125,10 +114,8 @@ class LooseTightDictionary
   def check(left_records)
     header = [ 'Left record (input)', 'Right record (output)', 'Prefix used (if any)', 'Score' ]
     case tee_format
-    when :csv
-      tee.andand.puts header.flatten.to_csv
     when :fixed_width
-      tee.andand.puts header.map { |i| i.to_s.ljust(30) }.join
+      tee.try(:puts, header.map { |i| i.to_s.ljust(30) }.join)
     end
 
     left_records.each do |left_record|
@@ -136,10 +123,8 @@ class LooseTightDictionary
         right_record = left_to_right left_record
       ensure
         case tee_format
-        when :csv
-          tee.andand.puts $ltd_1.flatten.to_csv
         when :fixed_width
-          tee.andand.puts $ltd_1.map { |i| i.to_s.ljust(30) }.join if $ltd_1
+          tee.try(:puts, $ltd_1.map { |i| i.to_s.ljust(30) }.join) if $ltd_1
         end
       end
     end
@@ -183,11 +168,11 @@ class LooseTightDictionary
         yep_dd = ($ltd_dd_right and $ltd_dd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_dd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_dd_right } and (!$ltd_dd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_dd_left_not }))
         
         if $ltd_dd_print and yep_dd
-          logger.andand.debug t_left_a.inspect
-          logger.andand.debug t_right_a.inspect
-          logger.andand.debug t_left_b.inspect
-          logger.andand.debug t_right_b.inspect
-          logger.andand.debug
+          logger.try :debug, t_left_a.inspect
+          logger.try :debug, t_right_a.inspect
+          logger.try :debug, t_left_b.inspect
+          logger.try :debug, t_right_b.inspect
+          logger.try :debug
         end
 
         z = 1
@@ -207,7 +192,7 @@ class LooseTightDictionary
     right = read_right right_record
     i_options_right = i_options right
     z = 1
-    debugger if $ltd_left.andand.match(left) or $ltd_right.andand.match(right)
+    debugger if $ltd_left.try(:match, left) or $ltd_right.try(:match, right)
     z = 1
     if collision? i_options_left, i_options_right
       $ltd_0 = nil
@@ -231,11 +216,11 @@ class LooseTightDictionary
       yep_ddd = ($ltd_ddd_right and $ltd_ddd_left and [t_left_a, t_left_b].any? { |f| f.str =~ $ltd_ddd_left } and [t_right_a, t_right_b].any? { |f| f.str =~ $ltd_ddd_right } and (!$ltd_ddd_left_not or [t_left_a, t_left_b].none? { |f| f.str =~ $ltd_ddd_left_not }))
       
       if $ltd_ddd_print and yep_ddd
-        logger.andand.debug t_left_a.inspect
-        logger.andand.debug t_right_a.inspect
-        logger.andand.debug t_left_b.inspect
-        logger.andand.debug t_right_b.inspect
-        logger.andand.debug
+        logger.try :debug, t_left_a.inspect
+        logger.try :debug, t_right_a.inspect
+        logger.try :debug, t_left_b.inspect
+        logger.try :debug, t_right_b.inspect
+        logger.try :debug
       end
       
       z = 1
@@ -255,7 +240,7 @@ class LooseTightDictionary
   end
   
   def t_options(str)
-    return @_t_options[str] if @_t_options.andand.has_key?(str)
+    return @_t_options[str] if @_t_options.try(:has_key?, str)
     @_t_options ||= Hash.new
     ary = Array.new
     ary.push T.new(str, str)
@@ -286,7 +271,7 @@ class LooseTightDictionary
   end
   
   def i_options(str)
-    return @_i_options[str] if @_i_options.andand.has_key?(str)
+    return @_i_options[str] if @_i_options.try(:has_key?, str)
     @_i_options ||= Hash.new
     ary = Array.new
     identities.each do |regexp|
@@ -298,7 +283,7 @@ class LooseTightDictionary
   end
   
   def blocking(str)
-    return @_blocking[str] if @_blocking.andand.has_key?(str)
+    return @_blocking[str] if @_blocking.try(:has_key?, str)
     @_blocking ||= Hash.new
     blockings.each do |regexp|
       if regexp.match str
@@ -309,7 +294,7 @@ class LooseTightDictionary
   end
   
   def literal_regexp(str)
-    return @_literal_regexp[str] if @_literal_regexp.andand.has_key? str
+    return @_literal_regexp[str] if @_literal_regexp.try(:has_key?, str)
     @_literal_regexp ||= Hash.new
     raw_regexp_options = str.split('/').last
     ignore_case = (!case_sensitive or raw_regexp_options.include?('i')) ? Regexp::IGNORECASE : nil
