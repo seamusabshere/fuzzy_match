@@ -3,6 +3,7 @@ require 'active_support/version'
 %w{
   active_support/core_ext/string
   active_support/core_ext/hash
+  active_support/core_ext/object
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ::ActiveSupport::VERSION::MAJOR == 3
