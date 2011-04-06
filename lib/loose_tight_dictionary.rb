@@ -9,6 +9,8 @@ require 'active_support/version'
 end if ::ActiveSupport::VERSION::MAJOR == 3
 
 class LooseTightDictionary
+  autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
+  autoload :Identity, 'loose_tight_dictionary/identity'
   autoload :T, 'loose_tight_dictionary/t'
   autoload :I, 'loose_tight_dictionary/i'
   autoload :Result, 'loose_tight_dictionary/result'
@@ -58,15 +60,7 @@ class LooseTightDictionary
 
   def identities
     @identities ||= (options[:identities] || []).map do |i|
-      if i.is_a?(::Regexp)
-        i
-      elsif i.is_a?(::String)
-        next if i.blank?
-        literal_regexp i
-      else
-        next if i[0].blank?
-        literal_regexp i[0]
-      end
+      Identity.new i
     end
   end
 
@@ -101,7 +95,6 @@ class LooseTightDictionary
     blocking_needle = blocking needle_value
     return if blocking_only and blocking_needle.nil?
 
-    i_map_needle = i_map needle_value
     t_map_needle = t_map needle_value
     
     unblocked, blocked = haystack.partition do |record|
@@ -112,45 +105,38 @@ class LooseTightDictionary
         (blocking_needle and blocking_needle.match(value))
     end
     
+    allowed, disallowed = unblocked.partition do |record|
+      value = read_haystack record
+      identities.all? do |i|
+        i.allow? needle_value, value
+      end
+    end
+    
     last_result.register_blocked blocked
     last_result.register_unblocked unblocked
     
-    match = unblocked.max do |a_record, b_record|
+    match = allowed.max do |a_record, b_record|
       a = read_haystack a_record
       b = read_haystack b_record
-      i_map_a = i_map a
-      i_map_b = i_map b
-      collision_a = collision? i_map_needle, i_map_a
-      collision_b = collision? i_map_needle, i_map_b
-      if collision_a and collision_b
-        # neither would ever work, so randomly rank one over the other
-        rand(2) == 1 ? -1 : 1
-      elsif collision_a
-        -1
-      elsif collision_b
-        1
+      
+      t_needle_a, t_haystack_a = optimize t_map_needle, t_map(a)
+      t_needle_b, t_haystack_b = optimize t_map_needle, t_map(b)
+      a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
+      b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
+
+      last_result.register_tt t_needle_a, t_haystack_a, a_prefix, a_score
+      last_result.register_tt t_needle_b, t_haystack_b, b_prefix, b_score
+
+      if a_score != b_score
+        a_score <=> b_score
+      elsif a_prefix and b_prefix and a_prefix != b_prefix
+        a_prefix <=> b_prefix
       else
-        t_needle_a, t_haystack_a = optimize t_map_needle, t_map(a)
-        t_needle_b, t_haystack_b = optimize t_map_needle, t_map(b)
-        a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
-        b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
-
-        last_result.register_tt t_needle_a, t_haystack_a, a_prefix, a_score
-        last_result.register_tt t_needle_b, t_haystack_b, b_prefix, b_score
-
-        if a_score != b_score
-          a_score <=> b_score
-        elsif a_prefix and b_prefix and a_prefix != b_prefix
-          a_prefix <=> b_prefix
-        else
-          b.length <=> a.length
-        end
+        b.length <=> a.length
       end
     end
     
     value = read_haystack match
-    i_map_haystack = i_map value
-    return if collision? i_map_needle, i_map_haystack
     
     last_result.register_match match
     
@@ -196,29 +182,6 @@ class LooseTightDictionary
       end
     end
     @t_map[str] = ary
-  end
-
-  def collision?(i_map_needle, i_map_haystack)
-    i_map_needle.any? do |r_needle|
-      i_map_haystack.any? do |r_haystack|
-        if r_needle.regexp == r_haystack.regexp and r_needle.identity != r_haystack.identity
-          last_result.register_collision r_needle, r_haystack
-          true
-        end
-      end
-    end
-  end
-
-  def i_map(str)
-    return @i_map[str] if @i_map.try(:has_key?, str)
-    @i_map ||= {}
-    ary = []
-    identities.each do |regexp|
-      if regexp.match str
-        ary.push I.new(regexp, str, case_sensitive)
-      end
-    end
-    @i_map[str] = ary
   end
 
   def blocking(str)
