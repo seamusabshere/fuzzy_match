@@ -1,19 +1,11 @@
 class LooseTightDictionary
   class Result
-    attr_reader :unblocked
-    attr_reader :blocked
+    attr_accessor :encompassed
+    attr_accessor :unencompassed
     attr_reader :match
     
     def tts
       @tts ||= []
-    end
-        
-    def register_unblocked(unblocked)
-      @unblocked = unblocked
-    end
-    
-    def register_blocked(blocked)
-      @blocked = blocked
     end
         
     def register_tt(t_needle, t_haystack, prefix, score)
@@ -31,8 +23,8 @@ class LooseTightDictionary
     def free
       tts.try :clear
       @tts = nil
-      @unblocked = nil
-      @blocked = nil
+      @encompassed = nil
+      @unencompassed = nil
       @match = nil
       @score = nil
     end

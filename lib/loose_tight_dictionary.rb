@@ -10,6 +10,7 @@ end if ::ActiveSupport::VERSION::MAJOR == 3
 
 class LooseTightDictionary
   autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
+  autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
   autoload :T, 'loose_tight_dictionary/t'
   autoload :Result, 'loose_tight_dictionary/result'
@@ -35,8 +36,8 @@ class LooseTightDictionary
     options[:haystack_reader]
   end
     
-  def blocking_only
-    options[:blocking_only] || false
+  def strict_blocking
+    options[:strict_blocking] || false
   end
 
   def tightenings
@@ -60,16 +61,8 @@ class LooseTightDictionary
   end
 
   def blockings
-    @blockings ||= (options[:blockings] || []).map do |i|
-      if i.is_a?(::Regexp)
-        i
-      elsif i.is_a?(::String)
-        next if i.blank?
-        literal_regexp i
-      else
-        next if i[0].blank?
-        literal_regexp i[0]
-      end
+    @blockings ||= (options[:blockings] || []).map do |b|
+      Blocking.new b
     end
   end
   
@@ -87,30 +80,36 @@ class LooseTightDictionary
     
     needle_value = read_needle needle
 
-    blocking_needle = blocking needle_value
-    return if blocking_only and blocking_needle.nil?
+    return if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle_value }
 
     t_map_needle = t_map needle_value
     
-    unblocked, blocked = haystack.partition do |record|
-      value = read_haystack record
-      blocking_haystack = blocking value
-      (not blocking_needle and not blocking_haystack) or
-        (blocking_haystack and blocking_haystack.match(needle_value)) or
-        (blocking_needle and blocking_needle.match(value))
-    end
-    
-    allowed, disallowed = unblocked.partition do |record|
-      value = read_haystack record
-      identities.all? do |i|
-        i.allow? needle_value, value
+    encompassed, unencompassed = if strict_blocking and blockings.any?
+      haystack.partition do |record|
+        value = read_haystack record
+        blockings.any? do |blocking|
+          blocking.encompass? needle_value, value
+        end
       end
+    else
+      [ haystack.dup, [] ]
     end
     
-    last_result.register_blocked blocked
-    last_result.register_unblocked unblocked
+    last_result.encompassed = encompassed
+    last_result.unencompassed = unencompassed
     
-    match = allowed.max do |a_record, b_record|
+    possibly_identical, certainly_different = if identities.any?
+      encompassed.partition do |record|
+        value = read_haystack record
+        identities.all? do |identity|
+          identity.possibly_identical? needle_value, value
+        end
+      end
+    else
+      [ encompassed.dup, [] ]
+    end
+        
+    match = possibly_identical.max do |a_record, b_record|
       a = read_haystack a_record
       b = read_haystack b_record
       
@@ -177,17 +176,6 @@ class LooseTightDictionary
       end
     end
     @t_map[str] = ary
-  end
-
-  def blocking(str)
-    return @blocking[str] if @blocking.try(:has_key?, str)
-    @blocking ||= {}
-    blockings.each do |regexp|
-      if regexp.match str
-        return @blocking[str] = regexp
-      end
-    end
-    @blocking[str] = nil
   end
 
   def literal_regexp(str)

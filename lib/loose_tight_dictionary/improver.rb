@@ -88,19 +88,23 @@ class LooseTightDictionary
       log
       log "Tightenings"
       log "-" * 150
-      log tightenings.empty? ? '(none)' : tightenings.map { |tightening| tightening.inspect }.join("\n")
+      log tightenings.blank? ? '(none)' : tightenings.map { |tightening| tightening.inspect }.join("\n")
       log
       log "Blockings"
       log "-" * 150
-      log blockings.empty? ? '(none)' : blockings.map { |blocking| blocking.inspect }.join("\n")
+      log blockings.blank? ? '(none)' : blockings.map { |blocking| blocking.inspect }.join("\n")
       log
       log "Identities"
       log "-" * 150
-      log identities.empty? ? '(none)' : identities.map { |blocking| blocking.inspect }.join("\n")
+      log identities.blank? ? '(none)' : identities.map { |blocking| blocking.inspect }.join("\n")
       log
-      log "Blocked"
+      log "Comparison allowed"
       log "-" * 150
-      log last_result.blocked.empty? ? '(none)' : last_result.blocked.map { |blocked| blocked.inspect }.join("\n")
+      log last_result.encompassed.blank? ? '(none)' : last_result.encompassed.map { |encompassed| encompassed.inspect }.join("\n")
+      log
+      log "Comparison disallowed"
+      log "-" * 150
+      log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.inspect }.join("\n")
       log
       log "Comparisons"
       log Result::TT::HEADERS.map { |i| i.ljust(50) }.join

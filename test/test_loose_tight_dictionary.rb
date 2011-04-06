@@ -42,19 +42,6 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_match %r{"BOEING 737100" => "737100"}, output
   end
 
-  def test_006_false_positive_without_blocking
-    d = LooseTightDictionary.new [ 'A1', 'A2', 'B 1' ]
-    assert_equal 'B 1', d.match('A 1')
-  end
-  
-  def test_007_block_false_positive
-    blockings = [
-      %r{A} # block things with A to only match things that also contain A
-    ]
-    d = LooseTightDictionary.new [ 'A1', 'A2', 'B 1' ], :blockings => blockings
-    assert_equal 'A1', d.match('A 1')
-  end
-  
   def test_008_false_positive_without_identity
     d = LooseTightDictionary.new [ 'A2', 'B1', 'B2' ]
     assert_equal 'A2', d.match('A 1')
@@ -66,5 +53,23 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     ]
     d = LooseTightDictionary.new [ 'A2', 'B1', 'B2' ], :identities => identities
     assert(d.match('A 1') != 'A2')
+  end
+  
+  def test_009_loose_blocking
+    # sanity check
+    d = LooseTightDictionary.new [ 'X' ]
+    assert_equal 'X', d.match('X')
+    assert_equal 'X', d.match('A')
+    # end sanity check
+    
+    d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ]
+    assert_equal 'X', d.match('X')
+    assert_equal 'X', d.match('A')
+  end
+  
+  def test_010_strict_blocking
+    d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ], :strict_blocking => true
+    assert_equal 'X', d.match('X')
+    assert_equal nil, d.match('A')
   end
 end
