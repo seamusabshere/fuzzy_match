@@ -44,7 +44,9 @@ class LooseTightDictionary
 
   def tightenings
     @tightenings ||= (options[:tightenings] || []).map do |i|
-      if i.is_a?(::String)
+      if i.is_a?(::Regexp)
+        i
+      elsif i.is_a?(::String)
         next if i.blank?
         literal_regexp i
       else
@@ -56,7 +58,9 @@ class LooseTightDictionary
 
   def identities
     @identities ||= (options[:identities] || []).map do |i|
-      if i.is_a?(::String)
+      if i.is_a?(::Regexp)
+        i
+      elsif i.is_a?(::String)
         next if i.blank?
         literal_regexp i
       else
@@ -68,7 +72,9 @@ class LooseTightDictionary
 
   def blockings
     @blockings ||= (options[:blockings] || []).map do |i|
-      if i.is_a?(::String)
+      if i.is_a?(::Regexp)
+        i
+      elsif i.is_a?(::String)
         next if i.blank?
         literal_regexp i
       else
@@ -195,7 +201,10 @@ class LooseTightDictionary
   def collision?(i_map_needle, i_map_haystack)
     i_map_needle.any? do |r_needle|
       i_map_haystack.any? do |r_haystack|
-        r_needle.regexp == r_haystack.regexp and r_needle.identity != r_haystack.identity
+        if r_needle.regexp == r_haystack.regexp and r_needle.identity != r_haystack.identity
+          last_result.register_collision r_needle, r_haystack
+          true
+        end
       end
     end
   end

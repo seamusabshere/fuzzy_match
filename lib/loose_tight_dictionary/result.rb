@@ -8,6 +8,10 @@ class LooseTightDictionary
       @tts ||= []
     end
     
+    def collisions
+      @collisions ||= []
+    end
+    
     def register_unblocked(unblocked)
       @unblocked = unblocked
     end
@@ -22,6 +26,10 @@ class LooseTightDictionary
     
     def register_match(match)
       @match = match
+    end
+    
+    def register_collision(r_needle, r_haystack)
+      collisions.push "#{r_needle.regexp.inspect}: #{r_needle.identity.inspect} != #{r_haystack.identity.inspect}"
     end
     
     def score

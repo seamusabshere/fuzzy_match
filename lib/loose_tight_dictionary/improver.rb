@@ -90,6 +90,22 @@ class LooseTightDictionary
       log "-" * 150
       log tightenings.empty? ? '(none)' : tightenings.map { |tightening| tightening.inspect }.join("\n")
       log
+      log "Blockings"
+      log "-" * 150
+      log blockings.empty? ? '(none)' : blockings.map { |blocking| blocking.inspect }.join("\n")
+      log
+      log "Identities"
+      log "-" * 150
+      log identities.empty? ? '(none)' : identities.map { |blocking| blocking.inspect }.join("\n")
+      log
+      log "Blocked"
+      log "-" * 150
+      log last_result.blocked.empty? ? '(none)' : last_result.blocked.map { |blocked| blocked.inspect }.join("\n")
+      log
+      log "Collisions"
+      log "-" * 150
+      log last_result.collisions.empty? ? '(none)' : last_result.collisions.join("\n")
+      log
       log "Comparisons"
       log Result::TT::HEADERS.map { |i| i.ljust(50) }.join
       log '-' * 150
