@@ -12,7 +12,6 @@ class LooseTightDictionary
   autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
   autoload :Identity, 'loose_tight_dictionary/identity'
   autoload :T, 'loose_tight_dictionary/t'
-  autoload :I, 'loose_tight_dictionary/i'
   autoload :Result, 'loose_tight_dictionary/result'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
