@@ -35,10 +35,6 @@ class LooseTightDictionary
     options[:haystack_reader]
   end
     
-  def case_sensitive
-    options[:case_sensitive] || false
-  end
-  
   def blocking_only
     options[:blocking_only] || false
   end
@@ -198,7 +194,7 @@ class LooseTightDictionary
     return @literal_regexp[str] if @literal_regexp.try(:has_key?, str)
     @literal_regexp ||= {}
     raw_regexp_options = str.split('/').last
-    ignore_case = (!case_sensitive or raw_regexp_options.include?('i')) ? ::Regexp::IGNORECASE : nil
+    ignore_case = raw_regexp_options.include?('i') ? ::Regexp::IGNORECASE : nil
     multiline = raw_regexp_options.include?('m') ? ::Regexp::MULTILINE : nil
     extended = raw_regexp_options.include?('x') ? ::Regexp::EXTENDED : nil
     @literal_regexp[str] = ::Regexp.new str.gsub(%r{\A/|/([ixm]*)\z}, ''), (ignore_case||multiline||extended)
@@ -209,9 +205,9 @@ class LooseTightDictionary
     if needle_reader
       needle_reader.call(needle)
     elsif needle.is_a?(::String)
-      case_sensitive ? needle : needle.downcase
+      needle
     else
-      case_sensitive ? needle[0] : needle[0].downcase
+      needle[0]
     end
   end
 
@@ -220,9 +216,9 @@ class LooseTightDictionary
     if haystack_reader
       haystack_reader.call(record)
     elsif record.is_a?(::String)
-      case_sensitive ? record : record.downcase
+      record
     else
-      case_sensitive ? record[0] : record[0].downcase
+      record[0]
     end
   end
 
