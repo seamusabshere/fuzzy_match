@@ -7,12 +7,13 @@ require 'active_support/version'
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ::ActiveSupport::VERSION::MAJOR == 3
+require 'amatch'
 
 class LooseTightDictionary
   autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
+  autoload :Tightening, 'loose_tight_dictionary/tightening'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
-  autoload :T, 'loose_tight_dictionary/t'
   autoload :Result, 'loose_tight_dictionary/result'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
@@ -41,16 +42,8 @@ class LooseTightDictionary
   end
 
   def tightenings
-    @tightenings ||= (options[:tightenings] || []).map do |i|
-      if i.is_a?(::Regexp)
-        i
-      elsif i.is_a?(::String)
-        next if i.blank?
-        literal_regexp i
-      else
-        next if i[0].blank?
-        literal_regexp i[0]
-      end
+    @tightenings ||= (options[:tightenings] || []).map do |t|
+      Tightening.new t
     end
   end
 
@@ -82,8 +75,6 @@ class LooseTightDictionary
 
     return if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle_value }
 
-    t_map_needle = t_map needle_value
-    
     encompassed, unencompassed = if strict_blocking and blockings.any?
       haystack.partition do |record|
         value = read_haystack record
@@ -109,83 +100,44 @@ class LooseTightDictionary
       [ encompassed.dup, [] ]
     end
         
-    match = possibly_identical.max do |a_record, b_record|
-      a = read_haystack a_record
-      b = read_haystack b_record
-      
-      t_needle_a, t_haystack_a = optimize t_map_needle, t_map(a)
-      t_needle_b, t_haystack_b = optimize t_map_needle, t_map(b)
-      a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
-      b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
-
-      last_result.register_tt t_needle_a, t_haystack_a, a_prefix, a_score
-      last_result.register_tt t_needle_b, t_haystack_b, b_prefix, b_score
-
-      if a_score != b_score
-        a_score <=> b_score
-      elsif a_prefix and b_prefix and a_prefix != b_prefix
-        a_prefix <=> b_prefix
-      else
-        b.length <=> a.length
-      end
+    needle_variations = vary needle_value
+    
+    scores = possibly_identical.inject({}) do |memo, record|
+      value = read_haystack record
+      variations = vary value
+      best_tuple = cart_prod(needle_variations, variations).sort_by do |needle_value_1, value_1|
+        score needle_value_1, value_1
+      end[-1]
+      memo[record] = score(best_tuple[0], best_tuple[1])
+      memo
     end
     
-    value = read_haystack match
-    
-    last_result.register_match match
-    
+    match, score = scores.max do |a, b|
+      _, score_a = a
+      _, score_b = b
+      score_a <=> score_b
+    end
+
+    last_result.score = score
+    last_result.match = match
+        
     match
+  end
+
+  def vary(str)
+    tightenings.inject([ str ]) do |memo, tightening|
+      memo.push tightening.apply(str)
+      memo
+    end.uniq
+  end
+  
+  def score(needle_value, value)
+    needle_value.pair_distance_similar value
   end
 
   def match_with_score(needle)
     match = match needle
     [ match, last_result.score ]
-  end
-
-  def optimize(t_map_needle, t_map_haystack)
-    cart_prod(t_map_needle, t_map_haystack).max do |a, b|
-      t_needle_a, t_haystack_a = a
-      t_needle_b, t_haystack_b = b
-
-      a_prefix, a_score = t_needle_a.prefix_and_score t_haystack_a
-      b_prefix, b_score = t_needle_b.prefix_and_score t_haystack_b
-
-      last_result.register_tt t_needle_a, t_haystack_a, a_prefix, a_score
-      last_result.register_tt t_needle_b, t_haystack_b, b_prefix, b_score
-
-      if a_score != b_score
-        a_score <=> b_score
-      elsif a_prefix and b_prefix and a_prefix != b_prefix
-        a_prefix <=> b_prefix
-      else
-        # randomly choose
-        # maybe later i can figure out how big the inputs are and apply occam's razor
-        rand(2) == 1 ? -1 : 1
-      end
-    end
-  end
-
-  def t_map(str)
-    return @t_map[str] if @t_map.try(:has_key?, str)
-    @t_map ||= {}
-    ary = []
-    ary.push T.new(str, str)
-    tightenings.each do |regexp|
-      if match_data = regexp.match(str)
-        ary.push T.new(str, match_data.captures.compact.join)
-      end
-    end
-    @t_map[str] = ary
-  end
-
-  def literal_regexp(str)
-    return @literal_regexp[str] if @literal_regexp.try(:has_key?, str)
-    @literal_regexp ||= {}
-    raw_regexp_options = str.split('/').last
-    ignore_case = raw_regexp_options.include?('i') ? ::Regexp::IGNORECASE : nil
-    multiline = raw_regexp_options.include?('m') ? ::Regexp::MULTILINE : nil
-    extended = raw_regexp_options.include?('x') ? ::Regexp::EXTENDED : nil
-    @literal_regexp[str] = ::Regexp.new str.gsub(%r{\A/|/([ixm]*)\z}, ''), (ignore_case||multiline||extended)
   end
 
   def read_needle(needle)

@@ -62,14 +62,6 @@ class LooseTightDictionary
       end
     end
 
-    def check(needles)
-      log Result::TT::HEADERS.map { |i| i.ljust(30) }.join
-
-      needles.each do |needle|
-        match needle
-      end
-    end
-    
     def explain(needle)
       match = match needle
       log "#" * 150
@@ -105,11 +97,6 @@ class LooseTightDictionary
       log "Comparison disallowed"
       log "-" * 150
       log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.inspect }.join("\n")
-      log
-      log "Comparisons"
-      log Result::TT::HEADERS.map { |i| i.ljust(50) }.join
-      log '-' * 150
-      log last_result.tts.uniq.sort.map { |tt| tt.inspect }.join("\n")
       log
       log "Match"
       log "-" * 150

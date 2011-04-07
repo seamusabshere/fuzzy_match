@@ -35,24 +35,18 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     tightenings = [
       %r{(7\d)(7|0)-?(\d{1,3})} # tighten 737-100/200 => 737100, which will cause it to win over 737-900
     ]
-    d = LooseTightDictionary.new ['BOEING 737-100/200', 'BOEING 737-900'], :tightenings => tightenings, :log => @log
-    d.improver.explain('BOEING 737100')
-    @log.rewind
-    output = @log.read
-    assert_match %r{"BOEING 737100" => "737100"}, output
+    d = LooseTightDictionary.new ['BOEING 737-100/200', 'BOEING 737-900'], :tightenings => tightenings
+    assert_equal 'BOEING 737-100/200', d.match('BOEING 737100')
   end
 
   def test_008_false_positive_without_identity
-    d = LooseTightDictionary.new [ 'A2', 'B1', 'B2' ]
-    assert_equal 'A2', d.match('A 1')
+    d = LooseTightDictionary.new %w{ foo bar }
+    assert_equal 'bar', d.match('baz')
   end
   
   def test_008_identify_false_positive
-    identities = [
-      %r{(A)[ ]*(\d+)} # if both sides match A*\d+, make sure they match exactly
-    ]
-    d = LooseTightDictionary.new [ 'A2', 'B1', 'B2' ], :identities => identities
-    assert(d.match('A 1') != 'A2')
+    d = LooseTightDictionary.new %w{ foo bar }, :identities => [ /ba(.)/ ]
+    assert_equal 'foo', d.match('baz')
   end
   
   def test_009_loose_blocking
