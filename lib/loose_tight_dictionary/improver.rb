@@ -40,24 +40,23 @@ class LooseTightDictionary
     def inline_check(needle, record)
       return unless positives.present? or negatives.present?
 
-      needle_value = read_needle needle
-      value = read_haystack record
+      needle = Record.wrap needle, needle_reader, tightenings
 
-      if positive_record = positives.try(:detect) { |record| record[0] == needle_value }
-        correct_value = positive_record[1]
-        if correct_value.present? and value.blank?
-          raise FalseNegative, "#{needle_value} should have matched #{correct_value}, but matched nothing"
-        elsif value != correct_value
-          raise Mismatch, "#{needle_value} should have matched #{correct_value}, but matched #{value}"
+      if positive_record = positives.try(:detect) { |record| record[0] == needle }
+        correct_record = positive_record[1]
+        if correct_record.present? and record.blank?
+          raise FalseNegative, "#{needle} should have matched #{correct_record}, but matched nothing"
+        elsif record != correct_record
+          raise Mismatch, "#{needle} should have matched #{correct_record}, but matched #{record}"
         end
       end
 
-      if negative_record = negatives.try(:detect) { |record| record[0] == needle_value }
-        incorrect_value = negative_record[1]
-        if incorrect_value.blank? and value.present?
-          raise FalsePositive, "#{needle_value} shouldn't have matched anything, but it matched #{value}"
-        elsif value == incorrect_value
-          raise FalsePositive, "#{needle_value} shouldn't have matched #{incorrect_value}, but it did!"
+      if negative_record = negatives.try(:detect) { |record| record[0] == needle }
+        incorrect_record = negative_record[1]
+        if incorrect_record.blank? and record.present?
+          raise FalsePositive, "#{needle} shouldn't have matched anything, but it matched #{record}"
+        elsif record == incorrect_record
+          raise FalsePositive, "#{needle} shouldn't have matched #{incorrect_record}, but it did!"
         end
       end
     end
@@ -68,8 +67,9 @@ class LooseTightDictionary
         begin
           if match = match(needle)
             log
-            log read_needle(needle)
-            log read_haystack(match)
+            log "%0.2f" % last_result.score
+            log(needle_reader ? needle_reader.call(needle) : needle)
+            log(haystack_reader ? haystack_reader.call(match) : match)
           else
             skipped << needle
           end
@@ -84,7 +84,7 @@ class LooseTightDictionary
       log
       
       skipped.each do |needle|
-        log read_needle(needle)
+        log (needle_reader ? needle_reader.call(needle) : needle)
       end
     end
 
@@ -97,12 +97,12 @@ class LooseTightDictionary
       log "Needle"
       log '(needle_reader proc not defined, so downcasing everything)' unless needle_reader
       log "-" * 150
-      log read_needle(needle).inspect
+      log (needle_reader ? needle_reader.call(needle) : needle).inspect
       log
       log "Haystack"
       log '(haystack_reader proc not defined, so downcasing everything)' unless haystack_reader
       log "-" * 150
-      log haystack.map { |record| read_haystack(record).inspect }.join("\n")
+      log haystack.map { |record| (haystack_reader ? haystack_reader.call(record) : record).inspect }.join("\n")
       log
       log "Tightenings"
       log "-" * 150

@@ -35,30 +35,22 @@ class LooseTightDictionary
 
     # end delegator
 
+    def ltd_unwrap
+      __getobj__
+    end
+
     attr_reader :ltd_tightenings
     attr_reader :ltd_reader
     attr_reader :ltd_applied_tightening
 
-    # methods i want to definitively override
-
-    def to_str
+    def ltd_to_str
       if ltd_applied_tightening
         ltd_tightened_value
       else
         ltd_read_value
       end
     end
-    
-    # def hash
-    #   to_str.hash
-    # end
-    # 
-    # def eql?(other)
-    #   hash == other.hash
-    # end
-    
-    # ... and those that i don't
-
+        
     def ltd_read_value
       @ltd_read_value ||= ltd_reader ? ltd_reader.call(__getobj__) : __getobj__.to_s
     end
@@ -81,9 +73,18 @@ class LooseTightDictionary
       end.uniq
     end
     
+    def ltd_optimal_prefix_range(other)
+      if ltd_tightened? and other.ltd_tightened?
+        0..([ ltd_to_str.length, other.ltd_to_str.length ].min-1)
+      end
+    end
+    
     def ltd_score(other)
-      # if prefixed...
-      to_str.pair_distance_similar other.to_str
+      if optimal_prefix_range = ltd_optimal_prefix_range(other)
+        ltd_to_str[optimal_prefix_range].pair_distance_similar other.ltd_to_str[optimal_prefix_range]
+      else
+        ltd_to_str.pair_distance_similar other.ltd_to_str
+      end
     end
   end
 end

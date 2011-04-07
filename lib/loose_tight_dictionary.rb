@@ -61,7 +61,7 @@ class LooseTightDictionary
     
     possibly_identical, certainly_different = if identities.any?
       encompassed.partition do |record|
-        identities.any? do |identity|
+        identities.all? do |identity|
           answer = identity.identical? needle, record
           answer.nil? or answer == true
         end
@@ -92,10 +92,8 @@ class LooseTightDictionary
     last_result.score = score
     last_result.match = match
         
-    match
+    match.ltd_unwrap
   end
-  
-  private
   
   def needle_reader
     options[:needle_reader]
@@ -104,7 +102,7 @@ class LooseTightDictionary
   def haystack_reader
     options[:haystack_reader]
   end
-    
+        
   def strict_blocking
     options[:strict_blocking] || false
   end
@@ -126,6 +124,8 @@ class LooseTightDictionary
       Blocking.new regexp_or_str
     end
   end
+  
+  private
   
   def free_last_result
     @last_result.try :free
