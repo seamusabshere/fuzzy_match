@@ -62,6 +62,32 @@ class LooseTightDictionary
       end
     end
 
+    def check(needles)
+      skipped = []
+      needles.each do |needle|
+        begin
+          if match = match(needle)
+            log
+            log read_needle(needle)
+            log read_haystack(match)
+          else
+            skipped << needle
+          end
+        rescue
+          log
+          log $!.inspect
+        end
+      end
+      
+      log
+      log 'skipped'
+      log
+      
+      skipped.each do |needle|
+        log read_needle(needle)
+      end
+    end
+
     def explain(needle)
       match = match needle
       log "#" * 150

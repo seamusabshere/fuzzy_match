@@ -36,13 +36,14 @@ end
                           :column_xpath => 'td'
 
   d = LooseTightDictionary.new @haystack,
-    :tightenings => @tightenings,
-    :identities => @identities,
-    :blockings => @blockings,
+    :tightenings => @tightenings.map { |row| row.values[0] },
+    :identities => @identities.map { |row| row.values[0] },
+    :blockings => @blockings.map { |row| row.values[0] },
     :log => $log,
-    :needle_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Model'] },
-    :haystack_reader => lambda { |record| record['Manufacturer'] + ' ' + record['Long Name'] },
-    :positives => @positives,
-    :negatives => @negatives
+    :needle_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Model']).downcase },
+    :haystack_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Long Name']).downcase },
+    :positives => @positives.map { |row| row.values[0] },
+    :negatives => @negatives.map { |row| row.values[0] },
+    :strict_blocking => true
   d.improver.check @needle
 end
