@@ -4,7 +4,7 @@ class LooseTightDictionary
   #
   # Blockings effectively divide up the haystack into groups that match a pattern
   #
-  # A blocking (as in a grouping) comes into effect when a record matches
+  # A blocking (as in a grouping) comes into effect when a str matches
   # Then the needle must also match the blocking's regexp
   class Blocking
     include ExtractRegexp
@@ -15,12 +15,12 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
 
-    def encompass?(value1, value2 = nil)
-      if value2.nil?
-        !!(regexp.match(value1))
-      elsif value2_match_data = regexp.match(value2)
-        if value1_match_data = regexp.match(value1)
-          value2_match_data.captures == value1_match_data.captures
+    def encompass?(str1, str2 = nil)
+      if str2.nil?
+        !!(regexp.match(str1))
+      elsif str2_match_data = regexp.match(str2)
+        if str1_match_data = regexp.match(str1)
+          str2_match_data.captures == str1_match_data.captures
         else
           false
         end

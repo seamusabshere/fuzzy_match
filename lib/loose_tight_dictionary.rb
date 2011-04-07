@@ -14,6 +14,7 @@ class LooseTightDictionary
   autoload :Tightening, 'loose_tight_dictionary/tightening'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
+  autoload :Record, 'loose_tight_dictionary/record'
   autoload :Result, 'loose_tight_dictionary/result'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
@@ -22,12 +23,79 @@ class LooseTightDictionary
 
   def initialize(haystack, options = {})
     @options = options.symbolize_keys
-    @haystack = haystack
+    @haystack = haystack.map { |record| Record.wrap record, haystack_reader, tightenings }
   end
   
   def improver
     @improver ||= Improver.new self
   end
+  
+  def last_result
+    @last_result ||= Result.new
+  end
+  
+  def match_with_score(needle)
+    match = match needle
+    [ match, last_result.score ]
+  end
+  
+  def match(needle)
+    free_last_result
+    
+    needle = Record.wrap needle, needle_reader, tightenings
+    
+    return if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle }
+
+    encompassed, unencompassed = if strict_blocking and blockings.any?
+      haystack.partition do |record|
+        blockings.any? do |blocking|
+          blocking.encompass?(needle, record) == true
+        end
+      end
+    else
+      [ haystack.dup, [] ]
+    end
+    
+    last_result.encompassed = encompassed
+    last_result.unencompassed = unencompassed
+    
+    possibly_identical, certainly_different = if identities.any?
+      encompassed.partition do |record|
+        identities.any? do |identity|
+          answer = identity.identical? needle, record
+          answer.nil? or answer == true
+        end
+      end
+    else
+      [ encompassed.dup, [] ]
+    end
+    
+    last_result.possibly_identical = possibly_identical
+    last_result.certainly_different = certainly_different
+        
+    scores = possibly_identical.inject({}) do |memo, record|
+      best_needle_interpretation, best_record_interpretation = cart_prod(needle.ltd_interpretations, record.ltd_interpretations).sort_by do |needle_1, record_1|
+        record_1.ltd_score needle_1
+      end[-1]
+      memo[record] = best_record_interpretation.ltd_score best_needle_interpretation
+      memo
+    end
+    
+    last_result.scores = scores
+    
+    match, score = scores.max do |a, b|
+      _, score_a = a
+      _, score_b = b
+      score_a <=> score_b
+    end
+
+    last_result.score = score
+    last_result.match = match
+        
+    match
+  end
+  
+  private
   
   def needle_reader
     options[:needle_reader]
@@ -59,107 +127,9 @@ class LooseTightDictionary
     end
   end
   
-  def last_result
-    @last_result ||= Result.new
-  end
-  
   def free_last_result
     @last_result.try :free
     @last_result = nil
-  end
-  
-  def match(needle)
-    free_last_result
-    
-    needle_value = read_needle needle
-
-    return if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle_value }
-
-    encompassed, unencompassed = if strict_blocking and blockings.any?
-      haystack.partition do |record|
-        value = read_haystack record
-        blockings.any? do |blocking|
-          blocking.encompass? needle_value, value
-        end
-      end
-    else
-      [ haystack.dup, [] ]
-    end
-    
-    last_result.encompassed = encompassed
-    last_result.unencompassed = unencompassed
-    
-    possibly_identical, certainly_different = if identities.any?
-      encompassed.partition do |record|
-        value = read_haystack record
-        identities.all? do |identity|
-          identity.possibly_identical? needle_value, value
-        end
-      end
-    else
-      [ encompassed.dup, [] ]
-    end
-        
-    needle_variations = vary needle_value
-    
-    scores = possibly_identical.inject({}) do |memo, record|
-      value = read_haystack record
-      variations = vary value
-      best_tuple = cart_prod(needle_variations, variations).sort_by do |needle_value_1, value_1|
-        score needle_value_1, value_1
-      end[-1]
-      memo[record] = score(best_tuple[0], best_tuple[1])
-      memo
-    end
-    
-    match, score = scores.max do |a, b|
-      _, score_a = a
-      _, score_b = b
-      score_a <=> score_b
-    end
-
-    last_result.score = score
-    last_result.match = match
-        
-    match
-  end
-
-  def vary(str)
-    tightenings.inject([ str ]) do |memo, tightening|
-      memo.push tightening.apply(str)
-      memo
-    end.uniq
-  end
-  
-  def score(needle_value, value)
-    needle_value.pair_distance_similar value
-  end
-
-  def match_with_score(needle)
-    match = match needle
-    [ match, last_result.score ]
-  end
-
-  def read_needle(needle)
-    return if needle.nil?
-    if needle_reader
-      needle_reader.call(needle)
-    elsif needle.is_a?(::String)
-      needle
-    else
-      needle[0]
-    end
-  end
-
-  def read_haystack(record)
-    return if record.nil?
-    if haystack_reader
-      haystack_reader.call(record)
-    elsif record.is_a?(::String)
-      record
-    else
-      record[0]
-    end
   end
 
   # Thanks William James!

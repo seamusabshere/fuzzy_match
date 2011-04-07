@@ -10,11 +10,11 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
     
-    def possibly_identical?(needle_value, value)
-      if needle_match_data = regexp.match(needle_value) and match_data = regexp.match(value)
-        needle_match_data.captures == match_data.captures
+    def identical?(str1, str2)
+      if str1_match_data = regexp.match(str1) and match_data = regexp.match(str2)
+        str1_match_data.captures == match_data.captures
       else
-        true
+        nil
       end
     end
   end

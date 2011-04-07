@@ -9,6 +9,10 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
     
+    def apply?(str)
+      !!(regexp.match(str))
+    end
+    
     def apply(str)
       if match_data = regexp.match(str)
         match_data.captures.join
