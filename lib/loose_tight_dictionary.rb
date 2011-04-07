@@ -42,20 +42,20 @@ class LooseTightDictionary
   end
 
   def tightenings
-    @tightenings ||= (options[:tightenings] || []).map do |t|
-      Tightening.new t
+    @tightenings ||= (options[:tightenings] || []).map do |regexp_or_str|
+      Tightening.new regexp_or_str
     end
   end
 
   def identities
-    @identities ||= (options[:identities] || []).map do |i|
-      Identity.new i
+    @identities ||= (options[:identities] || []).map do |regexp_or_str|
+      Identity.new regexp_or_str
     end
   end
 
   def blockings
-    @blockings ||= (options[:blockings] || []).map do |b|
-      Blocking.new b
+    @blockings ||= (options[:blockings] || []).map do |regexp_or_str|
+      Blocking.new regexp_or_str
     end
   end
   
