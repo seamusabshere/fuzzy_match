@@ -18,6 +18,8 @@ class LooseTightDictionary
   autoload :Scorable, 'loose_tight_dictionary/scorable'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
+  class Freed < RuntimeError; end
+  
   attr_reader :options
   attr_reader :haystack
 
@@ -40,6 +42,7 @@ class LooseTightDictionary
   end
   
   def find(needle, gather_last_result = true)
+    raise Freed if freed?
     free_last_result
     
     if gather_last_result
@@ -132,6 +135,28 @@ class LooseTightDictionary
     @blockings ||= (options[:blockings] || []).map do |regexp_or_str|
       Blocking.new regexp_or_str
     end
+  end
+  
+  def freed?
+    @freed == true
+  end
+  
+  def free
+    free_last_result
+    @improver = nil
+    
+    @options.try :clear
+    @haystack.try :clear
+    @tightenings.try :clear
+    @identities.try :clear
+    @blockings.try :clear
+    @options = nil
+    @haystack = nil
+    @tightenings = nil
+    @identities = nil
+    @blockings = nil
+  ensure
+    @freed = true
   end
   
   private

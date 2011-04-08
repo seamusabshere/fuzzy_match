@@ -67,4 +67,12 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal 'X', d.find('X')
     assert_equal nil, d.find('A')
   end
+  
+  def test_011_free
+    d = LooseTightDictionary.new %w{ NISSAN HONDA }
+    d.free
+    assert_raises(LooseTightDictionary::Freed) do
+      d.find('foobar')
+    end
+  end
 end
