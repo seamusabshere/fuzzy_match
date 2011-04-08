@@ -6,7 +6,7 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
     >> d = LooseTightDictionary.new %w(seamus andy ben)
     => [...]
-    >> puts d.match 'Shamus Heaney'
+    >> puts d.find 'Shamus Heaney'
     => 'seamus'
 
 Try running the included example file:

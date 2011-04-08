@@ -34,12 +34,12 @@ class LooseTightDictionary
     @last_result ||= Result.new
   end
   
-  def match_with_score(needle)
-    record = match needle
+  def find_with_score(needle)
+    record = find needle
     [ record, last_result.score ]
   end
   
-  def match(needle, gather_last_result = true)
+  def find(needle, gather_last_result = true)
     free_last_result
     
     if gather_last_result
@@ -93,15 +93,15 @@ class LooseTightDictionary
       score
     end
         
-    match, score = scores[-1]
+    record, score = scores[-1]
     
     if gather_last_result
       last_result.scores = scores
-      last_result.record = match.record
+      last_result.record = record.record
       last_result.score = score
     end
     
-    match.record
+    record.record
   end
   
   def needle_reader

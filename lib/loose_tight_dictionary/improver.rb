@@ -31,7 +31,7 @@ class LooseTightDictionary
       options[:negatives]
     end
 
-    def match(needle)
+    def find(needle)
       record = super
       inline_check needle, record
       record
@@ -66,11 +66,11 @@ class LooseTightDictionary
       skipped = []
       needles.each do |needle|
         begin
-          if match = match(needle)
+          if record = find(needle)
             log
             log "%0.2f" % last_result.score
             log(needle_reader ? needle_reader.call(needle) : needle)
-            log(haystack_reader ? haystack_reader.call(match) : match)
+            log(haystack_reader ? haystack_reader.call(record) : record)
           else
             skipped << needle
           end
@@ -90,9 +90,9 @@ class LooseTightDictionary
     end
 
     def explain(needle)
-      match = match needle
+      record = find needle
       log "#" * 150
-      log "# Match #{needle.inspect} => #{match.inspect}"
+      log "# Match #{needle.inspect} => #{record.inspect}"
       log "#" * 150
       log
       log "Needle"
@@ -129,7 +129,7 @@ class LooseTightDictionary
       log
       log "Match"
       log "-" * 150
-      log match.inspect
+      log record.inspect
     end
   end
 end
