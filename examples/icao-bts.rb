@@ -22,28 +22,36 @@ $log = $stderr
 
 @negatives = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=2&output=csv', :headers => false
 
-%w{ tightenings identities blockings }.each do |name|
-  $stderr.puts name
-  $stderr.puts "\n" + instance_variable_get("@#{name}").to_a.map { |record| record[0] }.join("\n")
-  $stderr.puts "\n"
-end
+# %w{ tightenings identities blockings positives negatives}.each do |name|
+#   $stderr.puts name
+#   $stderr.puts "\n" + instance_variable_get("@#{name}").to_a.map { |x| x.inspect }.join("\n")
+#   $stderr.puts "\n"
+# end
 
-('A'..'Z').each do |letter|
-# %w{ E }.each do |letter|
-  @needle = RemoteTable.new :url => "http://www.faa.gov/air_traffic/publications/atpubs/CNT/5-2-#{letter}.htm",
-                          :encoding => 'US-ASCII',
-                          :row_xpath => '//table/tr[2]/td/table/tr',
-                          :column_xpath => 'td'
+# @needles = ('A'..'Z').map do |letter|
+# @needles = %w{ A B D G }.map do |letter|
+@needles = %w{ B }.map do |letter|
+  t = RemoteTable.new :url => "http://www.faa.gov/air_traffic/publications/atpubs/CNT/5-2-#{letter}.htm",
+    :encoding => 'US-ASCII',
+    :row_xpath => '//table/tr[2]/td/table/tr',
+    :column_xpath => 'td'
+  t.to_a
+end.flatten
 
-  d = LooseTightDictionary.new @haystack,
-    :tightenings => @tightenings.map { |row| row.values[0] },
-    :identities => @identities.map { |row| row.values[0] },
-    :blockings => @blockings.map { |row| row.values[0] },
-    :log => $log,
-    :needle_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Model']).downcase },
-    :haystack_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Long Name']).downcase },
-    :positives => @positives.map { |row| row.values[0] },
-    :negatives => @negatives.map { |row| row.values[0] },
-    :strict_blocking => true
-  d.improver.check @needle
-end
+d = LooseTightDictionary.new @haystack,
+  :tightenings => @tightenings.map { |row| row.values[0] },
+  :identities => @identities.map { |row| row.values[0] },
+  :blockings => @blockings.map { |row| row.values[0] },
+  :log => $log,
+  :needle_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Model']).downcase },
+  :haystack_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Long Name']).downcase },
+  :positives => @positives,
+  :negatives => @negatives,
+  :strict_blocking => true
+
+# d.improver.explain('boeing 767300')
+d.improver.check @needles
+
+# 0.62
+# boeing 767300
+# boeing boeing 737-300

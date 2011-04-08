@@ -40,7 +40,8 @@ class LooseTightDictionary
     def inline_check(needle, record)
       return unless positives.present? or negatives.present?
 
-      needle = Record.wrap needle, needle_reader, tightenings
+      needle = Scorable.new :parent => self, :record => needle, :reader => needle_reader
+      record = Scorable.new :parent => self, :record => record, :reader => haystack_reader
 
       if positive_record = positives.try(:detect) { |record| record[0] == needle }
         correct_record = positive_record[1]
@@ -95,34 +96,36 @@ class LooseTightDictionary
       log "#" * 150
       log
       log "Needle"
-      log '(needle_reader proc not defined, so downcasing everything)' unless needle_reader
       log "-" * 150
-      log (needle_reader ? needle_reader.call(needle) : needle).inspect
+      log last_result.needle.to_str
       log
       log "Haystack"
-      log '(haystack_reader proc not defined, so downcasing everything)' unless haystack_reader
       log "-" * 150
-      log haystack.map { |record| (haystack_reader ? haystack_reader.call(record) : record).inspect }.join("\n")
+      log last_result.haystack.map { |record| record.to_str }.join("\n")
       log
       log "Tightenings"
       log "-" * 150
-      log tightenings.blank? ? '(none)' : tightenings.map { |tightening| tightening.inspect }.join("\n")
+      log last_result.tightenings.blank? ? '(none)' : last_result.tightenings.map { |tightening| tightening.inspect }.join("\n")
       log
       log "Blockings"
       log "-" * 150
-      log blockings.blank? ? '(none)' : blockings.map { |blocking| blocking.inspect }.join("\n")
+      log last_result.blockings.blank? ? '(none)' : last_result.blockings.map { |blocking| blocking.inspect }.join("\n")
       log
       log "Identities"
       log "-" * 150
-      log identities.blank? ? '(none)' : identities.map { |blocking| blocking.inspect }.join("\n")
+      log last_result.identities.blank? ? '(none)' : last_result.identities.map { |blocking| blocking.inspect }.join("\n")
       log
       log "Comparison allowed"
       log "-" * 150
-      log last_result.encompassed.blank? ? '(none)' : last_result.encompassed.map { |encompassed| encompassed.inspect }.join("\n")
+      log last_result.encompassed.blank? ? '(none)' : last_result.encompassed.map { |encompassed| encompassed.to_str }.join("\n")
       log
       log "Comparison disallowed"
       log "-" * 150
-      log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.inspect }.join("\n")
+      log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.to_str }.join("\n")
+      log
+      log "Scorables"
+      log "-" * 150
+      log last_result.scores.blank? ? '(none)' : last_result.scores.sort_by { |k, v| v }.reverse.map { |k, v| "#{k.to_str} - #{v}" }.join("\n")
       log
       log "Match"
       log "-" * 150

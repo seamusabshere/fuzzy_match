@@ -1,13 +1,14 @@
 require 'helper'
 
 class TestLooseTightDictionary < Test::Unit::TestCase
-  def setup
-    @log = StringIO.new
-  end
-  
-  def teardown
-    @log.close
-  end
+  # in case i start doing something with the log
+  # def setup
+  #   @log = StringIO.new
+  # end
+  # 
+  # def teardown
+  #   @log.close
+  # end
   
   def test_001_match
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
@@ -23,7 +24,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
     d.match 'MISSAM'
     assert_equal 0.6, d.last_result.score
-    assert_equal 'NISSAN', d.last_result.match
+    assert_equal 'NISSAN', d.last_result.record
   end
   
   def test_004_false_positive_without_tightening

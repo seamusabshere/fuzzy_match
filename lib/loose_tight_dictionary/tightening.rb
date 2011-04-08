@@ -10,14 +10,10 @@ class LooseTightDictionary
     end
     
     def apply?(str)
-      str = str.ltd_to_str if str.respond_to?(:ltd_to_str)
-      
       !!(regexp.match(str))
     end
     
     def apply(str)
-      str = str.ltd_to_str if str.respond_to?(:ltd_to_str)
-      
       if match_data = regexp.match(str)
         match_data.captures.join
       else

@@ -14,8 +14,8 @@ class LooseTightDictionary
   autoload :Tightening, 'loose_tight_dictionary/tightening'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
-  autoload :Record, 'loose_tight_dictionary/record'
   autoload :Result, 'loose_tight_dictionary/result'
+  autoload :Scorable, 'loose_tight_dictionary/scorable'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
   attr_reader :options
@@ -23,7 +23,7 @@ class LooseTightDictionary
 
   def initialize(haystack, options = {})
     @options = options.symbolize_keys
-    @haystack = haystack.map { |record| Record.wrap record, haystack_reader, tightenings }
+    @haystack = haystack.map { |record| Scorable.new :parent => self, :record => record, :reader => haystack_reader }
   end
   
   def improver
@@ -35,14 +35,24 @@ class LooseTightDictionary
   end
   
   def match_with_score(needle)
-    match = match needle
-    [ match, last_result.score ]
+    record = match needle
+    [ record, last_result.score ]
   end
   
-  def match(needle)
+  def match(needle, gather_last_result = true)
     free_last_result
     
-    needle = Record.wrap needle, needle_reader, tightenings
+    if gather_last_result
+      last_result.tightenings = tightenings
+      last_result.identities = identities
+      last_result.blockings = blockings
+    end
+    
+    needle = Scorable.new :parent => self, :record => needle, :reader => needle_reader
+    
+    if gather_last_result
+      last_result.needle = needle
+    end
     
     return if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle }
 
@@ -56,8 +66,10 @@ class LooseTightDictionary
       [ haystack.dup, [] ]
     end
     
-    last_result.encompassed = encompassed
-    last_result.unencompassed = unencompassed
+    if gather_last_result
+      last_result.encompassed = encompassed
+      last_result.unencompassed = unencompassed
+    end
     
     possibly_identical, certainly_different = if identities.any?
       encompassed.partition do |record|
@@ -70,29 +82,26 @@ class LooseTightDictionary
       [ encompassed.dup, [] ]
     end
     
-    last_result.possibly_identical = possibly_identical
-    last_result.certainly_different = certainly_different
-        
-    scores = possibly_identical.inject({}) do |memo, record|
-      best_needle_interpretation, best_record_interpretation = cart_prod(needle.ltd_interpretations, record.ltd_interpretations).sort_by do |needle_1, record_1|
-        record_1.ltd_score needle_1
-      end[-1]
-      memo[record] = best_record_interpretation.ltd_score best_needle_interpretation
-      memo
+    if gather_last_result
+      last_result.possibly_identical = possibly_identical
+      last_result.certainly_different = certainly_different
     end
     
-    last_result.scores = scores
-    
-    match, score = scores.max do |a, b|
-      _, score_a = a
-      _, score_b = b
-      score_a <=> score_b
+    scores = possibly_identical.map do |record|
+      [ record, needle.score(record) ]
+    end.sort_by do |record, score|
+      score
     end
-
-    last_result.score = score
-    last_result.match = match
         
-    match.ltd_unwrap
+    match, score = scores[-1]
+    
+    if gather_last_result
+      last_result.scores = scores
+      last_result.record = match.record
+      last_result.score = score
+    end
+    
+    match.record
   end
   
   def needle_reader
@@ -130,15 +139,5 @@ class LooseTightDictionary
   def free_last_result
     @last_result.try :free
     @last_result = nil
-  end
-
-  # Thanks William James!
-  # http://www.ruby-forum.com/topic/95519#200484
-  def cart_prod(*args)
-    args.inject([[]]){|old,lst|
-      new = []
-      lst.each{|e| new += old.map{|c| c.dup << e }}
-      new
-    }
   end
 end
