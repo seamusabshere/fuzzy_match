@@ -10,6 +10,6 @@ needles = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT', 'Shamus Heaney' ]
 
 d = LooseTightDictionary.new haystack, :log => $stdout
 needles.each do |needle|
-  d.improver.explain needle
+  d.explain needle
   puts
 end

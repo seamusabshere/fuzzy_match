@@ -4,6 +4,8 @@ require 'shoulda'
 
 # How to iteratively develop a dictionary.
 
+# ruby ./examples/bts_aircraft/test_bts_aircraft.rb
+
 ####################################################
 # Section 1 - constants that will get passed as arguments
 
@@ -11,7 +13,7 @@ require 'shoulda'
 # (Example) A table of aircraft as defined by the U.S. Bureau of Transportation Statistics
 HAYSTACK = RemoteTable.new :url => "file://#{File.expand_path('../number_260.csv', __FILE__)}", :select => lambda { |record| record['Aircraft Type'].to_i.between?(1, 998) and record['Manufacturer'].present? }
 
-# A reader used to convert every record (which could be an object of any type) into a string that will be used for comparison.
+# A reader used to convert every record (which could be an object of any type) into a string that will be used for similarity.
 # (Example) Combine the make and model into something like "boeing 747"
 # Note the downcase!
 HAYSTACK_READER = lambda { |record| "#{record['Manufacturer']} #{record['Long Name']}".downcase }
@@ -24,9 +26,9 @@ STRICT_BLOCKING = false
 # (Example) We made these by trial and error
 BLOCKINGS = RemoteTable.new(:url => "file://#{File.expand_path("../blockings.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
 
-# Tightenings
+# Tighteners
 # (Example) We made these by trial and error
-TIGHTENINGS = RemoteTable.new(:url => "file://#{File.expand_path("../tightenings.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
+TIGHTENERS = RemoteTable.new(:url => "file://#{File.expand_path("../tighteners.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
 
 # Identities
 # (Example) We made these by trial and error
@@ -63,7 +65,7 @@ NEGATIVES = RemoteTable.new :url => "file://#{File.expand_path("../negatives.csv
 FINAL_OPTIONS = {
   :haystack_reader => HAYSTACK_READER,
   :strict_blocking => STRICT_BLOCKING,
-  :tightenings => TIGHTENINGS,
+  :tighteners => TIGHTENERS,
   :identities => IDENTITIES,
   :blockings => BLOCKINGS
 }
@@ -81,7 +83,7 @@ class TestBtsAircraft < Test::Unit::TestCase
 
   should "find an easy match" do
     d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
-    record = d.find('Boeing Sparticus 707(100)')
+    record = d.find('boeing 707(100)')
     assert_equal HAYSTACK_RECORD_CLASS, record.class
     assert_equal HAYSTACK_READER.call(record), 'boeing boeing 707-100'
   end
@@ -107,7 +109,7 @@ class TestBtsAircraft < Test::Unit::TestCase
   end
 end
 
-# why?
+# Whenever I saw a failure like this...
 #     1) Failure:
 # test: BtsAircraft should find AIRBUS INDUSTRIE AIRBUS INDUSTRIE A340-300 when looking for AIRBUS A340300. (TestBtsAircraft)
 #     [examples/bts_aircraft/test_bts_aircraft.rb:96:in `__bind_1302579566_46630'
@@ -116,51 +118,6 @@ end
 # <"airbus industrie airbus industrie a340-300"> expected but was
 # <"airbus industrie airbus industrie a340">.
 
-# d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
-# puts d.improver.explain('ANTONOV An12'.downcase)
-
-# 
-# 
-# @tightenings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=0&output=csv', :headers => false
-# 
-# @identities = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=3&output=csv', :headers => false
-# 
-# @blockings = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=4&output=csv', :headers => false
-# 
-# @positives = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=1&output=csv', :headers => false
-# 
-# @negatives = RemoteTable.new :url => 'http://spreadsheets.google.com/pub?key=tiS_6CCDDM_drNphpYwE_iw&single=true&gid=2&output=csv', :headers => false
-# 
-# # %w{ tightenings identities blockings positives negatives}.each do |name|
-# #   $stderr.puts name
-# #   $stderr.puts "\n" + instance_variable_get("@#{name}").to_a.map { |x| x.inspect }.join("\n")
-# #   $stderr.puts "\n"
-# # end
-# 
-# # @needles = ('A'..'Z').map do |letter|
-# # @needles = %w{ A B D G }.map do |letter|
-# @needles = %w{ B }.map do |letter|
-#   t = RemoteTable.new :url => "http://www.faa.gov/air_traffic/publications/atpubs/CNT/5-2-#{letter}.htm",
-#     :encoding => 'US-ASCII',
-#     :row_xpath => '//table/tr[2]/td/table/tr',
-#     :column_xpath => 'td'
-#   t.to_a
-# end.flatten
-# 
-# d = LooseTightDictionary.new @haystack,
-#   :tightenings => @tightenings.map { |row| row.values[0] },
-#   :identities => @identities.map { |row| row.values[0] },
-#   :blockings => @blockings.map { |row| row.values[0] },
-#   :log => $log,
-#   :needle_reader => lambda { |record| (record['Manufacturer'] + ' ' + record['Model']).downcase }, # disable this if you're doine the explain line
-#   :haystack_reader => 
-#   :positives => @positives,
-#   :negatives => @negatives,
-#   :strict_blocking => true
-# 
-# # d.improver.explain('boeing 767300')
-# d.improver.check @needles
-# 
-# # 0.62
-# # boeing 767300
-# # boeing boeing 737-300
+# ...I would look at it like this
+d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+puts d.explain('AIRBUS A340300.'.downcase)

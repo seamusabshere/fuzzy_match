@@ -1,5 +1,3 @@
-require 'amatch'
-
 class LooseTightDictionary
   class Similarity
     attr_reader :wrapper1
@@ -11,23 +9,20 @@ class LooseTightDictionary
     end
     
     def <=>(other)
-      if score != other.score
-        score <=> other.score
+      if best_score != other.best_score
+        best_score <=> other.best_score
       else
-        length <=> other.length
+        weight <=> other.weight
       end
     end
     
-    def score
-      score_and_length[0]
+    # Weight things towards short original strings
+    def weight
+      @weight ||= (1.0 / (wrapper1.to_str.length * wrapper2.to_str.length))
     end
     
-    def length
-      score_and_length[1]
-    end
-        
-    def score_and_length
-      @score_and_length ||= Similarity.score_and_length(best_wrapper1_variant, best_wrapper2_variant)
+    def best_score
+      @best_score ||= Score.new best_wrapper1_variant, best_wrapper2_variant
     end
     
     def best_wrapper1_variant
@@ -43,27 +38,15 @@ class LooseTightDictionary
         wrapper1_variant1, wrapper2_variant1 = tuple1
         wrapper1_variant2, wrapper2_variant2 = tuple2
 
-        score1, length1 = Similarity.score_and_length(wrapper1_variant1, wrapper2_variant1)
-        score2, length2 = Similarity.score_and_length(wrapper1_variant2, wrapper2_variant2)
+        score1 = Score.new wrapper1_variant1, wrapper2_variant1
+        score2 = Score.new wrapper1_variant2, wrapper2_variant2
         
-        if score1 != score2
-          score1 <=> score2
-        else
-          length1 <=> length2
-        end
+        score1 <=> score2
       end[-1]
-    end
-
-    class << self
-      def score_and_length(wrapper1, wrapper2)
-        length = [ wrapper1.to_str.length, wrapper2.to_str.length ].min
-        score = wrapper1.to_str[0..length].pair_distance_similar(wrapper2.to_str[0..length])
-        [ score, length ]
-      end
     end
     
     def inspect
-      %{#<Similarity score=#{score} length=#{length} wrapper1="#{wrapper1.to_str}" wrapper2="#{wrapper2.to_str}" best_wrapper1_variant="#{best_wrapper1_variant}" best_wrapper2_variant="#{best_wrapper2_variant}">}
+      %{#<Similarity "#{wrapper2.to_str}"=>"#{best_wrapper2_variant}" versus "#{wrapper1.to_str}"=>"#{best_wrapper1_variant}" weight=#{"%0.5f" % weight} best_score=#{"%0.5f" % best_score.to_f}>}
     end
     
     # Thanks William James!

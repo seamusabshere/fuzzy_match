@@ -12,13 +12,12 @@ end if ::ActiveSupport::VERSION::MAJOR == 3
 class LooseTightDictionary
   autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
   autoload :Tightener, 'loose_tight_dictionary/tightener'
-  autoload :Tightening, 'loose_tight_dictionary/tightening'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
   autoload :Result, 'loose_tight_dictionary/result'
   autoload :Wrapper, 'loose_tight_dictionary/wrapper'
   autoload :Similarity, 'loose_tight_dictionary/similarity'
-  autoload :Improver, 'loose_tight_dictionary/improver'
+  autoload :Score, 'loose_tight_dictionary/score'
   
   class Freed < RuntimeError; end
   
@@ -36,12 +35,12 @@ class LooseTightDictionary
     @haystack = records.map { |record| Wrapper.new :parent => self, :record => record, :reader => haystack_reader }
   end
   
-  def improver
-    @improver ||= Improver.new self
-  end
-  
   def last_result
     @last_result ||= Result.new
+  end
+  
+  def log(str = '') #:nodoc:
+    (options[:log] || $stderr).puts str unless options[:log] == false
   end
   
   def find_with_score(needle)
@@ -105,7 +104,7 @@ class LooseTightDictionary
     
     best_similarity = similarities[-1]
     record = best_similarity.wrapper2
-    score = best_similarity.score
+    score = best_similarity.best_score.to_f
     
     if gather_last_result
       last_result.similarities = similarities
@@ -114,6 +113,61 @@ class LooseTightDictionary
     end
     
     record.record
+  end
+  
+  # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.
+  #
+  #     d = LooseTightDictionary.new ['737', '747', '757' ]
+  #     d.explain 'boeing 737-100'
+  def explain(needle)
+    record = find needle
+    log "#" * 150
+    log "# Match #{needle.inspect} => #{record.inspect}"
+    log "#" * 150
+    log
+    log "Needle"
+    log "-" * 150
+    log last_result.needle.to_str
+    log
+    log "Haystack"
+    log "-" * 150
+    log last_result.haystack.map { |record| record.to_str }.join("\n")
+    log
+    log "Tighteners"
+    log "-" * 150
+    log last_result.tighteners.blank? ? '(none)' : last_result.tighteners.map { |tightener| tightener.inspect }.join("\n")
+    log
+    log "Blockings"
+    log "-" * 150
+    log last_result.blockings.blank? ? '(none)' : last_result.blockings.map { |blocking| blocking.inspect }.join("\n")
+    log
+    log "Identities"
+    log "-" * 150
+    log last_result.identities.blank? ? '(none)' : last_result.identities.map { |blocking| blocking.inspect }.join("\n")
+    log
+    log "Included"
+    log "-" * 150
+    log last_result.encompassed.blank? ? '(none)' : last_result.encompassed.map { |encompassed| encompassed.to_str }.join("\n")
+    log
+    log "Ignored"
+    log "-" * 150
+    log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.to_str }.join("\n")
+    log
+    log "Possibly identical"
+    log "-" * 150
+    log last_result.possibly_identical.blank? ? '(none)' : last_result.possibly_identical.map { |possibly_identical| possibly_identical.to_str }.join("\n")
+    log
+    log "Certainly different"
+    log "-" * 150
+    log last_result.certainly_different.blank? ? '(none)' : last_result.certainly_different.map { |certainly_different| certainly_different.to_str }.join("\n")
+    log
+    log "Similarities"
+    log "-" * 150
+    log last_result.similarities.blank? ? '(none)' : last_result.similarities.reverse[0..9].map { |similarity| similarity.inspect }.join("\n")
+    log
+    log "Match"
+    log "-" * 150
+    log record.inspect
   end
   
   def needle_reader
@@ -152,9 +206,9 @@ class LooseTightDictionary
   
   def free
     free_last_result
-    @improver = nil
     
     @options.try :clear
+    @records.try :clear
     @haystack.try :clear
     @tighteners.try :clear
     @identities.try :clear
