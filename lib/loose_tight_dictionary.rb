@@ -7,16 +7,17 @@ require 'active_support/version'
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ::ActiveSupport::VERSION::MAJOR == 3
-require 'amatch'
 
 # See the README for more information.
 class LooseTightDictionary
   autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
+  autoload :Tightener, 'loose_tight_dictionary/tightener'
   autoload :Tightening, 'loose_tight_dictionary/tightening'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
   autoload :Result, 'loose_tight_dictionary/result'
-  autoload :Scorable, 'loose_tight_dictionary/scorable'
+  autoload :Wrapper, 'loose_tight_dictionary/wrapper'
+  autoload :Similarity, 'loose_tight_dictionary/similarity'
   autoload :Improver, 'loose_tight_dictionary/improver'
   
   class Freed < RuntimeError; end
@@ -27,12 +28,12 @@ class LooseTightDictionary
 
   # haystack - a bunch of records
   # options
-  # * tightenings: regexps that essentialize strings down
-  # * identities: regexps that rule out comparisons, for example a 737 cannot be identical to a 747
+  # * tighteners: regexps that essentialize strings down
+  # * identities: regexps that rule out similarities, for example a 737 cannot be identical to a 747
   def initialize(records, options = {})
     @options = options.symbolize_keys
     @records = records
-    @haystack = records.map { |record| Scorable.new :parent => self, :record => record, :reader => haystack_reader }
+    @haystack = records.map { |record| Wrapper.new :parent => self, :record => record, :reader => haystack_reader }
   end
   
   def improver
@@ -48,17 +49,18 @@ class LooseTightDictionary
     [ record, last_result.score ]
   end
   
+  # todo fix record.record confusion (should be wrapper.record or smth)
   def find(needle, gather_last_result = true)
     raise Freed if freed?
     free_last_result
     
     if gather_last_result
-      last_result.tightenings = tightenings
+      last_result.tighteners = tighteners
       last_result.identities = identities
       last_result.blockings = blockings
     end
     
-    needle = Scorable.new :parent => self, :record => needle, :reader => needle_reader
+    needle = Wrapper.new :parent => self, :record => needle, :reader => needle_reader
     
     if gather_last_result
       last_result.needle = needle
@@ -97,16 +99,16 @@ class LooseTightDictionary
       last_result.certainly_different = certainly_different
     end
     
-    scores = possibly_identical.map do |record|
-      [ record, needle.score(record) ]
-    end.sort_by do |record, score|
-      score
-    end
-        
-    record, score = scores[-1]
+    similarities = possibly_identical.map do |record|
+      needle.similarity record
+    end.sort
+    
+    best_similarity = similarities[-1]
+    record = best_similarity.wrapper2
+    score = best_similarity.score
     
     if gather_last_result
-      last_result.scores = scores
+      last_result.similarities = similarities
       last_result.record = record.record
       last_result.score = score
     end
@@ -126,9 +128,9 @@ class LooseTightDictionary
     options[:strict_blocking] || false
   end
 
-  def tightenings
-    @tightenings ||= (options[:tightenings] || []).map do |regexp_or_str|
-      Tightening.new regexp_or_str
+  def tighteners
+    @tighteners ||= (options[:tighteners] || []).map do |regexp_or_str|
+      Tightener.new regexp_or_str
     end
   end
 
@@ -154,12 +156,12 @@ class LooseTightDictionary
     
     @options.try :clear
     @haystack.try :clear
-    @tightenings.try :clear
+    @tighteners.try :clear
     @identities.try :clear
     @blockings.try :clear
     @options = nil
     @haystack = nil
-    @tightenings = nil
+    @tighteners = nil
     @identities = nil
     @blockings = nil
   ensure

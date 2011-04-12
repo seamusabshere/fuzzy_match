@@ -1,6 +1,6 @@
 class LooseTightDictionary
-  # A tightening just strips a string down to its core
-  class Tightening
+  # A tightener just strips a string down to its core
+  class Tightener
     include ExtractRegexp
     
     attr_reader :regexp
@@ -9,18 +9,22 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
     
-    # A tightening applies when its regexp matches a string.
+    # A tightener applies when its regexp matches and captures a new (shorter) string
     def apply?(str)
       !!(regexp.match(str))
     end
     
-    # The result of applying a tightening is just all the captures put together.
+    # The result of applying a tightener is just all the captures put together.
     def apply(str)
       if match_data = regexp.match(str)
         match_data.captures.join
       else
         str
       end
+    end
+    
+    def inspect
+      "#<Tightener regexp=#{regexp.inspect}>"
     end
   end
 end

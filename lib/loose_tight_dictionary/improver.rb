@@ -43,8 +43,8 @@ class LooseTightDictionary
     def inline_check(needle, record) #:nodoc
       return unless positives.present? or negatives.present?
 
-      needle = Scorable.new :parent => self, :record => needle, :reader => needle_reader
-      record = Scorable.new :parent => self, :record => record, :reader => haystack_reader
+      needle = Wrapper.new :parent => self, :record => needle, :reader => needle_reader
+      record = Wrapper.new :parent => self, :record => record, :reader => haystack_reader
 
       if positive_record = positives.try(:detect) { |record| record[0] == needle }
         correct_record = positive_record[1]
@@ -114,9 +114,9 @@ class LooseTightDictionary
       log "-" * 150
       log last_result.haystack.map { |record| record.to_str }.join("\n")
       log
-      log "Tightenings"
+      log "Tighteners"
       log "-" * 150
-      log last_result.tightenings.blank? ? '(none)' : last_result.tightenings.map { |tightening| tightening.inspect }.join("\n")
+      log last_result.tighteners.blank? ? '(none)' : last_result.tighteners.map { |tightener| tightener.inspect }.join("\n")
       log
       log "Blockings"
       log "-" * 150
@@ -126,21 +126,21 @@ class LooseTightDictionary
       log "-" * 150
       log last_result.identities.blank? ? '(none)' : last_result.identities.map { |blocking| blocking.inspect }.join("\n")
       log
-      log "Comparison allowed"
+      log "Included"
       log "-" * 150
       log last_result.encompassed.blank? ? '(none)' : last_result.encompassed.map { |encompassed| encompassed.to_str }.join("\n")
       log
-      log "Comparison disallowed"
+      log "Ignored"
       log "-" * 150
       log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.to_str }.join("\n")
       log
-      log "Scorables"
+      log "Similarities"
       log "-" * 150
-      log last_result.scores.blank? ? '(none)' : last_result.scores.sort_by { |k, v| v }.reverse.map { |k, v| "#{k.to_str} - #{v}" }.join("\n")
+      log last_result.similarities.blank? ? '(none)' : last_result.similarities.reverse.map { |similarity| similarity.inspect }.join("\n")
       log
       log "Match"
       log "-" * 150
-      log record.inspect
+      # log record.inspect
     end
   end
 end

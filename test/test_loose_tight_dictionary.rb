@@ -27,17 +27,17 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal 'NISSAN', d.last_result.record
   end
   
-  def test_004_false_positive_without_tightening
+  def test_004_false_positive_without_tightener
     d = LooseTightDictionary.new ['BOEING 737-100/200', 'BOEING 737-900']
-    assert_equal 'BOEING 737-900', d.find('BOEING 737100')
+    assert_equal 'BOEING 737-900', d.find('BOEING 737100 number 900')
   end
   
-  def test_005_correct_with_tightening
-    tightenings = [
+  def test_005_correct_with_tightener
+    tighteners = [
       %r{(7\d)(7|0)-?(\d{1,3})} # tighten 737-100/200 => 737100, which will cause it to win over 737-900
     ]
-    d = LooseTightDictionary.new ['BOEING 737-100/200', 'BOEING 737-900'], :tightenings => tightenings
-    assert_equal 'BOEING 737-100/200', d.find('BOEING 737100')
+    d = LooseTightDictionary.new ['BOEING 737-100/200', 'BOEING 737-900'], :tighteners => tighteners
+    assert_equal 'BOEING 737-100/200', d.find('BOEING 737100 number 900')
   end
 
   def test_008_false_positive_without_identity
