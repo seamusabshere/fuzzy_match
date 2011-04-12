@@ -23,14 +23,16 @@ class LooseTightDictionary
   
   attr_reader :options
   attr_reader :haystack
+  attr_reader :records
 
   # haystack - a bunch of records
   # options
   # * tightenings: regexps that essentialize strings down
   # * identities: regexps that rule out comparisons, for example a 737 cannot be identical to a 747
-  def initialize(haystack, options = {})
+  def initialize(records, options = {})
     @options = options.symbolize_keys
-    @haystack = haystack.map { |record| Scorable.new :parent => self, :record => record, :reader => haystack_reader }
+    @records = records
+    @haystack = records.map { |record| Scorable.new :parent => self, :record => record, :reader => haystack_reader }
   end
   
   def improver
