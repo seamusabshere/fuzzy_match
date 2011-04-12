@@ -9,6 +9,7 @@ require 'active_support/version'
 end if ::ActiveSupport::VERSION::MAJOR == 3
 require 'amatch'
 
+# See the README for more information.
 class LooseTightDictionary
   autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
   autoload :Tightening, 'loose_tight_dictionary/tightening'
@@ -23,6 +24,10 @@ class LooseTightDictionary
   attr_reader :options
   attr_reader :haystack
 
+  # haystack - a bunch of records
+  # options
+  # * tightenings: regexps that essentialize strings down
+  # * identities: regexps that rule out comparisons, for example a 737 cannot be identical to a 747
   def initialize(haystack, options = {})
     @options = options.symbolize_keys
     @haystack = haystack.map { |record| Scorable.new :parent => self, :record => record, :reader => haystack_reader }

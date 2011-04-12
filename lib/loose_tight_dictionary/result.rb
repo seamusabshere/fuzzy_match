@@ -1,5 +1,5 @@
 class LooseTightDictionary
-  class Result
+  class Result #:nodoc: all
     attr_accessor :needle
     attr_accessor :tightenings
     attr_accessor :blockings

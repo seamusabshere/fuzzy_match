@@ -1,6 +1,13 @@
 class LooseTightDictionary
-  class Scorable
+  # Scorables are the tokens that are passed around when doing scoring and optimizing.
+  class Scorable #:nodoc: all
     class << self
+      # When you pass two scorables, each of which represents a record (string) from either the needle or the haystack and also all of the "variations" on that string (for example, the end result of a successful tightening),
+      # this method uses the "Pair Distance" to generate a numeric score.
+      #
+      # Sometimes, before performing the final score, the scorables compare notes to determine an appropriate number of characters (a prefix) to compare.
+      # This only happens when both scorables are the result of tightenings. Since that indicates they are in their essential form, only the first X characters of each are scored, where X is the length of the shortest scorable.
+      # For example, if "737100" and "737" are being compared, "737" will be compared with "737" yielding a perfect score.
       def score(scorable1, scorable2)
         if optimal_prefix_range = scorable1.optimal_prefix_range(scorable2)
           scorable1.to_str[optimal_prefix_range].pair_distance_similar scorable2.to_str[optimal_prefix_range]

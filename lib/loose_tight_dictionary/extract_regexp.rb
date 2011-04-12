@@ -1,5 +1,5 @@
 class LooseTightDictionary
-  module ExtractRegexp
+  module ExtractRegexp #:nodoc: all
     def extract_regexp(regexp_or_str)
       case regexp_or_str
       when ::Regexp

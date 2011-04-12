@@ -4,8 +4,8 @@ class LooseTightDictionary
   #
   # Blockings effectively divide up the haystack into groups that match a pattern
   #
-  # A blocking (as in a grouping) comes into effect when a str matches
-  # Then the needle must also match the blocking's regexp
+  # A blocking (as in a grouping) comes into effect when a str matches.
+  # Then the needle must also match the blocking's regexp.
   class Blocking
     include ExtractRegexp
     
@@ -15,6 +15,10 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
 
+    # If a blocking "encompasses" two strings, that means they both fit into it.
+    #
+    # Returns false if they certainly don't fit this blocking.
+    # Returns nil if the blocking doesn't apply, i.e. str2 doesn't fit the blocking.
     def encompass?(str1, str2 = nil)
       if str2.nil?
         !!(regexp.match(str1))

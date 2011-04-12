@@ -9,10 +9,12 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
     
+    # A tightening applies when its regexp matches a string.
     def apply?(str)
       !!(regexp.match(str))
     end
     
+    # The result of applying a tightening is just all the captures put together.
     def apply(str)
       if match_data = regexp.match(str)
         match_data.captures.join

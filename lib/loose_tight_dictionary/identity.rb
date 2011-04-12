@@ -10,6 +10,10 @@ class LooseTightDictionary
       @regexp = extract_regexp regexp_or_str
     end
     
+    # Two strings are "identical" if they both match this identity and the captures are equal.
+    #
+    # Only returns true/false if both strings match the regexp.
+    # Otherwise returns nil.
     def identical?(str1, str2)
       if str1_match_data = regexp.match(str1) and match_data = regexp.match(str2)
         str1_match_data.captures == match_data.captures

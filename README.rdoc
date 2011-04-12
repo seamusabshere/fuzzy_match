@@ -4,7 +4,7 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
 == Quickstart
 
-    >> d = LooseTightDictionary.new %w(seamus andy ben)
+    >> d = LooseTightDictionary.new %w{seamus andy ben}
     => [...]
     >> puts d.find 'Shamus Heaney'
     => 'seamus'

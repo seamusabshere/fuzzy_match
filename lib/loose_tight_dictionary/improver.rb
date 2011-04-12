@@ -11,33 +11,36 @@ class LooseTightDictionary
       @_ch_obj = obj
     end
     
-    def __getobj__
+    def __getobj__ #:nodoc:
       @_ch_obj
     end
     
-    def __setobj__(obj)
+    def __setobj__(obj) #:nodoc:
       @_ch_obj = obj
     end
 
-    def log(str = '')
+    def log(str = '') #:nodoc:
       (options[:log] || $stderr).puts str unless options[:log] == false
     end
   
-    def positives
+    def positives #:nodoc:
       options[:positives]
     end
 
-    def negatives
+    def negatives #:nodoc:
       options[:negatives]
     end
 
+    # When you find from an improver, it checks the results against the known positives/negatives.
+    #
+    #     d.improver.find('737')
     def find(needle)
       record = super
       inline_check needle, record
       record
     end
     
-    def inline_check(needle, record)
+    def inline_check(needle, record) #:nodoc
       return unless positives.present? or negatives.present?
 
       needle = Scorable.new :parent => self, :record => needle, :reader => needle_reader
@@ -62,6 +65,10 @@ class LooseTightDictionary
       end
     end
 
+    # Give check a list of needles that you want to find and it will help you improve your dictionary.
+    #
+    #     d = LooseTightDictionary.new ['737', '747', '757' ]
+    #     d.improver.check [ 'boeing 737-100', '747sp', 'mcdonnell douglas dc-9' ]
     def check(needles)
       skipped = []
       needles.each do |needle|
@@ -89,6 +96,10 @@ class LooseTightDictionary
       end
     end
 
+    # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.
+    #
+    #     d = LooseTightDictionary.new ['737', '747', '757' ]
+    #     d.improver.explain 'boeing 737-100'
     def explain(needle)
       record = find needle
       log "#" * 150
