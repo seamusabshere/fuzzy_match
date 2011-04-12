@@ -206,18 +206,12 @@ class LooseTightDictionary
   
   def free
     free_last_result
-    
-    @options.try :clear
-    @records.try :clear
-    @haystack.try :clear
-    @tighteners.try :clear
-    @identities.try :clear
-    @blockings.try :clear
-    @options = nil
-    @haystack = nil
-    @tighteners = nil
-    @identities = nil
-    @blockings = nil
+    instance_variables.each do |ivar_name|
+      var = instance_variable_get(ivar_name)
+      var.clear if var.respond_to?(:clear)
+      var.free if var.respond_to?(:free)
+      instance_variable_set(ivar_name, nil)
+    end
   ensure
     @freed = true
   end
