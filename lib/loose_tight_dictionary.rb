@@ -59,7 +59,7 @@ class LooseTightDictionary
       last_result.blockings = blockings
     end
     
-    needle = Wrapper.new :parent => self, :record => needle, :reader => needle_reader
+    needle = Wrapper.new :parent => self, :record => needle
     
     if gather_last_result
       last_result.needle = needle
@@ -169,11 +169,7 @@ class LooseTightDictionary
     log "-" * 150
     log record.inspect
   end
-  
-  def needle_reader
-    options[:needle_reader]
-  end
-  
+    
   def haystack_reader
     options[:haystack_reader]
   end
