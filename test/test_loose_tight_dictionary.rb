@@ -17,7 +17,8 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   
   def test_002_find_with_score
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
-    assert_equal ['NISSAN', 0.6], d.find_with_score('MISSAM')
+    assert_equal 'NISSAN', d.find('MISSAM')
+    assert_equal 0.6, d.last_result.score
   end
   
   def test_003_last_result
@@ -74,5 +75,11 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_raises(LooseTightDictionary::Freed) do
       d.find('foobar')
     end
+  end
+  
+  def test_012_find_all
+    d = LooseTightDictionary.new [ 'X', 'X22', 'Y', 'Y4' ], :blockings => [ /X/, /Y/ ], :strict_blocking => true
+    assert_equal ['X', 'X22' ], d.find_all('X')
+    assert_equal [], d.find_all('A')
   end
 end

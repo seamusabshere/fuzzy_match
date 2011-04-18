@@ -47,7 +47,7 @@ FINAL_OPTIONS = {
 Memprof.start
 
 d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
-record = d.find('boeing 707(100)', false)
+record = d.find('boeing 707(100)', :gather_last_result => false)
 # d.free
 
 Memprof.stats

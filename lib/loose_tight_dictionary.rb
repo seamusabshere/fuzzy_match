@@ -42,16 +42,20 @@ class LooseTightDictionary
   def log(str = '') #:nodoc:
     (options[:log] || $stderr).puts str unless options[:log] == false
   end
-  
-  def find_with_score(needle)
-    record = find needle
-    [ record, last_result.score ]
+    
+  def find_all(needle, options = {})
+    options = options.symbolize_keys.merge(:find_all => true)
+    find needle, options
   end
   
   # todo fix record.record confusion (should be wrapper.record or smth)
-  def find(needle, gather_last_result = true)
+  def find(needle, options = {})
     raise Freed if freed?
     free_last_result
+    
+    options = options.symbolize_keys
+    gather_last_result = options.fetch(:gather_last_result, true)
+    find_all = options.fetch(:find_all, false)
     
     if gather_last_result
       last_result.tighteners = tighteners
@@ -65,7 +69,13 @@ class LooseTightDictionary
       last_result.needle = needle
     end
     
-    return if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle }
+    if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle }
+      if find_all
+        return []
+      else
+        return nil
+      end
+    end
 
     encompassed, unencompassed = if strict_blocking and blockings.any?
       haystack.partition do |record|
@@ -96,6 +106,10 @@ class LooseTightDictionary
     if gather_last_result
       last_result.possibly_identical = possibly_identical
       last_result.certainly_different = certainly_different
+    end
+    
+    if find_all
+      return possibly_identical.map { |record| record.record }
     end
     
     similarities = possibly_identical.map do |record|
