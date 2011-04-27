@@ -22,7 +22,7 @@ HAYSTACK_READER = lambda { |record| "#{record['Manufacturer']} #{record['Long Na
 
 # Whether to even bother trying to find a match for something without an explicit block
 # (Example) False, which is the default, which means we have more work to do
-STRICT_BLOCKING = false
+MUST_MATCH_BLOCKING = false
 
 # Blockings
 # (Example) We made these by trial and error
@@ -38,7 +38,7 @@ IDENTITIES = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/
 
 FINAL_OPTIONS = {
   :haystack_reader => HAYSTACK_READER,
-  :strict_blocking => STRICT_BLOCKING,
+  :must_match_blocking => MUST_MATCH_BLOCKING,
   :tighteners => TIGHTENERS,
   :identities => IDENTITIES,
   :blockings => BLOCKINGS

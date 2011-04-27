@@ -1,9 +1,9 @@
 require 'helper'
 
 class TestBlocking < Test::Unit::TestCase
-  def test_001_encompass_one
+  def test_001_match_one
     b = LooseTightDictionary::Blocking.new %r{apple}
-    assert_equal true, b.encompass?('2 apples')
+    assert_equal true, b.match?('2 apples')
   end
   
   def test_002_encompass_both

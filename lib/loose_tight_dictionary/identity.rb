@@ -2,12 +2,10 @@ class LooseTightDictionary
   # Identities take effect when needle and haystack both match a regexp
   # Then the captured part of the regexp has to match exactly
   class Identity
-    include ExtractRegexp
-    
     attr_reader :regexp
     
     def initialize(regexp_or_str)
-      @regexp = extract_regexp regexp_or_str
+      @regexp = regexp_or_str.is_a?(::Regexp) ? regexp_or_str : regexp_or_str.to_regexp
     end
     
     # Two strings are "identical" if they both match this identity and the captures are equal.

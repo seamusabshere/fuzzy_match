@@ -1,12 +1,10 @@
 class LooseTightDictionary
   # A tightener just strips a string down to its core
   class Tightener
-    include ExtractRegexp
-    
     attr_reader :regexp
     
     def initialize(regexp_or_str)
-      @regexp = extract_regexp regexp_or_str
+      @regexp = regexp_or_str.is_a?(::Regexp) ? regexp_or_str : regexp_or_str.to_regexp
     end
     
     # A tightener applies when its regexp matches and captures a new (shorter) string

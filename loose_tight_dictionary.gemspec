@@ -23,4 +23,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "remote_table"
   s.add_dependency 'activesupport', '>=2.3.4'
   s.add_dependency 'amatch'
+  s.add_dependency 'to_regexp'
 end

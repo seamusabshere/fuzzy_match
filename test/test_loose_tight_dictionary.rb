@@ -51,24 +51,20 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal 'foo', d.find('baz')
   end
   
-  def test_009_loose_blocking
-    # sanity check
+  def test_009_must_match_blocking
     d = LooseTightDictionary.new [ 'X' ]
     assert_equal 'X', d.find('X')
     assert_equal 'X', d.find('A')
-    # end sanity check
     
     d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ]
     assert_equal 'X', d.find('X')
     assert_equal 'X', d.find('A')
-  end
-  
-  def test_010_strict_blocking
-    d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ], :strict_blocking => true
+    
+    d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
     assert_equal 'X', d.find('X')
     assert_equal nil, d.find('A')
   end
-  
+    
   def test_011_free
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
     d.free
@@ -78,7 +74,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   def test_012_find_all
-    d = LooseTightDictionary.new [ 'X', 'X22', 'Y', 'Y4' ], :blockings => [ /X/, /Y/ ], :strict_blocking => true
+    d = LooseTightDictionary.new [ 'X', 'X22', 'Y', 'Y4' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
     assert_equal ['X', 'X22' ], d.find_all('X')
     assert_equal [], d.find_all('A')
   end

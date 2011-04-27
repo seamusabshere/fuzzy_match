@@ -7,10 +7,10 @@ require 'active_support/version'
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
 end if ::ActiveSupport::VERSION::MAJOR == 3
+require 'to_regexp'
 
 # See the README for more information.
 class LooseTightDictionary
-  autoload :ExtractRegexp, 'loose_tight_dictionary/extract_regexp'
   autoload :Tightener, 'loose_tight_dictionary/tightener'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
@@ -69,7 +69,7 @@ class LooseTightDictionary
       last_result.needle = needle
     end
     
-    if strict_blocking and blockings.none? { |blocking| blocking.encompass? needle }
+    if must_match_blocking and blockings.any? and blockings.none? { |blocking| blocking.match? needle }
       if find_all
         return []
       else
@@ -77,7 +77,7 @@ class LooseTightDictionary
       end
     end
 
-    encompassed, unencompassed = if strict_blocking and blockings.any?
+    encompassed, unencompassed = if blockings.any?
       haystack.partition do |record|
         blockings.any? do |blocking|
           blocking.encompass?(needle, record) == true
@@ -85,6 +85,12 @@ class LooseTightDictionary
       end
     else
       [ haystack.dup, [] ]
+    end
+    
+    # special case: the needle didn't fit anywhere, but must_match_blocking is false, so we'll try it against everything
+    if encompassed.none?
+      encompassed = unencompassed
+      unencompassed = []
     end
     
     if gather_last_result
@@ -188,8 +194,8 @@ class LooseTightDictionary
     options[:haystack_reader]
   end
         
-  def strict_blocking
-    options[:strict_blocking] || false
+  def must_match_blocking
+    options[:must_match_blocking] || false
   end
 
   def tighteners
