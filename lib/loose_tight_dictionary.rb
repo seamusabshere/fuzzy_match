@@ -48,7 +48,6 @@ class LooseTightDictionary
     find needle, options
   end
   
-  # todo fix record.record confusion (should be wrapper.record or smth)
   def find(needle, options = {})
     raise Freed if freed?
     free_last_result
@@ -78,9 +77,9 @@ class LooseTightDictionary
     end
 
     encompassed, unencompassed = if blockings.any?
-      haystack.partition do |record|
+      haystack.partition do |straw|
         blockings.any? do |blocking|
-          blocking.encompass?(needle, record) == true
+          blocking.encompass?(needle, straw) == true
         end
       end
     else
@@ -99,9 +98,9 @@ class LooseTightDictionary
     end
     
     possibly_identical, certainly_different = if identities.any?
-      encompassed.partition do |record|
+      encompassed.partition do |straw|
         identities.all? do |identity|
-          answer = identity.identical? needle, record
+          answer = identity.identical? needle, straw
           answer.nil? or answer == true
         end
       end
@@ -115,24 +114,24 @@ class LooseTightDictionary
     end
     
     if find_all
-      return possibly_identical.map { |record| record.record }
+      return possibly_identical.map { |straw| straw.record }
     end
     
-    similarities = possibly_identical.map do |record|
-      needle.similarity record
+    similarities = possibly_identical.map do |straw|
+      needle.similarity straw
     end.sort
     
     best_similarity = similarities[-1]
-    record = best_similarity.wrapper2
+    straw = best_similarity.wrapper2
     score = best_similarity.best_score.to_f
     
     if gather_last_result
       last_result.similarities = similarities
-      last_result.record = record.record
+      last_result.record = straw.record
       last_result.score = score
     end
     
-    record.record
+    straw.record
   end
   
   # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.
