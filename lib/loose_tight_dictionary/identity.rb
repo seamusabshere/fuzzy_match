@@ -5,7 +5,7 @@ class LooseTightDictionary
     attr_reader :regexp
     
     def initialize(regexp_or_str)
-      @regexp = regexp_or_str.is_a?(::Regexp) ? regexp_or_str : regexp_or_str.to_regexp
+      @regexp = regexp_or_str.to_regexp
     end
     
     # Two strings are "identical" if they both match this identity and the captures are equal.
