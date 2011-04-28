@@ -76,10 +76,12 @@ class LooseTightDictionary
       end
     end
 
-    encompassed, unencompassed = if blockings.any?
+    joint, disjoint = if blockings.any?
       haystack.partition do |straw|
-        blockings.any? do |blocking|
-          blocking.encompass?(needle, straw) == true
+        if first_blocking_decides
+          blockings.detect { |blocking| blocking.match? needle }.try :join?, needle, straw
+        else
+          blockings.any? { |blocking| blocking.join? needle, straw }
         end
       end
     else
@@ -87,25 +89,25 @@ class LooseTightDictionary
     end
     
     # special case: the needle didn't fit anywhere, but must_match_blocking is false, so we'll try it against everything
-    if encompassed.none?
-      encompassed = unencompassed
-      unencompassed = []
+    if joint.none?
+      joint = disjoint
+      disjoint = []
     end
     
     if gather_last_result
-      last_result.encompassed = encompassed
-      last_result.unencompassed = unencompassed
+      last_result.joint = joint
+      last_result.disjoint = disjoint
     end
     
     possibly_identical, certainly_different = if identities.any?
-      encompassed.partition do |straw|
+      joint.partition do |straw|
         identities.all? do |identity|
           answer = identity.identical? needle, straw
           answer.nil? or answer == true
         end
       end
     else
-      [ encompassed.dup, [] ]
+      [ joint.dup, [] ]
     end
     
     if gather_last_result
@@ -117,9 +119,7 @@ class LooseTightDictionary
       return possibly_identical.map { |straw| straw.record }
     end
     
-    similarities = possibly_identical.map do |straw|
-      needle.similarity straw
-    end.sort
+    similarities = possibly_identical.map { |straw| needle.similarity straw }.sort
     
     best_similarity = similarities[-1]
     straw = best_similarity.wrapper2
@@ -164,13 +164,13 @@ class LooseTightDictionary
     log "-" * 150
     log last_result.identities.blank? ? '(none)' : last_result.identities.map { |blocking| blocking.inspect }.join("\n")
     log
-    log "Included"
+    log "Joint"
     log "-" * 150
-    log last_result.encompassed.blank? ? '(none)' : last_result.encompassed.map { |encompassed| encompassed.to_str }.join("\n")
+    log last_result.joint.blank? ? '(none)' : last_result.joint.map { |joint| joint.to_str }.join("\n")
     log
-    log "Ignored"
+    log "Disjoint"
     log "-" * 150
-    log last_result.unencompassed.blank? ? '(none)' : last_result.unencompassed.map { |unencompassed| unencompassed.to_str }.join("\n")
+    log last_result.disjoint.blank? ? '(none)' : last_result.disjoint.map { |disjoint| disjoint.to_str }.join("\n")
     log
     log "Possibly identical"
     log "-" * 150
@@ -195,6 +195,10 @@ class LooseTightDictionary
         
   def must_match_blocking
     options[:must_match_blocking] || false
+  end
+  
+  def first_blocking_decides
+    options[:first_blocking_decides] || false
   end
 
   def tighteners

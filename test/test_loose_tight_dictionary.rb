@@ -78,4 +78,23 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal ['X', 'X22' ], d.find_all('X')
     assert_equal [], d.find_all('A')
   end
+  
+  def test_013_first_blocking_decides
+    d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ]
+    assert_equal [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], d.find_all('Boeing 747')
+    
+    d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
+    assert_equal [ 'Boeing 747', 'Boeing 747SR' ], d.find_all('Boeing 747')
+    
+    # first_blocking_decides refers to the needle
+    d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
+    assert_equal [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], d.find_all('Boeing ER6')
+    
+    d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing (7|E)/i, /boeing/i ], :first_blocking_decides => true
+    assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
+
+    # or equivalently with an identity
+    d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true, :identities => [ /boeing (7|E)/i ]
+    assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
+  end
 end

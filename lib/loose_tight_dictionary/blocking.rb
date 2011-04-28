@@ -17,11 +17,11 @@ class LooseTightDictionary
       !!(regexp.match(str))
     end
 
-    # If a blocking "encompasses" two strings, that means they both fit into it.
+    # If a blocking "joins" two strings, that means they both fit into it.
     #
     # Returns false if they certainly don't fit this blocking.
     # Returns nil if the blocking doesn't apply, i.e. str2 doesn't fit the blocking.
-    def encompass?(str1, str2)
+    def join?(str1, str2)
       if str2_match_data = regexp.match(str2)
         if str1_match_data = regexp.match(str1)
           str2_match_data.captures == str1_match_data.captures

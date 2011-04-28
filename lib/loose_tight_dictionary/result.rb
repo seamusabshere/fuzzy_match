@@ -4,8 +4,8 @@ class LooseTightDictionary
     attr_accessor :tighteners
     attr_accessor :blockings
     attr_accessor :identities
-    attr_accessor :encompassed
-    attr_accessor :unencompassed
+    attr_accessor :joint
+    attr_accessor :disjoint
     attr_accessor :possibly_identical
     attr_accessor :certainly_different
     attr_accessor :similarities
@@ -13,7 +13,7 @@ class LooseTightDictionary
     attr_accessor :score
     
     def haystack
-      encompassed + unencompassed
+      joint + disjoint
     end
     
     def free
