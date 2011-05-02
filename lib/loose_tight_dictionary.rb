@@ -121,17 +121,17 @@ class LooseTightDictionary
     
     similarities = possibly_identical.map { |straw| needle.similarity straw }.sort
     
-    best_similarity = similarities[-1]
-    straw = best_similarity.wrapper2
-    score = best_similarity.best_score.to_f
-    
     if gather_last_result
       last_result.similarities = similarities
-      last_result.record = straw.record
-      last_result.score = score
     end
     
-    straw.record
+    if best_similarity = similarities[-1] and straw = best_similarity.wrapper2 and record = straw.record
+      if gather_last_result
+        last_result.record = record
+        last_result.score = best_similarity.best_score.to_f
+      end
+      record
+    end
   end
   
   # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.
