@@ -18,6 +18,7 @@ class LooseTightDictionary
   autoload :Wrapper, 'loose_tight_dictionary/wrapper'
   autoload :Similarity, 'loose_tight_dictionary/similarity'
   autoload :Score, 'loose_tight_dictionary/score'
+  autoload :CachedResult, 'loose_tight_dictionary/cached_result'
   
   class Freed < RuntimeError; end
   
