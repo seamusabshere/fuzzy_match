@@ -9,97 +9,44 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
     >> puts d.find 'Shamus Heaney'
     => 'seamus'
 
-Try running the included example file:
+== String similarity matching
 
-    $ ruby examples/first_name_matching.rb 
-    ######################################################################################################################################################
-    # Match "Mr. Seamus" => "seamus"
-    ######################################################################################################################################################
+loose_tight_dictionary uses the Pair Distance algorithm as implemented by the amatch[http://flori.github.com/amatch/] library. Thanks Flori!
 
-    Needle
-    (needle_reader proc not defined, so downcasing everything)
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    "mr. seamus"
+== Regular expressions
 
-    Haystack
-    (haystack_reader proc not defined, so downcasing everything)
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    "seamus"
-    "andy"
-    "ben"
+You can improve the default matchings with regular expressions.
 
-    Tighteners
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    (none)
+* Emphasize important words using blockings and tighteners
+* Filter out stop words with tighteners
+* Prevent impossible matches with blockings and identities
 
-    Comparisons
-    Score                                             t_haystack [=> tightened/prefixed]                t_needle [=> tightened/prefixed]                  
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    0.8333333333333334                                "seamus"                                          "mr. seamus"
-    0.0                                               "andy"                                            "mr. seamus"
-    0.0                                               "ben"                                             "mr. seamus"
+=== Blockings
 
-    Match
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    "seamus"
+Setting a blocking of <tt>/Airbus/</tt> ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better blocking in this case would probably be <tt>/airbus/i</tt>, although this will NOT fix the case sensitivity issue mentioned below.
 
-    # [... there's more output ...]
+=== Tighteners
 
-== The Boeing example
+Adding a tightener like <tt>/(boeing).*(7\d\d)/i</tt> will cause "BOEING COMPANY 747" and "boeing747" to be scored as if they were "BOEING 747" and "boeing 747", respectively. See also "Case sensitivity" below.
 
-From the tests:
+=== Identities
 
-    ######################################################################################################################################################
-    # Match "BOEING 737100" => "BOEING BOEING 737-100/200"
-    ######################################################################################################################################################
+Adding an identity like <tt>/(F)\-?(\d50)/</tt> ensures that "Ford F-150" and "Ford F-250" never match.
 
-    Needle
-    (needle_reader proc not defined, so downcasing everything)
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    "boeing 737100"
+== Case sensitivity
 
-    Haystack
-    (haystack_reader proc not defined, so downcasing everything)
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    "boeing boeing 737-100/200"
-    "boeing boeing 737-900"
+You might want to add a haystack reader like <tt>lambda { |record| record.downcase }</tt> to make scoring case-insensitive.
 
-    Tighteners
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    /(7\d)(7|0)-?(\d{1,3})/i
+== Examples
 
-    Comparisons
-    Score                                             t_haystack [=> tightened/prefixed]                t_needle [=> tightened/prefixed]                  
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    1.0                                               "boeing boeing 737-100/200" => "737100"           "boeing 737100" => "737100"
-    0.6666666666666666                                "boeing boeing 737-100/200" => "737100"           "boeing 737100"
-    0.6153846153846154                                "boeing boeing 737-900"                           "boeing 737100"
-    0.6                                               "boeing boeing 737-900" => "737900"               "boeing 737100" => "737100"
-    0.6                                               "boeing boeing 737-100/200"                       "boeing 737100"
-    0.4                                               "boeing boeing 737-900" => "737900"               "boeing 737100"
-    0.32                                              "boeing boeing 737-100/200"                       "boeing 737100" => "737100"
-    0.2857142857142857                                "boeing boeing 737-900"                           "boeing 737100" => "737100"
+Try running the included example files (<tt>examples/first_name_matching.rb</tt>) and check out the tests.
 
-    Match
-    ------------------------------------------------------------------------------------------------------------------------------------------------------
-    "BOEING BOEING 737-100/200"
+== Authors
 
-== Improving dictionaries
-
-Similarity matching will only get you so far.
-
-    TODO: regex usage
-
-== Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with rakefile, version, or history.
-  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
+* Seamus Abshere <seamus@abshere.net>
+* Ian Hough <ijhough@gmail.com>
+* Andy Rossmeissl <andy@rossmeissl.net>
 
 == Copyright
 
-Copyright (c) 2011 Seamus Abshere. See LICENSE for details.
+Copyright 2011 Brighter Planet, Inc.
