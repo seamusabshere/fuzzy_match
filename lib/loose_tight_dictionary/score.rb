@@ -39,7 +39,7 @@ class LooseTightDictionary
       end.reject do |pair|
         pair.include? SPACE
       end
-      pairs2 = (0..str2.length-2).collect do |i|
+      pairs2 = (0..str2.length-2).map do |i|
         str2[i,2]
       end.reject do |pair|
         pair.include? SPACE
