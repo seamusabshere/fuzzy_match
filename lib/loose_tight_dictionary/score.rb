@@ -29,11 +29,12 @@ class LooseTightDictionary
     
     # a pure ruby pair distance until i figure out why amatch is segfaulting
     # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
+    # only about 10x slower
     def dices_coefficient(str1, str2)
-      str1.downcase 
+      str1 = str1.downcase 
+      str2 = str2.downcase
       pairs1 = (0..str1.length-2).collect {|i| str1[i,2]}.reject {
         |pair| pair.include? " "}
-      str2.downcase 
       pairs2 = (0..str2.length-2).collect {|i| str2[i,2]}.reject {
         |pair| pair.include? " "}
       union = pairs1.size + pairs2.size 
