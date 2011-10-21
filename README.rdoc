@@ -11,7 +11,11 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
 == String similarity matching
 
-loose_tight_dictionary uses the Pair Distance algorithm as implemented by the amatch[http://flori.github.com/amatch/] library. Thanks Flori!
+loose_tight_dictionary uses {Dice's Coefficient}[http://en.wikipedia.org/wiki/Dice's_coefficient] algorithm (aka Pair Distance).
+
+If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster but it may not be threadsafe (?)
+
+Otherwise, a pure ruby version is used from http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
 
 == Regular expressions
 

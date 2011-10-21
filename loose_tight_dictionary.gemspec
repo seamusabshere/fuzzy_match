@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'cohort_scope'
   s.add_development_dependency 'weighted_average'
   s.add_development_dependency 'rake'
-  s.add_dependency 'activesupport', '>=3'
-  # s.add_dependency 'amatch'
-  s.add_dependency 'to_regexp', '>=0.0.3'
+  # s.add_development_dependency 'amatch'
+  s.add_runtime_dependency 'activesupport', '>=3'
+  s.add_runtime_dependency 'to_regexp', '>=0.0.3'
 end

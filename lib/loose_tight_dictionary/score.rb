@@ -1,4 +1,8 @@
-# require 'amatch'
+begin
+  require 'amatch'
+rescue ::LoadError
+  # using native ruby similarity scoring
+end
 
 class LooseTightDictionary
   class Score
@@ -27,11 +31,13 @@ class LooseTightDictionary
     
     private
     
-    # a pure ruby pair distance until i figure out why amatch is segfaulting
     # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
-    # only about 10x slower
     SPACE = ' '
     def dices_coefficient(str1, str2)
+      if defined?(::Amatch)
+        return str1.pair_distance_similar str2
+      end
+      
       str1 = str1.downcase 
       str2 = str2.downcase
       pairs1 = (0..str1.length-2).map do |i|

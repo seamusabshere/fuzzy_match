@@ -112,7 +112,7 @@ class TestCache < Test::Unit::TestCase
   
   def test_004_weighted_average
     aircraft = Aircraft.find('B742')
-    assert_equal 5.4545, aircraft.flight_segments.weighted_average(:seats, :weighted_by => :passengers)
+    assert_equal 5.45455, aircraft.flight_segments.weighted_average(:seats, :weighted_by => :passengers)
   end
   
   def test_005_right_way_to_do_cohorts
