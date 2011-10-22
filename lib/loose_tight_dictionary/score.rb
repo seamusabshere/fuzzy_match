@@ -32,36 +32,38 @@ class LooseTightDictionary
     private
     
     # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
-    SPACE = ' '
-    def dices_coefficient(str1, str2)
-      if defined?(::Amatch)
-        return str1.pair_distance_similar str2
+    if defined?(::Amatch)
+      def dices_coefficient(str1, str2)
+        str1.pair_distance_similar str2
       end
-      
-      str1 = str1.downcase 
-      str2 = str2.downcase
-      pairs1 = (0..str1.length-2).map do |i|
-        str1[i,2]
-      end.reject do |pair|
-        pair.include? SPACE
-      end
-      pairs2 = (0..str2.length-2).map do |i|
-        str2[i,2]
-      end.reject do |pair|
-        pair.include? SPACE
-      end
-      union = pairs1.size + pairs2.size 
-      intersection = 0 
-      pairs1.each do |p1| 
-        0.upto(pairs2.size-1) do |i| 
-          if p1 == pairs2[i] 
-            intersection += 1 
-            pairs2.slice!(i) 
-            break 
+    else
+      SPACE = ' '
+      def dices_coefficient(str1, str2)
+        str1 = str1.downcase 
+        str2 = str2.downcase
+        pairs1 = (0..str1.length-2).map do |i|
+          str1[i,2]
+        end.reject do |pair|
+          pair.include? SPACE
+        end
+        pairs2 = (0..str2.length-2).map do |i|
+          str2[i,2]
+        end.reject do |pair|
+          pair.include? SPACE
+        end
+        union = pairs1.size + pairs2.size 
+        intersection = 0 
+        pairs1.each do |p1| 
+          0.upto(pairs2.size-1) do |i| 
+            if p1 == pairs2[i] 
+              intersection += 1 
+              pairs2.slice!(i) 
+              break 
+            end 
           end 
         end 
-      end 
-      (2.0 * intersection) / union
+        (2.0 * intersection) / union
+      end
     end
   end
 end
