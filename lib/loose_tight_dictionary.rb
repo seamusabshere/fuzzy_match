@@ -20,8 +20,6 @@ class LooseTightDictionary
   autoload :Score, 'loose_tight_dictionary/score'
   autoload :CachedResult, 'loose_tight_dictionary/cached_result'
   
-  class Freed < RuntimeError; end
-  
   attr_reader :options
   attr_reader :haystack
   attr_reader :records
@@ -37,7 +35,7 @@ class LooseTightDictionary
   end
   
   def last_result
-    @last_result ||= Result.new
+    @last_result || raise(::RuntimeError, "[loose_tight_dictionary] You can't access the last result until you've run a find with :gather_last_result => true")
   end
   
   def log(str = '') #:nodoc:
@@ -50,11 +48,13 @@ class LooseTightDictionary
   end
   
   def find(needle, options = {})
-    raise Freed if freed?
-    free_last_result
+    raise ::RuntimeError, "[loose_tight_dictionary] Dictionary has already been freed, can't perform more finds" if freed?
     
     options = options.symbolize_keys
-    gather_last_result = options.fetch(:gather_last_result, true)
+    if gather_last_result = options.fetch(:gather_last_result, false)
+      free_last_result
+      @last_result = Result.new
+    end
     find_all = options.fetch(:find_all, false)
     
     if gather_last_result
@@ -140,7 +140,7 @@ class LooseTightDictionary
   #     d = LooseTightDictionary.new ['737', '747', '757' ]
   #     d.explain 'boeing 737-100'
   def explain(needle)
-    record = find needle
+    record = find needle, :gather_last_result => true
     log "#" * 150
     log "# Match #{needle.inspect} => #{record.inspect}"
     log "#" * 150

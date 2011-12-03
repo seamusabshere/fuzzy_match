@@ -15,15 +15,17 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal 'NISSAN', d.find('MISSAM')
   end
   
-  def test_002_find_with_score
+  def test_002_dont_gather_last_result_by_default
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
-    assert_equal 'NISSAN', d.find('MISSAM')
-    assert_equal 0.6, d.last_result.score
+    d.find('MISSAM')
+    assert_raises(::RuntimeError, /gather_last_result/) do
+      d.last_result
+    end
   end
   
   def test_003_last_result
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
-    d.find 'MISSAM'
+    d.find 'MISSAM', :gather_last_result => true
     assert_equal 0.6, d.last_result.score
     assert_equal 'NISSAN', d.last_result.record
   end
@@ -68,7 +70,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   def test_011_free
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
     d.free
-    assert_raises(LooseTightDictionary::Freed) do
+    assert_raises(::RuntimeError, /free/) do
       d.find('foobar')
     end
   end
