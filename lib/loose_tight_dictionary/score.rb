@@ -43,6 +43,11 @@ class LooseTightDictionary
       def dices_coefficient(str1, str2)
         str1 = str1.downcase 
         str2 = str2.downcase
+        if str1 == str2
+          return 1.0
+        elsif str1.length == 1 and str2.length == 1
+          return 0.0
+        end
         pairs1 = (0..str1.length-2).map do |i|
           str1[i,2]
         end.reject do |pair|
