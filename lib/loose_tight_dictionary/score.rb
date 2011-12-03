@@ -34,6 +34,8 @@ class LooseTightDictionary
     # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
     if defined?(::Amatch)
       def dices_coefficient(str1, str2)
+        str1 = str1.downcase 
+        str2 = str2.downcase
         str1.pair_distance_similar str2
       end
     else

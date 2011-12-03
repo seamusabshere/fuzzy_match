@@ -4,30 +4,36 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
 == Quickstart
 
-    >> d = LooseTightDictionary.new %w{seamus andy ben}
-    => [...]
-    >> puts d.find 'Shamus Heaney'
-    => 'seamus'
+    >> require 'loose_tight_dictionary'
+    => true 
+    >> LooseTightDictionary.new(%w{seamus andy ben}).find('Shamus')
+    => "seamus"
 
 == String similarity matching
 
-loose_tight_dictionary uses {Dice's Coefficient}[http://en.wikipedia.org/wiki/Dice's_coefficient] algorithm (aka Pair Distance).
+Exclusively uses {Dice's Coefficient}[http://en.wikipedia.org/wiki/Dice's_coefficient] algorithm (aka Pair Distance).
 
-If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster but it may not be threadsafe (?)
+== Production use
 
-Otherwise, a pure ruby version is used from http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
+Over 2 years in {Brighter Planet's environmental impact API}[http://impact.brighterplanet.com] and {reference data service}[http://data.brighterplanet.com].
+
+== Speed
+
+If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster (but {segfaults have been seen in the wild}[https://github.com/flori/amatch/issues/3]).
+
+Otherwise, a {pure ruby version}[http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings] is used.
 
 == Regular expressions
 
 You can improve the default matchings with regular expressions.
 
-* Emphasize important words using blockings and tighteners
-* Filter out stop words with tighteners
-* Prevent impossible matches with blockings and identities
+* Emphasize important words using <b>blockings</b> and <b>tighteners</b>
+* Filter out stop words with <b>tighteners</b>
+* Prevent impossible matches with <b>blockings</b> and <b>identities</b>
 
 === Blockings
 
-Setting a blocking of <tt>/Airbus/</tt> ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better blocking in this case would probably be <tt>/airbus/i</tt>, although this will NOT fix the case sensitivity issue mentioned below.
+Setting a blocking of <tt>/Airbus/</tt> ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better blocking in this case would probably be <tt>/airbus/i</tt>.
 
 === Tighteners
 
@@ -39,7 +45,7 @@ Adding an identity like <tt>/(F)\-?(\d50)/</tt> ensures that "Ford F-150" and "F
 
 == Case sensitivity
 
-You might want to add a haystack reader like <tt>lambda { |record| record.downcase }</tt> to make scoring case-insensitive.
+Scoring is case-insensitive. Everything is downcased before scoring. This is a change from previous versions.
 
 == Examples
 
