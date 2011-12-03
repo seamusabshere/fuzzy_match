@@ -13,6 +13,10 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   def test_001_find
     d = LooseTightDictionary.new %w{ NISSAN HONDA }
     assert_equal 'NISSAN', d.find('MISSAM')
+    
+    d = LooseTightDictionary.new [ 'X' ]
+    assert_equal 'X', d.find('X')
+    assert_equal nil, d.find('A')
   end
   
   def test_002_dont_gather_last_result_by_default
@@ -50,18 +54,18 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   
   def test_008_identify_false_positive
     d = LooseTightDictionary.new %w{ foo bar }, :identities => [ /ba(.)/ ]
-    assert_equal 'foo', d.find('baz')
+    assert_equal nil, d.find('baz')
   end
   
-  def test_009_must_match_blocking
-    d = LooseTightDictionary.new [ 'X' ]
-    assert_equal 'X', d.find('X')
-    assert_equal 'X', d.find('A')
-    
+  # TODO this is not very helpful
+  def test_009_blocking
     d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ]
     assert_equal 'X', d.find('X')
-    assert_equal 'X', d.find('A')
-    
+    assert_equal nil, d.find('A')
+  end
+
+  # TODO this is not very helpful
+  def test_0095_must_match_blocking
     d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
     assert_equal 'X', d.find('X')
     assert_equal nil, d.find('A')
@@ -146,4 +150,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal ba, by_first.find('b')
   end
   
+  def test_018_no_result_if_best_score_is_zero
+    assert_equal nil, LooseTightDictionary.new(['a']).find('b')
+  end
 end

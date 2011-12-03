@@ -129,7 +129,9 @@ class LooseTightDictionary
       last_result.similarities = similarities
     end
     
-    if best_similarity = similarities[-1] and straw = best_similarity.wrapper2 and record = straw.record
+    best_similarity = similarities[-1]
+    if best_similarity.best_score.to_f > 0
+      record = best_similarity.wrapper2.record
       if gather_last_result
         last_result.record = record
         last_result.score = best_similarity.best_score.to_f
