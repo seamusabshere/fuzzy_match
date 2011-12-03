@@ -6,7 +6,7 @@ require 'active_support/version'
   active_support/core_ext/object
 }.each do |active_support_3_requirement|
   require active_support_3_requirement
-end if ::ActiveSupport::VERSION::MAJOR == 3
+end if ::ActiveSupport::VERSION::MAJOR >= 3
 require 'to_regexp'
 
 # See the README for more information.
