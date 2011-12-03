@@ -195,11 +195,11 @@ class LooseTightDictionary
   end
         
   def must_match_blocking
-    options[:must_match_blocking] || false
+    options.fetch :must_match_blocking, false
   end
   
   def first_blocking_decides
-    options[:first_blocking_decides] || false
+    options.fetch :first_blocking_decides, false
   end
 
   def tighteners
