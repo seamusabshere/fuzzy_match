@@ -99,4 +99,51 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true, :identities => [ /boeing (7|E)/i ]
     assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
   end
+  
+  MyStruct = Struct.new(:one, :two)
+  def test_014_symbol_read_sends_method
+    ab = MyStruct.new('a', 'b')
+    ba = MyStruct.new('b', 'a')
+    haystack = [ab, ba]
+    by_first = LooseTightDictionary.new haystack, :read => :one
+    by_last = LooseTightDictionary.new haystack, :read => :two
+    assert_equal ab, by_first.find('a')
+    assert_equal ab, by_last.find('b')
+    assert_equal ba, by_first.find('b')
+    assert_equal ba, by_last.find('a')
+  end
+  
+  def test_015_symbol_read_reads_array
+    ab = ['a', 'b']
+    ba = ['b', 'a']
+    haystack = [ab, ba]
+    by_first = LooseTightDictionary.new haystack, :read => 0
+    by_last = LooseTightDictionary.new haystack, :read => 1
+    assert_equal ab, by_first.find('a')
+    assert_equal ab, by_last.find('b')
+    assert_equal ba, by_first.find('b')
+    assert_equal ba, by_last.find('a')
+  end
+  
+  def test_016_symbol_read_reads_hash
+    ab = { :one => 'a', :two => 'b' }
+    ba = { :one => 'b', :two => 'a' }
+    haystack = [ab, ba]
+    by_first = LooseTightDictionary.new haystack, :read => :one
+    by_last = LooseTightDictionary.new haystack, :read => :two
+    assert_equal ab, by_first.find('a')
+    assert_equal ab, by_last.find('b')
+    assert_equal ba, by_first.find('b')
+    assert_equal ba, by_last.find('a')
+  end
+  
+  def test_017_understands_haystack_reader_option
+    ab = ['a', 'b']
+    ba = ['b', 'a']
+    haystack = [ab, ba]
+    by_first = LooseTightDictionary.new haystack, :haystack_reader => 0
+    assert_equal ab, by_first.find('a')
+    assert_equal ba, by_first.find('b')
+  end
+  
 end

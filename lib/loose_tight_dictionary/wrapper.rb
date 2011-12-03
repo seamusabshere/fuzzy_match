@@ -3,12 +3,12 @@ class LooseTightDictionary
   class Wrapper #:nodoc: all
     attr_reader :parent
     attr_reader :record
-    attr_reader :reader
+    attr_reader :read
 
-    def initialize(attrs = {})
-      attrs.each do |k, v|
-        instance_variable_set "@#{k}", v
-      end
+    def initialize(parent, record, read = nil)
+      @parent = parent
+      @record = record
+      @read = read
     end
 
     def inspect
@@ -16,7 +16,20 @@ class LooseTightDictionary
     end
 
     def to_str
-      @to_str ||= reader ? reader.call(record) : record.to_s
+      @to_str ||= case read
+      when ::Proc
+        read.call record
+      when ::Symbol
+        if record.respond_to?(read)
+          record.send read
+        else
+          record[read]
+        end
+      when ::NilClass
+        record
+      else
+        record[read]
+      end.to_s
     end
 
     alias :to_s :to_str

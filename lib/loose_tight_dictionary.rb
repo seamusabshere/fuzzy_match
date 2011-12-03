@@ -26,12 +26,15 @@ class LooseTightDictionary
 
   # haystack - a bunch of records
   # options
-  # * tighteners: regexps that essentialize strings down
-  # * identities: regexps that rule out similarities, for example a 737 cannot be identical to a 747
+  # * tighteners: regexps (see readme)
+  # * identities: regexps
+  # * blockings: regexps
+  # * read: how to interpret each entry in the 'haystack', either a Proc or a symbol
   def initialize(records, options = {})
     @options = options.symbolize_keys
     @records = records
-    @haystack = records.map { |record| Wrapper.new :parent => self, :record => record, :reader => haystack_reader }
+    read = options[:read] || options[:haystack_reader]
+    @haystack = records.map { |record| Wrapper.new self, record, read }
   end
   
   def last_result
@@ -63,7 +66,7 @@ class LooseTightDictionary
       last_result.blockings = blockings
     end
     
-    needle = Wrapper.new :parent => self, :record => needle
+    needle = Wrapper.new self, needle
     
     if gather_last_result
       last_result.needle = needle
@@ -190,10 +193,6 @@ class LooseTightDictionary
     log record.inspect
   end
     
-  def haystack_reader
-    options[:haystack_reader]
-  end
-        
   def must_match_blocking
     options.fetch :must_match_blocking, false
   end

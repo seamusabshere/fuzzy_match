@@ -63,7 +63,7 @@ NEGATIVES = RemoteTable.new :url => "file://#{File.expand_path("../negatives.csv
 # Section 3
 
 FINAL_OPTIONS = {
-  :haystack_reader => HAYSTACK_READER,
+  :read => HAYSTACK_READER,
   :must_match_blocking => MUST_MATCH_BLOCKING,
   :tighteners => TIGHTENERS,
   :identities => IDENTITIES,

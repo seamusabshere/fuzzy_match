@@ -17,11 +17,17 @@ Exclusively uses {Dice's Coefficient}[http://en.wikipedia.org/wiki/Dice's_coeffi
 
 Over 2 years in {Brighter Planet's environmental impact API}[http://impact.brighterplanet.com] and {reference data service}[http://data.brighterplanet.com].
 
-== Speed
+== Haystacks and how to read them
 
-If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster (but {segfaults have been seen in the wild}[https://github.com/flori/amatch/issues/3]).
+The (admittedly imperfect) metaphor is "look for a needle in a haystack"
 
-Otherwise, a {pure ruby version}[http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings] is used.
+* needle - the search term
+* haystack - the records you are searching (<b>your result will be an object from here</b>)
+
+So, what if your needle is a string like <tt>youruguay</tt> and your haystack is full of <tt>Country</tt> objects like <tt><Country name:"Uruguay"></tt>?
+
+    >> LooseTightDictionary.new(countries, :read => :name).find('youruguay')
+    => <Country name:"Uruguay">
 
 == Regular expressions
 
@@ -49,7 +55,13 @@ Scoring is case-insensitive. Everything is downcased before scoring. This is a c
 
 == Examples
 
-Try running the included example files (<tt>examples/first_name_matching.rb</tt>) and check out the tests.
+Check out the tests.
+
+== Speed
+
+If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster (but {segfaults have been seen in the wild}[https://github.com/flori/amatch/issues/3]). Thanks Flori!
+
+Otherwise, a pure ruby version derived from the {answer to a StackOverflow question}[http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings] is used. Thanks {marzagao}[http://stackoverflow.com/users/10997/marzagao]!
 
 == Authors
 

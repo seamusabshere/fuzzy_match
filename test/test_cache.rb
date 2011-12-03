@@ -33,7 +33,7 @@ class Aircraft < ActiveRecord::Base
   end
   
   def self.loose_tight_dictionary
-    @loose_tight_dictionary ||= LooseTightDictionary.new all, :haystack_reader => lambda { |straw| straw.aircraft_description }
+    @loose_tight_dictionary ||= LooseTightDictionary.new all, :read => ::Proc.new { |straw| straw.aircraft_description }
   end
   
   def self.create_table

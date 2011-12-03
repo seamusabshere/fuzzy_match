@@ -37,7 +37,7 @@ TIGHTENERS = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/
 IDENTITIES = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/bts_aircraft/identities.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
 
 FINAL_OPTIONS = {
-  :haystack_reader => HAYSTACK_READER,
+  :read => HAYSTACK_READER,
   :must_match_blocking => MUST_MATCH_BLOCKING,
   :tighteners => TIGHTENERS,
   :identities => IDENTITIES,
