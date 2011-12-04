@@ -1,12 +1,8 @@
 require 'active_support'
 require 'active_support/version'
-%w{
-  active_support/core_ext/string
-  active_support/core_ext/hash
-  active_support/core_ext/object
-}.each do |active_support_3_requirement|
-  require active_support_3_requirement
-end if ::ActiveSupport::VERSION::MAJOR >= 3
+if ::ActiveSupport::VERSION::MAJOR >= 3
+  require 'active_support/core_ext'
+end
 require 'to_regexp'
 
 # See the README for more information.
@@ -129,8 +125,8 @@ class LooseTightDictionary
       last_result.similarities = similarities
     end
     
-    best_similarity = similarities[-1]
-    if best_similarity.best_score.to_f > 0
+    
+    if best_similarity = similarities[-1] and best_similarity.best_score.to_f > 0
       record = best_similarity.wrapper2.record
       if gather_last_result
         last_result.record = record
