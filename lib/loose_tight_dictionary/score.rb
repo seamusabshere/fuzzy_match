@@ -25,11 +25,7 @@ class LooseTightDictionary
         by_dices_coefficient
       end
     end
-    
-    def ==(other)
-      (dices_coefficient == other.dices_coefficient) and (levenshtein == other.levenshtein)
-    end
-    
+        
     def utf8?
       @utf8_query ||= (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
     end

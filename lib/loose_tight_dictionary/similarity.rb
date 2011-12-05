@@ -9,10 +9,11 @@ class LooseTightDictionary
     end
     
     def <=>(other)
-      if best_score == other.best_score
+      by_score = best_score <=> other.best_score
+      if by_score == 0
         original_weight <=> other.original_weight
       else
-        best_score <=> other.best_score
+        by_score
       end
     end
     
