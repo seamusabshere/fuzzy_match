@@ -9,16 +9,16 @@ class LooseTightDictionary
     end
     
     def <=>(other)
-      if best_score != other.best_score
-        best_score <=> other.best_score
+      if best_score == other.best_score
+        original_weight <=> other.original_weight
       else
-        weight <=> other.weight
+        best_score <=> other.best_score
       end
     end
     
     # Weight things towards short original strings
-    def weight
-      @weight ||= (1.0 / (wrapper1.to_str.length * wrapper2.to_str.length))
+    def original_weight
+      @original_weight ||= (1.0 / (wrapper1.render.length * wrapper2.render.length))
     end
     
     def best_score
@@ -46,7 +46,7 @@ class LooseTightDictionary
     end
     
     def inspect
-      %{#<Similarity "#{wrapper2.to_str}"=>"#{best_wrapper2_variant}" versus "#{wrapper1.to_str}"=>"#{best_wrapper1_variant}" weight=#{"%0.5f" % weight} best_score=#{"%0.5f" % best_score.to_f}>}
+      %{#<Similarity "#{wrapper2.render}"=>"#{best_wrapper2_variant}" versus "#{wrapper1.render}"=>"#{best_wrapper1_variant}" original_weight=#{"%0.5f" % original_weight} best_score=#{best_score.inspect}>}
     end
   end
 end

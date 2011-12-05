@@ -8,7 +8,7 @@ require 'loose_tight_dictionary'
 haystack = [ 'seamus', 'andy', 'ben' ]
 needles = [ 'Mr. Seamus', 'Sr. Andy', 'Master BenT', 'Shamus Heaney' ]
 
-d = LooseTightDictionary.new haystack, :log => $stdout
+d = LooseTightDictionary.new haystack
 needles.each do |needle|
   d.explain needle
   puts

@@ -71,11 +71,6 @@ FINAL_OPTIONS = {
 }
 
 class TestBtsAircraft < Test::Unit::TestCase
-  should "store the records somewhere" do
-    d = LooseTightDictionary.new HAYSTACK
-    assert d.records.grep(/BOEING 707-100/)
-  end
-  
   should "understand records by using the haystack reader" do
     d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
     assert d.haystack.map { |record| record.to_str }.include?('boeing boeing 707-100')

@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 require 'helper'
 
 class TestLooseTightDictionary < Test::Unit::TestCase
@@ -11,8 +12,9 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   # end
   
   def test_001_find
-    d = LooseTightDictionary.new %w{ NISSAN HONDA }
-    assert_equal 'NISSAN', d.find('MISSAM')
+    d = LooseTightDictionary.new %w{ RATZ CATZ }
+    assert_equal 'RATZ', d.find('RITZ')
+    assert_equal 'RATZ', d.find('RíTZ')
     
     d = LooseTightDictionary.new [ 'X' ]
     assert_equal 'X', d.find('X')
@@ -46,7 +48,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     d = LooseTightDictionary.new ['BOEING 737-100/200', 'BOEING 737-900'], :tighteners => tighteners
     assert_equal 'BOEING 737-100/200', d.find('BOEING 737100 number 900')
   end
-
+  
   def test_008_false_positive_without_identity
     d = LooseTightDictionary.new %w{ foo bar }
     assert_equal 'bar', d.find('baz')
@@ -63,7 +65,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert_equal 'X', d.find('X')
     assert_equal nil, d.find('A')
   end
-
+  
   # TODO this is not very helpful
   def test_0095_must_match_blocking
     d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
@@ -98,7 +100,7 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     
     d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing (7|E)/i, /boeing/i ], :first_blocking_decides => true
     assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
-
+  
     # or equivalently with an identity
     d = LooseTightDictionary.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true, :identities => [ /boeing (7|E)/i ]
     assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
@@ -152,5 +154,18 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   
   def test_018_no_result_if_best_score_is_zero
     assert_equal nil, LooseTightDictionary.new(['a']).find('b')
+  end
+  
+  def test_019_must_match_at_least_one_word
+    d = LooseTightDictionary.new %w{ RATZ CATZ }, :must_match_at_least_one_word => true
+    assert_equal nil, d.find('RITZ')
+  end
+  
+  def test_020_stop_words
+    d = LooseTightDictionary.new [ 'A HOTEL', 'B HTL' ], :must_match_at_least_one_word => true
+    assert_equal 'B HTL', d.find('A HTL')
+    
+    d = LooseTightDictionary.new [ 'A HOTEL', 'B HTL' ], :must_match_at_least_one_word => true, :stop_words => [ %r{HO?TE?L} ]
+    assert_equal 'A HOTEL', d.find('A HTL')
   end
 end

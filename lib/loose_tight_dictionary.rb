@@ -8,6 +8,7 @@ require 'to_regexp'
 # See the README for more information.
 class LooseTightDictionary
   autoload :Tightener, 'loose_tight_dictionary/tightener'
+  autoload :StopWord, 'loose_tight_dictionary/stop_word'
   autoload :Blocking, 'loose_tight_dictionary/blocking'
   autoload :Identity, 'loose_tight_dictionary/identity'
   autoload :Result, 'loose_tight_dictionary/result'
@@ -16,19 +17,31 @@ class LooseTightDictionary
   autoload :Score, 'loose_tight_dictionary/score'
   autoload :CachedResult, 'loose_tight_dictionary/cached_result'
   
-  attr_reader :options
   attr_reader :haystack
-  attr_reader :records
+  attr_reader :blockings
+  attr_reader :identities
+  attr_reader :tighteners
+  attr_reader :stop_words
+  attr_reader :first_blocking_decides
+  attr_reader :must_match_blocking
+  attr_reader :must_match_at_least_one_word
 
   # haystack - a bunch of records
   # options
   # * tighteners: regexps (see readme)
   # * identities: regexps
   # * blockings: regexps
+  # * stop_words: regexps
   # * read: how to interpret each entry in the 'haystack', either a Proc or a symbol
   def initialize(records, options = {})
-    @options = options.symbolize_keys
-    @records = records
+    options = options.symbolize_keys
+    @first_blocking_decides = options.fetch :first_blocking_decides, false
+    @must_match_blocking = options.fetch :must_match_blocking, false
+    @must_match_at_least_one_word = options.fetch :must_match_at_least_one_word, false
+    @blockings = options.fetch(:blockings, []).map { |regexp_or_str| Blocking.new regexp_or_str }
+    @identities = options.fetch(:identities, []).map { |regexp_or_str| Identity.new regexp_or_str }
+    @tighteners = options.fetch(:tighteners, []).map { |regexp_or_str| Tightener.new regexp_or_str }
+    @stop_words = options.fetch(:stop_words, []).map { |regexp_or_str| StopWord.new regexp_or_str }
     read = options[:read] || options[:haystack_reader]
     @haystack = records.map { |record| Wrapper.new self, record, read }
   end
@@ -37,10 +50,6 @@ class LooseTightDictionary
     @last_result || raise(::RuntimeError, "[loose_tight_dictionary] You can't access the last result until you've run a find with :gather_last_result => true")
   end
   
-  def log(str = '') #:nodoc:
-    (options[:log] || $stderr).puts str unless options[:log] == false
-  end
-    
   def find_all(needle, options = {})
     options = options.symbolize_keys.merge(:find_all => true)
     find needle, options
@@ -50,11 +59,13 @@ class LooseTightDictionary
     raise ::RuntimeError, "[loose_tight_dictionary] Dictionary has already been freed, can't perform more finds" if freed?
     
     options = options.symbolize_keys
-    if gather_last_result = options.fetch(:gather_last_result, false)
+    gather_last_result = options.fetch(:gather_last_result, false)
+    is_find_all = options.fetch(:find_all, false)
+    
+    if gather_last_result
       free_last_result
       @last_result = Result.new
     end
-    find_all = options.fetch(:find_all, false)
     
     if gather_last_result
       last_result.tighteners = tighteners
@@ -69,15 +80,27 @@ class LooseTightDictionary
     end
     
     if must_match_blocking and blockings.any? and blockings.none? { |blocking| blocking.match? needle }
-      if find_all
+      if is_find_all
         return []
       else
         return nil
       end
     end
 
+    candidates = if must_match_at_least_one_word
+      haystack.select do |straw|
+        needle.words.any? { |w| straw.render.include? w }
+      end
+    else
+      haystack
+    end
+    
+    if gather_last_result
+      last_result.candidates = candidates
+    end
+    
     joint, disjoint = if blockings.any?
-      haystack.partition do |straw|
+      candidates.partition do |straw|
         if first_blocking_decides
           blockings.detect { |blocking| blocking.match? needle }.try :join?, needle, straw
         else
@@ -85,7 +108,7 @@ class LooseTightDictionary
         end
       end
     else
-      [ haystack.dup, [] ]
+      [ candidates.dup, [] ]
     end
     
     # special case: the needle didn't fit anywhere, but must_match_blocking is false, so we'll try it against everything
@@ -115,7 +138,7 @@ class LooseTightDictionary
       last_result.certainly_different = certainly_different
     end
     
-    if find_all
+    if is_find_all
       return possibly_identical.map { |straw| straw.record }
     end
     
@@ -125,12 +148,11 @@ class LooseTightDictionary
       last_result.similarities = similarities
     end
     
-    
-    if best_similarity = similarities[-1] and best_similarity.best_score.to_f > 0
+    if best_similarity = similarities[-1] and best_similarity.best_score.dices_coefficient > 0
       record = best_similarity.wrapper2.record
       if gather_last_result
         last_result.record = record
-        last_result.score = best_similarity.best_score.to_f
+        last_result.score = best_similarity.best_score.dices_coefficient
       end
       record
     end
@@ -148,11 +170,11 @@ class LooseTightDictionary
     log
     log "Needle"
     log "-" * 150
-    log last_result.needle.to_str
+    log last_result.needle.render
     log
     log "Haystack"
     log "-" * 150
-    log last_result.haystack.map { |record| record.to_str }.join("\n")
+    log last_result.haystack.map { |record| record.render }.join("\n")
     log
     log "Tighteners"
     log "-" * 150
@@ -168,19 +190,19 @@ class LooseTightDictionary
     log
     log "Joint"
     log "-" * 150
-    log last_result.joint.blank? ? '(none)' : last_result.joint.map { |joint| joint.to_str }.join("\n")
+    log last_result.joint.blank? ? '(none)' : last_result.joint.map { |joint| joint.render }.join("\n")
     log
     log "Disjoint"
     log "-" * 150
-    log last_result.disjoint.blank? ? '(none)' : last_result.disjoint.map { |disjoint| disjoint.to_str }.join("\n")
+    log last_result.disjoint.blank? ? '(none)' : last_result.disjoint.map { |disjoint| disjoint.render }.join("\n")
     log
     log "Possibly identical"
     log "-" * 150
-    log last_result.possibly_identical.blank? ? '(none)' : last_result.possibly_identical.map { |possibly_identical| possibly_identical.to_str }.join("\n")
+    log last_result.possibly_identical.blank? ? '(none)' : last_result.possibly_identical.map { |possibly_identical| possibly_identical.render }.join("\n")
     log
     log "Certainly different"
     log "-" * 150
-    log last_result.certainly_different.blank? ? '(none)' : last_result.certainly_different.map { |certainly_different| certainly_different.to_str }.join("\n")
+    log last_result.certainly_different.blank? ? '(none)' : last_result.certainly_different.map { |certainly_different| certainly_different.render }.join("\n")
     log
     log "Similarities"
     log "-" * 150
@@ -190,33 +212,11 @@ class LooseTightDictionary
     log "-" * 150
     log record.inspect
   end
+  
+  def log(str = '') #:nodoc:
+    $stderr.puts str
+  end
     
-  def must_match_blocking
-    options.fetch :must_match_blocking, false
-  end
-  
-  def first_blocking_decides
-    options.fetch :first_blocking_decides, false
-  end
-
-  def tighteners
-    @tighteners ||= (options[:tighteners] || []).map do |regexp_or_str|
-      Tightener.new regexp_or_str
-    end
-  end
-
-  def identities
-    @identities ||= (options[:identities] || []).map do |regexp_or_str|
-      Identity.new regexp_or_str
-    end
-  end
-
-  def blockings
-    @blockings ||= (options[:blockings] || []).map do |regexp_or_str|
-      Blocking.new regexp_or_str
-    end
-  end
-  
   def freed?
     @freed == true
   end

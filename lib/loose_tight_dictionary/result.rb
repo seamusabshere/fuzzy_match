@@ -4,6 +4,7 @@ class LooseTightDictionary
     attr_accessor :tighteners
     attr_accessor :blockings
     attr_accessor :identities
+    attr_accessor :candidates
     attr_accessor :joint
     attr_accessor :disjoint
     attr_accessor :possibly_identical

@@ -1,6 +1,6 @@
 = loose_tight_dictionary
 
-Match things based on string similarity (using the Pair Distance algorithm) and regular expressions.
+Find a needle in a haystack based on string similarity (using the Pair Distance algorithm and Levenshtein distance) and regular expressions.
 
 == Quickstart
 
@@ -11,7 +11,20 @@ Match things based on string similarity (using the Pair Distance algorithm) and 
 
 == String similarity matching
 
-Exclusively uses {Dice's Coefficient}[http://en.wikipedia.org/wiki/Dice's_coefficient] algorithm (aka Pair Distance).
+Uses {Dice's Coefficient}[http://en.wikipedia.org/wiki/Dice's_coefficient] algorithm (aka Pair Distance).
+
+If that judges two strings to be be equally similar to a third string, then Levenshtein distance is used. For example, pair distance considers "RATZ" and "CATZ" to be equally similar to "RITZ" so we invoke Levenshtein.
+
+    >> require 'amatch'
+    => true 
+    >> 'RITZ'.pair_distance_similar 'RATZ'
+    => 0.3333333333333333 
+    >> 'RITZ'.pair_distance_similar 'CATZ'  # <-- pair distance can't tell the difference, so we fall back to levenshtein...
+    => 0.3333333333333333 
+    >> 'RITZ'.levenshtein_similar 'RATZ'
+    => 0.75 
+    >> 'RITZ'.levenshtein_similar 'CATZ'    # <-- which properly shows that RATZ should win
+    => 0.5 
 
 == Production use
 
@@ -36,6 +49,7 @@ You can improve the default matchings with regular expressions.
 * Emphasize important words using <b>blockings</b> and <b>tighteners</b>
 * Filter out stop words with <b>tighteners</b>
 * Prevent impossible matches with <b>blockings</b> and <b>identities</b>
+* Ignore words with <b>stop words</b>
 
 === Blockings
 
@@ -49,19 +63,23 @@ Adding a tightener like <tt>/(boeing).*(7\d\d)/i</tt> will cause "BOEING COMPANY
 
 Adding an identity like <tt>/(F)\-?(\d50)/</tt> ensures that "Ford F-150" and "Ford F-250" never match.
 
+=== Stop words
+
+Adding a stop word like <tt>THE</tt> ensures that it is not taken into account when comparing "THE CAT", "THE DAT", and "THE CATT"
+
 == Case sensitivity
 
-Scoring is case-insensitive. Everything is downcased before scoring. This is a change from previous versions.
+Scoring is case-insensitive. Everything is downcased before scoring. This is a change from previous versions. Your regexps may still be case-sensitive, though.
 
 == Examples
 
 Check out the tests.
 
-== Speed
+== Speed (and who to thank for the algorithms)
 
-If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster (but {segfaults have been seen in the wild}[https://github.com/flori/amatch/issues/3]). Thanks Flori!
+If you add the amatch[http://flori.github.com/amatch/] gem to your Gemfile, it will use that, which is much faster (but {segfaults have been seen in the wild}[https://github.com/flori/amatch/issues/3]). Thanks {Flori}[https://github.com/flori]!
 
-Otherwise, a pure ruby version derived from the {answer to a StackOverflow question}[http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings] is used. Thanks {marzagao}[http://stackoverflow.com/users/10997/marzagao]!
+Otherwise, pure ruby versions of the string similarity algorithms derived from the {answer to a StackOverflow question}[http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings] and {the text gem}[https://github.com/threedaymonk/text/blob/master/lib/text/levenshtein.rb] are used. Thanks {marzagao}[http://stackoverflow.com/users/10997/marzagao] and {threedaymonk}[https://github.com/threedaymonk]!
 
 == Authors
 

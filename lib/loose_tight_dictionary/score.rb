@@ -9,40 +9,46 @@ class LooseTightDictionary
     attr_reader :str1, :str2
 
     def initialize(str1, str2)
-      @str1 = str1
-      @str2 = str2
-    end
-    
-    def to_f
-      @to_f ||= dices_coefficient(str1, str2)
+      @str1 = str1.downcase
+      @str2 = str2.downcase
     end
     
     def inspect
-      %{#<Score: to_f=#{to_f}>}
+      %{#<Score: dices_coefficient=#{dices_coefficient} levenshtein=#{levenshtein}>}
     end
     
     def <=>(other)
-      to_f <=> other.to_f
+      by_dices_coefficient = (dices_coefficient <=> other.dices_coefficient)
+      if by_dices_coefficient == 0
+        levenshtein <=> other.levenshtein
+      else
+        by_dices_coefficient
+      end
     end
     
     def ==(other)
-      to_f == other.to_f
+      (dices_coefficient == other.dices_coefficient) and (levenshtein == other.levenshtein)
     end
     
-    private
+    def utf8?
+      @utf8_query ||= (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
+    end
     
-    # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
     if defined?(::Amatch)
-      def dices_coefficient(str1, str2)
-        str1 = str1.downcase 
-        str2 = str2.downcase
+      
+      def dices_coefficient
         str1.pair_distance_similar str2
       end
+      
+      def levenshtein
+        str1.levenshtein_similar str2
+      end
+      
     else
+      
       SPACE = ' '
-      def dices_coefficient(str1, str2)
-        str1 = str1.downcase 
-        str2 = str2.downcase
+      # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
+      def dices_coefficient
         if str1 == str2
           return 1.0
         elsif str1.length == 1 and str2.length == 1
@@ -71,6 +77,48 @@ class LooseTightDictionary
         end 
         (2.0 * intersection) / union
       end
+
+      # extracted/adapted from the text gem version 1.0.2
+      # normalization added for utf-8 strings
+      # lib/text/levenshtein.rb
+      def levenshtein
+        if utf8?
+          unpack_rule = 'U*'
+        else
+          unpack_rule = 'C*'
+        end
+        s = str1.unpack(unpack_rule)
+        t = str2.unpack(unpack_rule)
+        n = s.length
+        m = t.length
+        if n == 0 or m == 0
+          return 0.0
+        end
+        d = (0..m).to_a
+        x = nil
+        (0...n).each do |i|
+          e = i+1
+          (0...m).each do |j|
+            cost = (s[i] == t[j]) ? 0 : 1
+            x = [
+              d[j+1] + 1, # insertion
+              e + 1,      # deletion
+              d[j] + cost # substitution
+            ].min
+            d[j] = e
+            e = x
+          end
+          d[m] = x
+        end
+        # normalization logic from https://github.com/flori/amatch/blob/master/ext/amatch_ext.c#L301
+        # if (b_len > a_len) {
+        #     result = rb_float_new(1.0 - ((double) v[p][b_len]) / b_len);
+        # } else {
+        #     result = rb_float_new(1.0 - ((double) v[p][b_len]) / a_len);
+        # }
+        1.0 - x.to_f / [n, m].max
+      end
+      
     end
   end
 end

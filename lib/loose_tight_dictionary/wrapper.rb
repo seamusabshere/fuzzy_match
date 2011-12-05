@@ -1,22 +1,23 @@
 class LooseTightDictionary
   # Wrappers are the tokens that are passed around when doing scoring and optimizing.
   class Wrapper #:nodoc: all
-    attr_reader :parent
+    attr_reader :loose_tight_dictionary
     attr_reader :record
     attr_reader :read
 
-    def initialize(parent, record, read = nil)
-      @parent = parent
+    def initialize(loose_tight_dictionary, record, read = nil)
+      @loose_tight_dictionary = loose_tight_dictionary
       @record = record
       @read = read
     end
 
     def inspect
-      "#<Wrapper to_str=#{to_str} variants=#{variants.length}>"
+      "#<Wrapper render=#{render} variants=#{variants.length}>"
     end
 
-    def to_str
-      @to_str ||= case read
+    def render
+      return @render if rendered?
+      str = case read
       when ::Proc
         read.call record
       when ::Symbol
@@ -29,22 +30,37 @@ class LooseTightDictionary
         record
       else
         record[read]
-      end.to_s
+      end.to_s.dup
+      loose_tight_dictionary.stop_words.each do |stop_word|
+        stop_word.apply! str
+      end
+      @render = str.freeze
+      @rendered = true
+      @render
     end
 
-    alias :to_s :to_str
+    alias :to_str :render
+
+    WORD_BOUNDARY = %r{\s*\b\s*}
+    def words
+      @words ||= render.split(WORD_BOUNDARY)
+    end
 
     def similarity(other)
       Similarity.new self, other
     end
 
     def variants
-      @variants ||= parent.tighteners.inject([ to_str ]) do |memo, tightener|
-        if tightener.apply? to_str
-          memo.push tightener.apply(to_str)
+      @variants ||= loose_tight_dictionary.tighteners.inject([ render ]) do |memo, tightener|
+        if tightener.apply? render
+          memo.push tightener.apply(render)
         end
         memo
       end.uniq
+    end
+    
+    def rendered?
+      @rendered == true
     end
   end
 end
