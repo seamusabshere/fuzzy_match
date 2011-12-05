@@ -27,7 +27,9 @@ class LooseTightDictionary
     end
         
     def utf8?
-      @utf8_query ||= (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
+      return @utf8_query[0] if @utf8_query.is_a?(::Array)
+      @utf8_query = [ (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u') ]
+      @utf8_query[0]
     end
     
     if defined?(::Amatch)
