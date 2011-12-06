@@ -175,4 +175,9 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     assert capture.read.include?('CATZ')
     capture.close
   end
+  
+  def test_022_compare_words_with_words
+    d = LooseTightDictionary.new [ 'PENINSULA HOTELS' ], :must_match_at_least_one_word => true
+    assert_equal nil, d.find('DOLCE LA HULPE BXL FI')
+  end
 end

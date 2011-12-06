@@ -90,7 +90,7 @@ class LooseTightDictionary
 
     candidates = if must_match_at_least_one_word
       haystack.select do |straw|
-        needle.words.any? { |w| straw.render.include? w }
+        (needle.words & straw.words).any?
       end
     else
       haystack
