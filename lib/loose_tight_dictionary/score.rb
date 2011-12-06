@@ -27,9 +27,7 @@ class LooseTightDictionary
     end
         
     def utf8?
-      return @utf8_query[0] if @utf8_query.is_a?(::Array)
-      @utf8_query = [ (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u') ]
-      @utf8_query[0]
+      (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
     end
     
     if defined?(::Amatch)
@@ -118,5 +116,10 @@ class LooseTightDictionary
       end
       
     end
+    
+    extend ::ActiveSupport::Memoizable
+    memoize :dices_coefficient
+    memoize :levenshtein
+    memoize :utf8?
   end
 end
