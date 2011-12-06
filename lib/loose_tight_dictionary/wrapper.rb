@@ -34,6 +34,7 @@ class LooseTightDictionary
       loose_tight_dictionary.stop_words.each do |stop_word|
         stop_word.apply! str
       end
+      str.strip!
       @render = str.freeze
       @rendered = true
       @render
