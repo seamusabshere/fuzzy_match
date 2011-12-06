@@ -2,15 +2,6 @@
 require 'helper'
 
 class TestLooseTightDictionary < Test::Unit::TestCase
-  # in case i start doing something with the log
-  # def setup
-  #   @log = StringIO.new
-  # end
-  # 
-  # def teardown
-  #   @log.close
-  # end
-  
   def test_001_find
     d = LooseTightDictionary.new %w{ RATZ CATZ }
     assert_equal 'RATZ', d.find('RITZ')
@@ -167,5 +158,21 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     
     d = LooseTightDictionary.new [ 'A HOTEL', 'B HTL' ], :must_match_at_least_one_word => true, :stop_words => [ %r{HO?TE?L} ]
     assert_equal 'A HOTEL', d.find('A HTL')
+  end
+  
+  def test_021_explain
+    require 'stringio'
+    capture = StringIO.new
+    begin
+      old_stderr = $stderr
+      $stderr = capture
+      d = LooseTightDictionary.new %w{ RATZ CATZ }
+      d.explain('RITZ')
+    ensure
+      $stderr = old_stderr
+    end
+    capture.rewind
+    assert capture.read.include?('CATZ')
+    capture.close
   end
 end

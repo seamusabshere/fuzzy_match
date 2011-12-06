@@ -71,6 +71,7 @@ class LooseTightDictionary
       last_result.tighteners = tighteners
       last_result.identities = identities
       last_result.blockings = blockings
+      last_result.stop_words = stop_words
     end
     
     needle = Wrapper.new self, needle
@@ -172,9 +173,12 @@ class LooseTightDictionary
     log "-" * 150
     log last_result.needle.render
     log
-    log "Haystack"
+    log "Stop words"
+    log last_result.stop_words.blank? ? '(none)' : last_result.stop_words.map { |stop_word| stop_word.inspect }.join("\n")
+    log
+    log "Candidates"
     log "-" * 150
-    log last_result.haystack.map { |record| record.render }.join("\n")
+    log last_result.candidates.map { |record| record.render }.join("\n")
     log
     log "Tighteners"
     log "-" * 150

@@ -4,6 +4,7 @@ class LooseTightDictionary
     attr_accessor :tighteners
     attr_accessor :blockings
     attr_accessor :identities
+    attr_accessor :stop_words
     attr_accessor :candidates
     attr_accessor :joint
     attr_accessor :disjoint
@@ -12,9 +13,5 @@ class LooseTightDictionary
     attr_accessor :similarities
     attr_accessor :record
     attr_accessor :score
-    
-    def haystack
-      joint + disjoint
-    end
   end
 end
