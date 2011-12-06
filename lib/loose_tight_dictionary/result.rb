@@ -16,9 +16,5 @@ class LooseTightDictionary
     def haystack
       joint + disjoint
     end
-    
-    def free
-      # nothing to see here
-    end
   end
 end

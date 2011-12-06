@@ -223,16 +223,8 @@ class LooseTightDictionary
   
   def free
     free_last_result
-    @options.try :clear
-    @options = nil
     @haystack.try :clear
     @haystack = nil
-    @tighteners.try :clear
-    @tighteners = nil
-    @identities.try :clear
-    @identities = nil
-    @blockings.try :clear
-    @blockings = nil
   ensure
     @freed = true
   end
@@ -240,7 +232,6 @@ class LooseTightDictionary
   private
   
   def free_last_result
-    @last_result.try :free
-    @last_result = nil
+    @last_result = nil    
   end
 end
