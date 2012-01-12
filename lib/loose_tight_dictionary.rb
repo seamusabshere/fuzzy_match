@@ -166,8 +166,8 @@ class LooseTightDictionary
   #
   #     d = LooseTightDictionary.new ['737', '747', '757' ]
   #     d.explain 'boeing 737-100'
-  def explain(needle)
-    record = find needle, :gather_last_result => true
+  def explain(needle, options = {})
+    record = find needle, options.merge(:gather_last_result => true)
     log "#" * 150
     log "# Match #{needle.inspect} => #{record.inspect}"
     log "#" * 150
