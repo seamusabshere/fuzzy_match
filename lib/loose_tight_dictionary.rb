@@ -115,10 +115,18 @@ class LooseTightDictionary
       [ candidates.dup, [] ]
     end
     
-    # special case: the needle didn't fit anywhere, but must_match_blocking is false, so we'll try it against everything
     if joint.none?
-      joint = disjoint
-      disjoint = []
+      if must_match_blocking
+        if is_find_all
+          return []
+        else
+          return nil
+        end
+      else
+        # special case: the needle didn't fit anywhere, but must_match_blocking is false, so we'll try it against everything
+        joint = disjoint
+        disjoint = []
+      end
     end
     
     if gather_last_result
