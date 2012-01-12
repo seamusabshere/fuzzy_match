@@ -22,9 +22,9 @@ class LooseTightDictionary
   attr_reader :identities
   attr_reader :tighteners
   attr_reader :stop_words
-  attr_reader :first_blocking_decides
-  attr_reader :must_match_blocking
-  attr_reader :must_match_at_least_one_word
+  attr_reader :default_first_blocking_decides
+  attr_reader :default_must_match_blocking
+  attr_reader :default_must_match_at_least_one_word
 
   # haystack - a bunch of records
   # options
@@ -35,9 +35,9 @@ class LooseTightDictionary
   # * read: how to interpret each entry in the 'haystack', either a Proc or a symbol
   def initialize(records, options = {})
     options = options.symbolize_keys
-    @first_blocking_decides = options.fetch :first_blocking_decides, false
-    @must_match_blocking = options.fetch :must_match_blocking, false
-    @must_match_at_least_one_word = options.fetch :must_match_at_least_one_word, false
+    @default_first_blocking_decides = options[:first_blocking_decides]
+    @default_must_match_blocking = options[:must_match_blocking]
+    @default_must_match_at_least_one_word = options[:must_match_at_least_one_word]
     @blockings = options.fetch(:blockings, []).map { |regexp_or_str| Blocking.new regexp_or_str }
     @identities = options.fetch(:identities, []).map { |regexp_or_str| Identity.new regexp_or_str }
     @tighteners = options.fetch(:tighteners, []).map { |regexp_or_str| Tightener.new regexp_or_str }
@@ -61,6 +61,9 @@ class LooseTightDictionary
     options = options.symbolize_keys
     gather_last_result = options.fetch(:gather_last_result, false)
     is_find_all = options.fetch(:find_all, false)
+    first_blocking_decides = options.fetch(:first_blocking_decides, default_first_blocking_decides)
+    must_match_blocking = options.fetch(:must_match_blocking, default_must_match_blocking)
+    must_match_at_least_one_word = options.fetch(:must_match_at_least_one_word, default_must_match_at_least_one_word)
     
     if gather_last_result
       free_last_result

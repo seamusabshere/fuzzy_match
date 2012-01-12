@@ -62,6 +62,10 @@ class TestLooseTightDictionary < Test::Unit::TestCase
     d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
     assert_equal 'X', d.find('X')
     assert_equal nil, d.find('A')
+    
+    d = LooseTightDictionary.new [ 'X' ], :blockings => [ /X/, /Y/ ]
+    assert_equal 'X', d.find('X', :must_match_blocking => true)
+    assert_equal nil, d.find('A', :must_match_blocking => true)
   end
     
   def test_011_free
@@ -153,6 +157,9 @@ class TestLooseTightDictionary < Test::Unit::TestCase
   end
   
   def test_020_stop_words
+    d = LooseTightDictionary.new [ 'A HOTEL', 'B HTL' ]
+    assert_equal 'B HTL', d.find('A HTL', :must_match_at_least_one_word => true)
+    
     d = LooseTightDictionary.new [ 'A HOTEL', 'B HTL' ], :must_match_at_least_one_word => true
     assert_equal 'B HTL', d.find('A HTL')
     
