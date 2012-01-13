@@ -2,7 +2,7 @@
 
 Find a needle in a haystack based on string similarity (using the Pair Distance algorithm and Levenshtein distance) and regular expressions.
 
-Replaces [loose_tight_dictionary](https://github.com/seamusabshere/loose_tight_dictionary) because that was a confusing name.
+Replaces {loose_tight_dictionary}[https://github.com/seamusabshere/loose_tight_dictionary] because that was a confusing name.
 
 == Quickstart
 
