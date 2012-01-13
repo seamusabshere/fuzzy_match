@@ -42,7 +42,8 @@ class FuzzyMatch
 
     alias :to_str :render
 
-    WORD_BOUNDARY = %r{\s*\b\s*}
+    # "Foo's Bar" should be treated as [ "Foo's", "Bar" ], so we don't use traditional regexp word boundaries (\b)
+    WORD_BOUNDARY = %r{\s+}
     def words
       @words ||= render.split(WORD_BOUNDARY)
     end

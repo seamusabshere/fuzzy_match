@@ -154,6 +154,10 @@ class TestFuzzyMatch < Test::Unit::TestCase
   def test_019_must_match_at_least_one_word
     d = FuzzyMatch.new %w{ RATZ CATZ }, :must_match_at_least_one_word => true
     assert_equal nil, d.find('RITZ')
+    
+    d = FuzzyMatch.new ["Foo's Bar"], :must_match_at_least_one_word => true
+    assert_equal nil, d.find("Jacob's")
+    assert_equal "Foo's Bar", d.find("Foo's")
   end
   
   def test_020_stop_words
