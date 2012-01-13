@@ -26,14 +26,14 @@ class FuzzyMatch
   attr_reader :default_must_match_blocking
   attr_reader :default_must_match_at_least_one_word
 
-  # haystack - a bunch of records
+  # haystack - a bunch of records that will compete to see who best matches the needle
   # options
   # * tighteners: regexps (see readme)
   # * identities: regexps
   # * blockings: regexps
   # * stop_words: regexps
   # * read: how to interpret each entry in the 'haystack', either a Proc or a symbol
-  def initialize(records, options = {})
+  def initialize(competitors, options = {})
     options = options.symbolize_keys
     @default_first_blocking_decides = options[:first_blocking_decides]
     @default_must_match_blocking = options[:must_match_blocking]
@@ -43,7 +43,7 @@ class FuzzyMatch
     @tighteners = options.fetch(:tighteners, []).map { |regexp_or_str| Tightener.new regexp_or_str }
     @stop_words = options.fetch(:stop_words, []).map { |regexp_or_str| StopWord.new regexp_or_str }
     read = options[:read] || options[:haystack_reader]
-    @haystack = records.map { |record| Wrapper.new self, record, read }
+    @haystack = competitors.map { |competitor| Wrapper.new self, competitor, read }
   end
   
   def last_result
@@ -161,12 +161,12 @@ class FuzzyMatch
     end
     
     if best_similarity = similarities.first and best_similarity.best_score.dices_coefficient_similar > 0
-      record = best_similarity.wrapper2.record
+      winner = best_similarity.wrapper2.record
       if gather_last_result
-        last_result.record = record
+        last_result.winner = winner
         last_result.score = best_similarity.best_score.dices_coefficient_similar
       end
-      record
+      winner
     end
   end
   

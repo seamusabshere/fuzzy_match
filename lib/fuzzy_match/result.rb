@@ -11,7 +11,7 @@ class FuzzyMatch
     attr_accessor :possibly_identical
     attr_accessor :certainly_different
     attr_accessor :similarities
-    attr_accessor :record
+    attr_accessor :winner
     attr_accessor :score
   end
 end

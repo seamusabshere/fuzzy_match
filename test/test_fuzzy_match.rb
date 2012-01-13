@@ -24,7 +24,7 @@ class TestFuzzyMatch < Test::Unit::TestCase
     d = FuzzyMatch.new %w{ NISSAN HONDA }
     d.find 'MISSAM', :gather_last_result => true
     assert_equal 0.6, d.last_result.score
-    assert_equal 'NISSAN', d.last_result.record
+    assert_equal 'NISSAN', d.last_result.winner
   end
   
   def test_004_false_positive_without_tightener
