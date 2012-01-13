@@ -160,11 +160,11 @@ class FuzzyMatch
       return similarities.map { |similarity| similarity.wrapper2.record }
     end
     
-    if best_similarity = similarities.first and best_similarity.best_score.dices_coefficient > 0
+    if best_similarity = similarities.first and best_similarity.best_score.dices_coefficient_similar > 0
       record = best_similarity.wrapper2.record
       if gather_last_result
         last_result.record = record
-        last_result.score = best_similarity.best_score.dices_coefficient
+        last_result.score = best_similarity.best_score.dices_coefficient_similar
       end
       record
     end

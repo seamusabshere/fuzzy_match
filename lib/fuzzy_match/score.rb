@@ -14,13 +14,13 @@ class FuzzyMatch
     end
     
     def inspect
-      %{#<Score: dices_coefficient=#{dices_coefficient} levenshtein=#{levenshtein}>}
+      %{#<Score: dices_coefficient=#{dices_coefficient_similar} levenshtein=#{levenshtein_similar}>}
     end
     
     def <=>(other)
-      by_dices_coefficient = (dices_coefficient <=> other.dices_coefficient)
+      by_dices_coefficient = (dices_coefficient_similar <=> other.dices_coefficient_similar)
       if by_dices_coefficient == 0
-        levenshtein <=> other.levenshtein
+        levenshtein_similar <=> other.levenshtein_similar
       else
         by_dices_coefficient
       end
@@ -32,11 +32,11 @@ class FuzzyMatch
     
     if defined?(::Amatch)
       
-      def dices_coefficient
+      def dices_coefficient_similar
         str1.pair_distance_similar str2
       end
       
-      def levenshtein
+      def levenshtein_similar
         str1.levenshtein_similar str2
       end
       
@@ -44,7 +44,7 @@ class FuzzyMatch
       
       SPACE = ' '
       # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
-      def dices_coefficient
+      def dices_coefficient_similar
         if str1 == str2
           return 1.0
         elsif str1.length == 1 and str2.length == 1
@@ -77,7 +77,7 @@ class FuzzyMatch
       # extracted/adapted from the text gem version 1.0.2
       # normalization added for utf-8 strings
       # lib/text/levenshtein.rb
-      def levenshtein
+      def levenshtein_similar
         if utf8?
           unpack_rule = 'U*'
         else
@@ -118,8 +118,8 @@ class FuzzyMatch
     end
     
     extend ::ActiveSupport::Memoizable
-    memoize :dices_coefficient
-    memoize :levenshtein
+    memoize :dices_coefficient_similar
+    memoize :levenshtein_similar
     memoize :utf8?
   end
 end
