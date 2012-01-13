@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Seamus Abshere"]
   s.email       = ["seamus@abshere.net"]
   s.homepage    = "https://github.com/seamusabshere/fuzzy_match"
-  s.summary     = %Q{Allows iterative development of dictionaries for big data sets.}
-  s.description = %Q{Create dictionaries that link rows between two tables using loose matching (string similarity) by default and tight matching (regexp) by request.}
+  s.summary     = %Q{Find a needle in a haystack using string similarity and (optionally) regexp rules. Replaces loose_tight_dictionary.}
+  s.description = %Q{Find a needle in a haystack using string similarity and (optionally) regexp rules. Replaces loose_tight_dictionary.}
 
   s.rubyforge_project = "fuzzy_match"
 
