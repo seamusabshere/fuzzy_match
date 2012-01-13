@@ -1,4 +1,4 @@
-class LooseTightDictionary
+class FuzzyMatch
   # Identities take effect when needle and haystack both match a regexp
   # Then the captured part of the regexp has to match exactly
   class Identity

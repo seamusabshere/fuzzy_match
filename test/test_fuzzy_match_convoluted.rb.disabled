@@ -4,7 +4,7 @@ require 'shoulda'
 
 $log = false
 
-class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
+class TestFuzzyMatchConvoluted < Test::Unit::TestCase
   def setup
     clear_ltd
     
@@ -52,7 +52,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
   end
   
   def ltd
-    @_ltd ||= LooseTightDictionary.new  @haystack,
+    @_ltd ||= FuzzyMatch.new  @haystack,
                                         :tightenings => @tightenings,
                                         :identities => @identities,
                                         :blockings => @blockings,
@@ -91,7 +91,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     b747 = 'B747200/300'
     dc9 = 'DC-9-10'
     haystack_records = [ dash, b747, dc9 ]
-    simple_ltd = LooseTightDictionary.new haystack_records, :log => $log
+    simple_ltd = FuzzyMatch.new haystack_records, :log => $log
     assert_equal dash, simple_ltd.improver.match('DeHavilland Dash-8 DHC-400')
     assert_equal b747, simple_ltd.improver.match('Boeing 747-300')
     assert_equal dc9, simple_ltd.improver.match('McDonnell Douglas MD81/DC-9')
@@ -99,14 +99,14 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
   
   should "call it a mismatch if you hit a blank positive" do
     @positives.push [@a_needle[0], '']
-    assert_raises(LooseTightDictionary::Improver::Mismatch) do
+    assert_raises(FuzzyMatch::Improver::Mismatch) do
       ltd.improver.match @a_needle
     end
   end
 
   should "call it a false positive if you hit a blank negative" do
     @negatives.push [@a_needle[0], '']
-    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
+    assert_raises(FuzzyMatch::Improver::FalsePositive) do
       ltd.improver.match @a_needle
     end
   end
@@ -205,7 +205,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
   should "fail if positive checks don't work" do
     @positives.push [ @d_needle[0], @d_haystack[0] ]
 
-    assert_raises(LooseTightDictionary::Improver::Mismatch) do
+    assert_raises(FuzzyMatch::Improver::Mismatch) do
       ltd.improver.check @needle
     end
   end
@@ -226,7 +226,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     # sabshere 9/30/10 this shouldn't raise anything
     # but the tightenings have been changed... we should be using test-only tightenings, not production ones
     # assert_nothing_raised do
-    assert_raises(LooseTightDictionary::Improver::Mismatch) do
+    assert_raises(FuzzyMatch::Improver::Mismatch) do
       ltd.improver.check @needle
     end
   end
@@ -234,7 +234,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
   should "fail if negative checks don't work" do
     @negatives.push [ @b_needle[0], @c_haystack[0] ]
   
-    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
+    assert_raises(FuzzyMatch::Improver::FalsePositive) do
       ltd.improver.check @needle
     end
   end
@@ -242,7 +242,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
   should "do inline checking" do
     @negatives.push [ @b_needle[0], @c_haystack[0] ]
   
-    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
+    assert_raises(FuzzyMatch::Improver::FalsePositive) do
       ltd.improver.match @b_needle
     end
   end
@@ -251,7 +251,7 @@ class TestLooseTightDictionaryConvoluted < Test::Unit::TestCase
     @negatives.push [ @b_needle[0], @c_haystack[0] ]
     @tightenings.push @t_1
   
-    assert_raises(LooseTightDictionary::Improver::FalsePositive) do
+    assert_raises(FuzzyMatch::Improver::FalsePositive) do
       ltd.improver.check @needle
     end
   end

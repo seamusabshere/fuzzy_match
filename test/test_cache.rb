@@ -7,7 +7,7 @@ require 'weighted_average'
 
 ActiveRecord::Base.establish_connection(
   'adapter' => 'mysql',
-  'database' => 'loose_tight_dictionary_test',
+  'database' => 'fuzzy_match_test',
   'username' => 'root',
   'password' => 'password'
 )
@@ -18,22 +18,22 @@ ActiveSupport::Inflector.inflections do |inflect|
   inflect.uncountable 'aircraft'
 end
 
-require 'loose_tight_dictionary/cached_result'
+require 'fuzzy_match/cached_result'
 
-::LooseTightDictionary::CachedResult.setup(true)
-::LooseTightDictionary::CachedResult.delete_all
+::FuzzyMatch::CachedResult.setup(true)
+::FuzzyMatch::CachedResult.delete_all
 
 class Aircraft < ActiveRecord::Base
   set_primary_key :icao_code
   
-  cache_loose_tight_dictionary_matches_with :flight_segments, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
+  cache_fuzzy_match_matches_with :flight_segments, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
     
   def aircraft_description
     [manufacturer_name, model_name].compact.join(' ')
   end
   
-  def self.loose_tight_dictionary
-    @loose_tight_dictionary ||= LooseTightDictionary.new all, :read => ::Proc.new { |straw| straw.aircraft_description }
+  def self.fuzzy_match
+    @fuzzy_match ||= FuzzyMatch.new all, :read => ::Proc.new { |straw| straw.aircraft_description }
   end
   
   def self.create_table
@@ -53,7 +53,7 @@ end
 class FlightSegment < ActiveRecord::Base
   set_primary_key :row_hash
   
-  cache_loose_tight_dictionary_matches_with :aircraft, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
+  cache_fuzzy_match_matches_with :aircraft, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
   
   extend CohortScope
   self.minimum_cohort_size = 1

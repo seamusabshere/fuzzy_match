@@ -1,12 +1,12 @@
-= loose_tight_dictionary
+= fuzzy_match
 
 Find a needle in a haystack based on string similarity (using the Pair Distance algorithm and Levenshtein distance) and regular expressions.
 
 == Quickstart
 
-    >> require 'loose_tight_dictionary'
+    >> require 'fuzzy_match'
     => true 
-    >> LooseTightDictionary.new(%w{seamus andy ben}).find('Shamus')
+    >> FuzzyMatch.new(%w{seamus andy ben}).find('Shamus')
     => "seamus"
 
 == String similarity matching
@@ -39,7 +39,7 @@ The (admittedly imperfect) metaphor is "look for a needle in a haystack"
 
 So, what if your needle is a string like <tt>youruguay</tt> and your haystack is full of <tt>Country</tt> objects like <tt><Country name:"Uruguay"></tt>?
 
-    >> LooseTightDictionary.new(countries, :read => :name).find('youruguay')
+    >> FuzzyMatch.new(countries, :read => :name).find('youruguay')
     => <Country name:"Uruguay">
 
 == Regular expressions

@@ -1,4 +1,4 @@
-class LooseTightDictionary
+class FuzzyMatch
   class Result #:nodoc: all
     attr_accessor :needle
     attr_accessor :tighteners

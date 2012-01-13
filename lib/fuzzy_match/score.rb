@@ -4,7 +4,7 @@ rescue ::LoadError
   # using native ruby similarity scoring
 end
 
-class LooseTightDictionary
+class FuzzyMatch
   class Score
     attr_reader :str1, :str2
 

@@ -1,4 +1,4 @@
-class LooseTightDictionary
+class FuzzyMatch
   # A stop word is ignored
   class StopWord
     attr_reader :regexp

@@ -1,4 +1,4 @@
-class LooseTightDictionary
+class FuzzyMatch
   # "Record linkage typically involves two main steps: blocking and scoring..."
   # http://en.wikipedia.org/wiki/Record_linkage
   #

@@ -1,4 +1,4 @@
-class LooseTightDictionary
+class FuzzyMatch
   class Similarity
     attr_reader :wrapper1
     attr_reader :wrapper2

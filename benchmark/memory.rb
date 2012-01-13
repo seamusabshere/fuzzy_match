@@ -7,7 +7,7 @@ Bundler.setup
 require 'remote_table'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'loose_tight_dictionary'
+require 'fuzzy_match'
 
 # messily stolen from the bts example
 
@@ -46,7 +46,7 @@ FINAL_OPTIONS = {
 
 Memprof.start
 
-d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
 record = d.find('boeing 707(100)', :gather_last_result => false)
 # d.free
 

@@ -72,12 +72,12 @@ FINAL_OPTIONS = {
 
 class TestBtsAircraft < Test::Unit::TestCase
   should "understand records by using the haystack reader" do
-    d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+    d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
     assert d.haystack.map { |record| record.to_str }.include?('boeing boeing 707-100')
   end
 
   should "find an easy match" do
-    d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+    d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
     record = d.find('boeing 707(100)')
     assert_equal HAYSTACK_RECORD_CLASS, record.class
     assert_equal HAYSTACK_READER.call(record), 'boeing boeing 707-100'
@@ -87,7 +87,7 @@ class TestBtsAircraft < Test::Unit::TestCase
     needle = row['needle']
     correct_record = row['haystack']
     should %{find #{correct_record.blank? ? 'nothing' : correct_record} when looking for #{needle}} do
-      d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+      d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
       record = d.find(needle.downcase)
       assert_equal correct_record.downcase, HAYSTACK_READER.call(record)
     end
@@ -97,7 +97,7 @@ class TestBtsAircraft < Test::Unit::TestCase
     needle = row['needle']
     incorrect_record = row['haystack']
     should %{not find #{incorrect_record} when looking for #{needle}} do
-      d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+      d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
       record = d.find(needle.downcase)
       assert(incorrect_record.downcase != HAYSTACK_READER.call(record))
     end
@@ -114,5 +114,5 @@ end
 # <"airbus industrie airbus industrie a340">.
 
 # ...I would look at it like this
-d = LooseTightDictionary.new HAYSTACK, FINAL_OPTIONS
+d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
 puts d.explain('AIRBUS A340300.'.downcase)

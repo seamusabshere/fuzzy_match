@@ -6,16 +6,16 @@ end
 require 'to_regexp'
 
 # See the README for more information.
-class LooseTightDictionary
-  autoload :Tightener, 'loose_tight_dictionary/tightener'
-  autoload :StopWord, 'loose_tight_dictionary/stop_word'
-  autoload :Blocking, 'loose_tight_dictionary/blocking'
-  autoload :Identity, 'loose_tight_dictionary/identity'
-  autoload :Result, 'loose_tight_dictionary/result'
-  autoload :Wrapper, 'loose_tight_dictionary/wrapper'
-  autoload :Similarity, 'loose_tight_dictionary/similarity'
-  autoload :Score, 'loose_tight_dictionary/score'
-  autoload :CachedResult, 'loose_tight_dictionary/cached_result'
+class FuzzyMatch
+  autoload :Tightener, 'fuzzy_match/tightener'
+  autoload :StopWord, 'fuzzy_match/stop_word'
+  autoload :Blocking, 'fuzzy_match/blocking'
+  autoload :Identity, 'fuzzy_match/identity'
+  autoload :Result, 'fuzzy_match/result'
+  autoload :Wrapper, 'fuzzy_match/wrapper'
+  autoload :Similarity, 'fuzzy_match/similarity'
+  autoload :Score, 'fuzzy_match/score'
+  autoload :CachedResult, 'fuzzy_match/cached_result'
   
   attr_reader :haystack
   attr_reader :blockings
@@ -47,7 +47,7 @@ class LooseTightDictionary
   end
   
   def last_result
-    @last_result || raise(::RuntimeError, "[loose_tight_dictionary] You can't access the last result until you've run a find with :gather_last_result => true")
+    @last_result || raise(::RuntimeError, "[fuzzy_match] You can't access the last result until you've run a find with :gather_last_result => true")
   end
   
   def find_all(needle, options = {})
@@ -56,7 +56,7 @@ class LooseTightDictionary
   end
   
   def find(needle, options = {})
-    raise ::RuntimeError, "[loose_tight_dictionary] Dictionary has already been freed, can't perform more finds" if freed?
+    raise ::RuntimeError, "[fuzzy_match] Dictionary has already been freed, can't perform more finds" if freed?
     
     options = options.symbolize_keys
     gather_last_result = options.fetch(:gather_last_result, false)
@@ -172,7 +172,7 @@ class LooseTightDictionary
   
   # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.
   #
-  #     d = LooseTightDictionary.new ['737', '747', '757' ]
+  #     d = FuzzyMatch.new ['737', '747', '757' ]
   #     d.explain 'boeing 737-100'
   def explain(needle, options = {})
     record = find needle, options.merge(:gather_last_result => true)

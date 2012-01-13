@@ -1,4 +1,4 @@
 source "http://rubygems.org"
 
-# Specify your gem's dependencies in loose_tight_dictionary.gemspec
+# Specify your gem's dependencies in fuzzy_match.gemspec
 gemspec

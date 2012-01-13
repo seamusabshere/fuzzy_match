@@ -1,12 +1,12 @@
-class LooseTightDictionary
+class FuzzyMatch
   # Wrappers are the tokens that are passed around when doing scoring and optimizing.
   class Wrapper #:nodoc: all
-    attr_reader :loose_tight_dictionary
+    attr_reader :fuzzy_match
     attr_reader :record
     attr_reader :read
 
-    def initialize(loose_tight_dictionary, record, read = nil)
-      @loose_tight_dictionary = loose_tight_dictionary
+    def initialize(fuzzy_match, record, read = nil)
+      @fuzzy_match = fuzzy_match
       @record = record
       @read = read
     end
@@ -31,7 +31,7 @@ class LooseTightDictionary
       else
         record[read]
       end.to_s.dup
-      loose_tight_dictionary.stop_words.each do |stop_word|
+      fuzzy_match.stop_words.each do |stop_word|
         stop_word.apply! str
       end
       str.strip!
@@ -52,7 +52,7 @@ class LooseTightDictionary
     end
 
     def variants
-      @variants ||= loose_tight_dictionary.tighteners.inject([ render ]) do |memo, tightener|
+      @variants ||= fuzzy_match.tighteners.inject([ render ]) do |memo, tightener|
         if tightener.apply? render
           memo.push tightener.apply(render)
         end

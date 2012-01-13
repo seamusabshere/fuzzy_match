@@ -1,4 +1,4 @@
-class LooseTightDictionary
+class FuzzyMatch
   # A tightener just strips a string down to its core
   class Tightener
     attr_reader :regexp

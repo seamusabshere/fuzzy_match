@@ -1,21 +1,21 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "loose_tight_dictionary/version"
+require "fuzzy_match/version"
 
 Gem::Specification.new do |s|
-  s.name        = "loose_tight_dictionary"
-  s.version     = LooseTightDictionary::VERSION
+  s.name        = "fuzzy_match"
+  s.version     = FuzzyMatch::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Seamus Abshere"]
   s.email       = ["seamus@abshere.net"]
-  s.homepage    = "https://github.com/seamusabshere/loose_tight_dictionary"
+  s.homepage    = "https://github.com/seamusabshere/fuzzy_match"
   s.summary     = %Q{Allows iterative development of dictionaries for big data sets.}
   s.description = %Q{Create dictionaries that link rows between two tables using loose matching (string similarity) by default and tight matching (regexp) by request.}
 
-  s.rubyforge_project = "loose_tight_dictionary"
+  s.rubyforge_project = "fuzzy_match"
 
   s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- {test,spec,floose_tight_dictionaryures}/*`.split("\n")
+  s.test_files    = `git ls-files -- {test,spec,ffuzzy_matchures}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
