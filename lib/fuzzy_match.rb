@@ -149,18 +149,18 @@ class FuzzyMatch
       last_result.possibly_identical = possibly_identical
       last_result.certainly_different = certainly_different
     end
-    
-    if is_find_all
-      return possibly_identical.map { |straw| straw.record }
-    end
-    
-    similarities = possibly_identical.map { |straw| needle.similarity straw }.sort
-    
+        
+    similarities = possibly_identical.map { |straw| needle.similarity straw }.sort.reverse
+        
     if gather_last_result
       last_result.similarities = similarities
     end
     
-    if best_similarity = similarities[-1] and best_similarity.best_score.dices_coefficient > 0
+    if is_find_all
+      return similarities.map { |similarity| similarity.wrapper2.record }
+    end
+    
+    if best_similarity = similarities.first and best_similarity.best_score.dices_coefficient > 0
       record = best_similarity.wrapper2.record
       if gather_last_result
         last_result.record = record

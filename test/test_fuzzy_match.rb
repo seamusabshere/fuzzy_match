@@ -91,7 +91,7 @@ class TestFuzzyMatch < Test::Unit::TestCase
     
     # first_blocking_decides refers to the needle
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
-    assert_equal [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], d.find_all('Boeing ER6')
+    assert_equal ["Boeing ER6", "Boeing 747", "Boeing 747SR"], d.find_all('Boeing ER6')
     
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing (7|E)/i, /boeing/i ], :first_blocking_decides => true
     assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
