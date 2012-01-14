@@ -173,20 +173,19 @@ class TestFuzzyMatch < Test::Unit::TestCase
     assert_equal 'A HOTEL', d.find('A HTL')
   end
   
-  def test_021_explain
+  def test_021_explain_prints_to_stdout
     require 'stringio'
     capture = StringIO.new
     begin
-      old_stderr = $stderr
-      $stderr = capture
+      old_stdout = $stdout
+      $stdout = capture
       d = FuzzyMatch.new %w{ RATZ CATZ }
       d.explain('RITZ')
     ensure
-      $stderr = old_stderr
+      $stdout = old_stdout
     end
     capture.rewind
     assert capture.read.include?('CATZ')
-    capture.close
   end
   
   def test_022_compare_words_with_words

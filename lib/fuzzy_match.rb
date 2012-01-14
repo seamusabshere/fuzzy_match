@@ -108,7 +108,13 @@ class FuzzyMatch
     if gather_last_result
       free_last_result
       @last_result = Result.new
+      last_result.read = read
+      last_result.haystack = haystack
       last_result.options = options
+      last_result.timeline << <<-EOS
+Options were set, either by you or by falling back to defaults.
+\tOptions: #{options.inspect}
+EOS
     end
     
     if gather_last_result
@@ -122,9 +128,20 @@ class FuzzyMatch
     
     if gather_last_result
       last_result.needle = needle
+      last_result.timeline << <<-EOS
+The needle's #{needle.variants.length} variants were enumerated.
+\tVariants: #{needle.variants.map(&:inspect).join(', ')}
+EOS
     end
     
     if must_match_blocking and blockings.any? and blockings.none? { |blocking| blocking.match? needle }
+      if gather_last_result
+        last_result.timeline << <<-EOS
+The needle didn't match any of the #{blockings.length} blocking, which was a requirement.
+\tBlockings (first 3): #{blockings[0,3].map(&:inspect).join(', ')}
+EOS
+      end
+      
       if is_find_all
         return []
       else
@@ -132,83 +149,109 @@ class FuzzyMatch
       end
     end
 
-    candidates = if must_match_at_least_one_word
-      haystack.select do |straw|
+    if must_match_at_least_one_word
+      passed_word_requirement = haystack.select do |straw|
         (needle.words & straw.words).any?
       end
+      if gather_last_result
+        last_result.timeline << <<-EOS
+Since :must_match_at_least_one_word => true, the competition was reduced to records sharing at least one word with the needle.
+\tNeedle words: #{needle.words.map(&:inspect).join(', ')}
+\tPassed (first 3): #{passed_word_requirement[0,3].map(&:render).map(&:inspect).join(', ')}
+\tFailed (first 3): #{(haystack-passed_word_requirement)[0,3].map(&:render).map(&:inspect).join(', ')}
+EOS
+      end
     else
-      haystack
+      passed_word_requirement = haystack
     end
     
-    if gather_last_result
-      last_result.candidates = candidates
-    end
-    
-    joint, disjoint = if blockings.any?
-      candidates.partition do |straw|
+    if blockings.any?
+      joint = passed_word_requirement.select do |straw|
         if first_blocking_decides
           blockings.detect { |blocking| blocking.match? needle }.try :join?, needle, straw
         else
           blockings.any? { |blocking| blocking.join? needle, straw }
         end
       end
+      if gather_last_result
+        last_result.timeline << <<-EOS
+Since there were blockings, the competition was reduced to records in the same block as the needle.
+\tBlockings (first 3): #{blockings[0,3].map(&:inspect).join(', ')}
+\tPassed (first 3): #{joint[0,3].map(&:render).map(&:inspect).join(', ')}
+\tFailed (first 3): #{(passed_word_requirement-joint)[0,3].map(&:render).map(&:inspect).join(', ')}
+EOS
+      end
     else
-      [ candidates.dup, [] ]
+      joint = passed_word_requirement.dup
     end
     
     if joint.none?
       if must_match_blocking
+        if gather_last_result
+          last_result.timeline << <<-EOS
+Since :must_match_at_least_one_word => true and none of the competition was in the same block as the needle, the search stopped.
+EOS
+        end
         if is_find_all
           return []
         else
           return nil
         end
       else
-        # special case: the needle didn't fit anywhere, but must_match_blocking is false, so we'll try it against everything
-        joint = disjoint
-        disjoint = []
+        joint = passed_word_requirement.dup
       end
     end
-    
-    if gather_last_result
-      last_result.joint = joint
-      last_result.disjoint = disjoint
-    end
-    
-    possibly_identical, certainly_different = if identities.any?
-      joint.partition do |straw|
+        
+    if identities.any?
+      possibly_identical = joint.select do |straw|
         identities.all? do |identity|
           answer = identity.identical? needle, straw
           answer.nil? or answer == true
         end
       end
+      if gather_last_result
+        last_result.timeline << <<-EOS
+Since there were identities, the competition was reduced to records that might be identical to the needle (in other words, are not certainly different)
+\Identities (first 3): #{identities[0,3].map(&:inspect).join(', ')}
+\tPassed (first 3): #{possibly_identical[0,3].map(&:render).map(&:inspect).join(', ')}
+\tFailed (first 3): #{(joint-possibly_identical)[0,3].map(&:render).map(&:inspect).join(', ')}
+EOS
+      end
     else
-      [ joint.dup, [] ]
-    end
-    
-    if gather_last_result
-      last_result.possibly_identical = possibly_identical
-      last_result.certainly_different = certainly_different
+      possibly_identical = joint.dup
     end
         
     similarities = possibly_identical.map { |straw| needle.similarity straw }.sort.reverse
         
     if gather_last_result
-      last_result.similarities = similarities
+        last_result.timeline << <<-EOS
+The competition was sorted in order of similarity to the needle.
+\tSimilar (first 3): #{(similarities)[0,3].map(&:wrapper2).map(&:render).map(&:inspect).join(', ')}
+EOS
     end
     
     if is_find_all
       return similarities.map { |similarity| similarity.wrapper2.record }
     end
     
+    winner = nil
+
     if best_similarity = similarities.first and best_similarity.best_score.dices_coefficient_similar > 0
       winner = best_similarity.wrapper2.record
       if gather_last_result
         last_result.winner = winner
         last_result.score = best_similarity.best_score.dices_coefficient_similar
+        last_result.timeline << <<-EOS
+A winner was determined because the similarity score #{best_similarity.best_score.dices_coefficient_similar} is greater than zero.
+EOS
       end
-      winner
+    elsif gather_last_result
+        last_result.timeline << <<-EOS
+No winner assigned because similarity score was zero.
+EOS
     end
+    
+    winner
   end
   
   # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.
@@ -216,63 +259,10 @@ class FuzzyMatch
   #     d = FuzzyMatch.new ['737', '747', '757' ]
   #     d.explain 'boeing 737-100'
   def explain(needle, options = {})
-    record = find needle, options.merge(:gather_last_result => true)
-    log "#" * 150
-    log "# Match #{needle.inspect} => #{record.inspect}"
-    log "#" * 150
-    log
-    log "Needle"
-    log "-" * 150
-    log last_result.needle.render
-    log
-    log "Stop words"
-    log last_result.stop_words.blank? ? '(none)' : last_result.stop_words.map { |stop_word| stop_word.inspect }.join("\n")
-    log
-    log "Candidates"
-    log "-" * 150
-    log last_result.candidates.map { |record| record.render }.join("\n")
-    log
-    log "Tighteners"
-    log "-" * 150
-    log last_result.tighteners.blank? ? '(none)' : last_result.tighteners.map { |tightener| tightener.inspect }.join("\n")
-    log
-    log "Blockings"
-    log "-" * 150
-    log last_result.blockings.blank? ? '(none)' : last_result.blockings.map { |blocking| blocking.inspect }.join("\n")
-    log
-    log "Identities"
-    log "-" * 150
-    log last_result.identities.blank? ? '(none)' : last_result.identities.map { |blocking| blocking.inspect }.join("\n")
-    log
-    log "Joint"
-    log "-" * 150
-    log last_result.joint.blank? ? '(none)' : last_result.joint.map { |joint| joint.render }.join("\n")
-    log
-    log "Disjoint"
-    log "-" * 150
-    log last_result.disjoint.blank? ? '(none)' : last_result.disjoint.map { |disjoint| disjoint.render }.join("\n")
-    log
-    log "Possibly identical"
-    log "-" * 150
-    log last_result.possibly_identical.blank? ? '(none)' : last_result.possibly_identical.map { |possibly_identical| possibly_identical.render }.join("\n")
-    log
-    log "Certainly different"
-    log "-" * 150
-    log last_result.certainly_different.blank? ? '(none)' : last_result.certainly_different.map { |certainly_different| certainly_different.render }.join("\n")
-    log
-    log "Similarities"
-    log "-" * 150
-    log last_result.similarities.blank? ? '(none)' : last_result.similarities.reverse[0..9].map { |similarity| similarity.inspect }.join("\n")
-    log
-    log "Match"
-    log "-" * 150
-    log record.inspect
+    find needle, options.merge(:gather_last_result => true)
+    last_result.explain
   end
-  
-  def log(str = '') #:nodoc:
-    $stderr.puts str
-  end
-    
+
   def freed?
     @freed == true
   end
