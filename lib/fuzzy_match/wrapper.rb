@@ -3,20 +3,25 @@ class FuzzyMatch
   class Wrapper #:nodoc: all
     attr_reader :fuzzy_match
     attr_reader :record
-    attr_reader :read
+    attr_reader :literal
+    attr_reader :rendered
 
-    def initialize(fuzzy_match, record, read = nil)
+    def initialize(fuzzy_match, record, literal = false)
       @fuzzy_match = fuzzy_match
       @record = record
-      @read = read
+      @literal = literal
     end
 
     def inspect
       "#<Wrapper render=#{render} variants=#{variants.length}>"
     end
+    
+    def read
+      fuzzy_match.read unless literal
+    end
 
     def render
-      return @render if rendered?
+      return @render if rendered
       str = case read
       when ::Proc
         read.call record
@@ -59,10 +64,6 @@ class FuzzyMatch
         end
         memo
       end.uniq
-    end
-    
-    def rendered?
-      @rendered == true
     end
   end
 end

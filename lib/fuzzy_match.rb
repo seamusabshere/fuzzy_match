@@ -17,33 +17,72 @@ class FuzzyMatch
   autoload :Score, 'fuzzy_match/score'
   autoload :CachedResult, 'fuzzy_match/cached_result'
   
+  DEFAULT_OPTIONS = {
+    :first_blocking_decides => false,
+    :must_match_blocking => false,
+    :must_match_at_least_one_word => false,
+    :gather_last_result => false,
+    :find_all => false
+  }
+  
   attr_reader :haystack
   attr_reader :blockings
   attr_reader :identities
   attr_reader :tighteners
   attr_reader :stop_words
-  attr_reader :default_first_blocking_decides
-  attr_reader :default_must_match_blocking
-  attr_reader :default_must_match_at_least_one_word
+  attr_reader :read
+  attr_reader :default_options
 
   # haystack - a bunch of records that will compete to see who best matches the needle
-  # options
+  #
+  # rules (can only be specified at initialization or by using a setter)
   # * tighteners: regexps (see readme)
   # * identities: regexps
   # * blockings: regexps
   # * stop_words: regexps
   # * read: how to interpret each entry in the 'haystack', either a Proc or a symbol
-  def initialize(competitors, options = {})
-    options = options.symbolize_keys
-    @default_first_blocking_decides = options[:first_blocking_decides]
-    @default_must_match_blocking = options[:must_match_blocking]
-    @default_must_match_at_least_one_word = options[:must_match_at_least_one_word]
-    @blockings = options.fetch(:blockings, []).map { |regexp_or_str| Blocking.new regexp_or_str }
-    @identities = options.fetch(:identities, []).map { |regexp_or_str| Identity.new regexp_or_str }
-    @tighteners = options.fetch(:tighteners, []).map { |regexp_or_str| Tightener.new regexp_or_str }
-    @stop_words = options.fetch(:stop_words, []).map { |regexp_or_str| StopWord.new regexp_or_str }
-    read = options[:read] || options[:haystack_reader]
-    @haystack = competitors.map { |competitor| Wrapper.new self, competitor, read }
+  #
+  # options (can be specified at initialization or when calling #find)
+  # * first_blocking_decides
+  # * must_match_blocking
+  # * must_match_at_least_one_word
+  # * gather_last_result
+  # * find_all
+  def initialize(competitors, options_and_rules = {})
+    options_and_rules = options_and_rules.symbolize_keys
+
+    # rules
+    self.blockings = options_and_rules.delete(:blockings) || []
+    self.identities = options_and_rules.delete(:identities) || []
+    self.tighteners = options_and_rules.delete(:tighteners) || []
+    self.stop_words = options_and_rules.delete(:stop_words) || []
+    @read = options_and_rules.delete(:read) || options_and_rules.delete(:haystack_reader)
+
+    # options
+    @default_options = options_and_rules.reverse_merge(DEFAULT_OPTIONS).freeze
+
+    # do this last
+    self.haystack = competitors
+  end
+  
+  def blockings=(ary)
+    @blockings = ary.map { |regexp_or_str| Blocking.new regexp_or_str }
+  end
+  
+  def identities=(ary)
+    @identities = ary.map { |regexp_or_str| Identity.new regexp_or_str }
+  end
+  
+  def tighteners=(ary)
+    @tighteners = ary.map { |regexp_or_str| Tightener.new regexp_or_str }
+  end
+  
+  def stop_words=(ary)
+    @stop_words = ary.map { |regexp_or_str| StopWord.new regexp_or_str }
+  end
+  
+  def haystack=(ary)
+    @haystack = ary.map { |competitor| Wrapper.new self, competitor }
   end
   
   def last_result
@@ -58,16 +97,18 @@ class FuzzyMatch
   def find(needle, options = {})
     raise ::RuntimeError, "[fuzzy_match] Dictionary has already been freed, can't perform more finds" if freed?
     
-    options = options.symbolize_keys
-    gather_last_result = options.fetch(:gather_last_result, false)
-    is_find_all = options.fetch(:find_all, false)
-    first_blocking_decides = options.fetch(:first_blocking_decides, default_first_blocking_decides)
-    must_match_blocking = options.fetch(:must_match_blocking, default_must_match_blocking)
-    must_match_at_least_one_word = options.fetch(:must_match_at_least_one_word, default_must_match_at_least_one_word)
+    options = options.symbolize_keys.reverse_merge default_options
+    
+    gather_last_result = options[:gather_last_result]
+    is_find_all = options[:find_all]
+    first_blocking_decides = options[:first_blocking_decides]
+    must_match_blocking = options[:must_match_blocking]
+    must_match_at_least_one_word = options[:must_match_at_least_one_word]
     
     if gather_last_result
       free_last_result
       @last_result = Result.new
+      last_result.options = options
     end
     
     if gather_last_result
@@ -77,7 +118,7 @@ class FuzzyMatch
       last_result.stop_words = stop_words
     end
     
-    needle = Wrapper.new self, needle
+    needle = Wrapper.new self, needle, true
     
     if gather_last_result
       last_result.needle = needle

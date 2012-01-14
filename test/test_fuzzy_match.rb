@@ -108,6 +108,8 @@ class TestFuzzyMatch < Test::Unit::TestCase
     haystack = [ab, ba]
     by_first = FuzzyMatch.new haystack, :read => :one
     by_last = FuzzyMatch.new haystack, :read => :two
+    assert_equal :one, by_first.read
+    assert_equal :two, by_last.read
     assert_equal ab, by_first.find('a')
     assert_equal ab, by_last.find('b')
     assert_equal ba, by_first.find('b')
