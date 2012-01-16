@@ -26,7 +26,7 @@ require 'fuzzy_match/cached_result'
 class Aircraft < ActiveRecord::Base
   set_primary_key :icao_code
   
-  cache_fuzzy_match_matches_with :flight_segments, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
+  cache_fuzzy_match_with :flight_segments, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
     
   def aircraft_description
     [manufacturer_name, model_name].compact.join(' ')
@@ -53,7 +53,7 @@ end
 class FlightSegment < ActiveRecord::Base
   set_primary_key :row_hash
   
-  cache_fuzzy_match_matches_with :aircraft, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
+  cache_fuzzy_match_with :aircraft, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
   
   extend CohortScope
   self.minimum_cohort_size = 1

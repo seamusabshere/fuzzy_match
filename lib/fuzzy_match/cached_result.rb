@@ -24,7 +24,7 @@ class FuzzyMatch
       # required options:
       # :primary_key - what to call on this class
       # :foreign_key - what to call on the other class
-      def cache_fuzzy_match_matches_with(other_active_record_class, options)
+      def cache_fuzzy_match_with(other_active_record_class, options)
         other = other_active_record_class.to_s.singularize.camelcase
         me = name
         if me < other
