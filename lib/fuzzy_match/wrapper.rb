@@ -50,7 +50,7 @@ class FuzzyMatch
     # "Foo's Bar" should be treated as [ "Foo's", "Bar" ], so we don't use traditional regexp word boundaries (\b)
     WORD_BOUNDARY = %r{\s+}
     def words
-      @words ||= render.split(WORD_BOUNDARY)
+      @words ||= render.downcase.split(WORD_BOUNDARY)
     end
 
     def similarity(other)

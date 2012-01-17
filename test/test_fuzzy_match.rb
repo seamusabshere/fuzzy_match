@@ -192,4 +192,10 @@ class TestFuzzyMatch < Test::Unit::TestCase
     d = FuzzyMatch.new [ 'PENINSULA HOTELS' ], :must_match_at_least_one_word => true
     assert_equal nil, d.find('DOLCE LA HULPE BXL FI')
   end
+  
+  def test_023_must_match_at_least_one_word_is_case_insensitive
+    d = FuzzyMatch.new [ 'A', 'B' ]
+    assert_equal 'A', d.find('a', :must_match_at_least_one_word => true)
+  end
+  
 end
