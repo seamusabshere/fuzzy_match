@@ -44,7 +44,7 @@ So, what if your needle is a string like <tt>youruguay</tt> and your haystack is
     >> FuzzyMatch.new(countries, :read => :name).find('youruguay')
     => <Country name:"Uruguay">
 
-== Regular expressions
+== Rules (regular expressions)
 
 You can improve the default matchings with regular expressions.
 
@@ -72,6 +72,14 @@ Adding a stop word like <tt>THE</tt> ensures that it is not taken into account w
 == Case sensitivity
 
 Scoring is case-insensitive. Everything is downcased before scoring. This is a change from previous versions. Your regexps may still be case-sensitive, though.
+
+== Options
+
+* <tt>read</tt>: how to interpret each record in the 'haystack', either a Proc or a symbol
+* <tt>must_match_blocking</tt>: don't return a match unless the needle fits into one of the blockings you specified
+* <tt>must_match_at_least_one_word</tt>: don't return a match unless the needle shares at least one word with the match
+* <tt>first_blocking_decides</tt>: force records into the first blocking they match, rather than choosing a blocking that will give them a higher score
+* <tt>gather_last_result</tt>: enable <tt>last_result</tt>
 
 == Examples
 

@@ -35,19 +35,18 @@ class FuzzyMatch
 
   # haystack - a bunch of records that will compete to see who best matches the needle
   #
-  # rules (can only be specified at initialization or by using a setter)
-  # * tighteners: regexps (see readme)
-  # * identities: regexps
-  # * blockings: regexps
-  # * stop_words: regexps
-  # * read: how to interpret each entry in the 'haystack', either a Proc or a symbol
+  # Rules (can only be specified at initialization or by using a setter)
+  # * :<tt>tighteners</tt> - regexps (see README)
+  # * :<tt>identities</tt> - regexps
+  # * :<tt>blockings</tt> - regexps
+  # * :<tt>stop_words</tt> - regexps
   #
-  # options (can be specified at initialization or when calling #find)
-  # * first_blocking_decides
-  # * must_match_blocking
-  # * must_match_at_least_one_word
-  # * gather_last_result
-  # * find_all
+  # Options (can be specified at initialization or when calling #find)
+  # * :<tt>read</tt> - how to interpret each record in the 'haystack', either a Proc or a symbol
+  # * :<tt>must_match_blocking</tt> - don't return a match unless the needle fits into one of the blockings you specified
+  # * :<tt>must_match_at_least_one_word</tt> - don't return a match unless the needle shares at least one word with the match
+  # * :<tt>first_blocking_decides</tt> - force records into the first blocking they match, rather than choosing a blocking that will give them a higher score
+  # * :<tt>gather_last_result</tt> - enable <tt>last_result</tt>
   def initialize(competitors, options_and_rules = {})
     options_and_rules = options_and_rules.symbolize_keys
 
