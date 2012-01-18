@@ -27,7 +27,7 @@ ERB
     attr_accessor :read
     attr_accessor :haystack
     attr_accessor :options
-    attr_accessor :tighteners
+    attr_accessor :normalizers
     attr_accessor :blockings
     attr_accessor :identities
     attr_accessor :stop_words

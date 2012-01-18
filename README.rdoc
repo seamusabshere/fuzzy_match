@@ -48,8 +48,8 @@ So, what if your needle is a string like <tt>youruguay</tt> and your haystack is
 
 You can improve the default matchings with regular expressions.
 
-* Emphasize important words using <b>blockings</b> and <b>tighteners</b>
-* Filter out stop words with <b>tighteners</b>
+* Emphasize important words using <b>blockings</b> and <b>normalizers</b>
+* Strip strings down to the essentials with <b>normalizers</b>
 * Prevent impossible matches with <b>blockings</b> and <b>identities</b>
 * Ignore words with <b>stop words</b>
 
@@ -57,9 +57,9 @@ You can improve the default matchings with regular expressions.
 
 Setting a blocking of <tt>/Airbus/</tt> ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better blocking in this case would probably be <tt>/airbus/i</tt>.
 
-=== Tighteners
+=== Normalizers (formerly called tighteners)
 
-Adding a tightener like <tt>/(boeing).*(7\d\d)/i</tt> will cause "BOEING COMPANY 747" and "boeing747" to be scored as if they were "BOEING 747" and "boeing 747", respectively. See also "Case sensitivity" below.
+Adding a normalizer like <tt>/(boeing).*(7\d\d)/i</tt> will cause "BOEING COMPANY 747" and "boeing747" to be scored as if they were "BOEING 747" and "boeing 747", respectively. See also "Case sensitivity" below.
 
 === Identities
 

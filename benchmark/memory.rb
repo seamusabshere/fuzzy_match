@@ -28,9 +28,9 @@ MUST_MATCH_BLOCKING = false
 # (Example) We made these by trial and error
 BLOCKINGS = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/bts_aircraft/blockings.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
 
-# Tighteners
+# Normalizers
 # (Example) We made these by trial and error
-TIGHTENERS = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/bts_aircraft/tighteners.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
+NORMALIZERS = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/bts_aircraft/normalizers.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
 
 # Identities
 # (Example) We made these by trial and error
@@ -39,7 +39,7 @@ IDENTITIES = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/
 FINAL_OPTIONS = {
   :read => HAYSTACK_READER,
   :must_match_blocking => MUST_MATCH_BLOCKING,
-  :tighteners => TIGHTENERS,
+  :normalizers => NORMALIZERS,
   :identities => IDENTITIES,
   :blockings => BLOCKINGS
 }

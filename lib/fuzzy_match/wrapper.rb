@@ -58,9 +58,9 @@ class FuzzyMatch
     end
 
     def variants
-      @variants ||= fuzzy_match.tighteners.inject([ render ]) do |memo, tightener|
-        if tightener.apply? render
-          memo.push tightener.apply(render)
+      @variants ||= fuzzy_match.normalizers.inject([ render ]) do |memo, normalizer|
+        if normalizer.apply? render
+          memo.push normalizer.apply(render)
         end
         memo
       end.uniq

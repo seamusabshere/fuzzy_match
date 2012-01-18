@@ -27,16 +27,14 @@ class TestFuzzyMatch < Test::Unit::TestCase
     assert_equal 'NISSAN', d.last_result.winner
   end
   
-  def test_004_false_positive_without_tightener
+  def test_005_correct_with_normalizer
     d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900']
-    assert_equal 'BOEING 737-900', d.find('BOEING 737100 number 900')
-  end
-  
-  def test_005_correct_with_tightener
-    tighteners = [
+    assert_equal 'BOEING 737-900', d.find('BOEING 737100 number 900') # false positive without normalizer
+
+    normalizers = [
       %r{(7\d)(7|0)-?(\d{1,3})} # tighten 737-100/200 => 737100, which will cause it to win over 737-900
     ]
-    d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], :tighteners => tighteners
+    d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], :normalizers => normalizers
     assert_equal 'BOEING 737-100/200', d.find('BOEING 737100 number 900')
   end
   

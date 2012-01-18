@@ -7,7 +7,7 @@ require 'to_regexp'
 
 # See the README for more information.
 class FuzzyMatch
-  autoload :Tightener, 'fuzzy_match/tightener'
+  autoload :Normalizer, 'fuzzy_match/normalizer'
   autoload :StopWord, 'fuzzy_match/stop_word'
   autoload :Blocking, 'fuzzy_match/blocking'
   autoload :Identity, 'fuzzy_match/identity'
@@ -28,7 +28,7 @@ class FuzzyMatch
   attr_reader :haystack
   attr_reader :blockings
   attr_reader :identities
-  attr_reader :tighteners
+  attr_reader :normalizers
   attr_reader :stop_words
   attr_reader :read
   attr_reader :default_options
@@ -36,7 +36,7 @@ class FuzzyMatch
   # haystack - a bunch of records that will compete to see who best matches the needle
   #
   # Rules (can only be specified at initialization or by using a setter)
-  # * :<tt>tighteners</tt> - regexps (see README)
+  # * :<tt>normalizers</tt> - regexps (see README)
   # * :<tt>identities</tt> - regexps
   # * :<tt>blockings</tt> - regexps
   # * :<tt>stop_words</tt> - regexps
@@ -53,7 +53,7 @@ class FuzzyMatch
     # rules
     self.blockings = options_and_rules.delete(:blockings) || []
     self.identities = options_and_rules.delete(:identities) || []
-    self.tighteners = options_and_rules.delete(:tighteners) || []
+    self.normalizers = options_and_rules.delete(:normalizers) || options_and_rules.delete(:tighteners) || []
     self.stop_words = options_and_rules.delete(:stop_words) || []
     @read = options_and_rules.delete(:read) || options_and_rules.delete(:haystack_reader)
 
@@ -72,8 +72,8 @@ class FuzzyMatch
     @identities = ary.map { |regexp_or_str| Identity.new regexp_or_str }
   end
   
-  def tighteners=(ary)
-    @tighteners = ary.map { |regexp_or_str| Tightener.new regexp_or_str }
+  def normalizers=(ary)
+    @normalizers = ary.map { |regexp_or_str| Normalizer.new regexp_or_str }
   end
   
   def stop_words=(ary)
@@ -117,7 +117,7 @@ EOS
     end
     
     if gather_last_result
-      last_result.tighteners = tighteners
+      last_result.normalizers = normalizers
       last_result.identities = identities
       last_result.blockings = blockings
       last_result.stop_words = stop_words

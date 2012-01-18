@@ -11,7 +11,7 @@
     779 ./benchmark/../lib/fuzzy_match/similarity.rb:42:FuzzyMatch::Score
     779 ./benchmark/../lib/fuzzy_match/similarity.rb:41:FuzzyMatch::Score
     676 benchmark/memory.rb:21:String
-    607 ./benchmark/../lib/fuzzy_match/tightener.rb:20:String
+    607 ./benchmark/../lib/fuzzy_match/normalizer.rb:20:String
     444 ./benchmark/../lib/fuzzy_match/wrapper.rb:29:Array
     342 ./benchmark/../lib/fuzzy_match/wrapper.rb:29:String
     325 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/remote_table-1.1.6/lib/remote_table/hasher.rb:20:String
@@ -25,7 +25,7 @@
     303 ./benchmark/../lib/fuzzy_match/similarity.rb:21:Float
     234 ./benchmark/../lib/fuzzy_match/similarity.rb:56:Array
     234 ./benchmark/../lib/fuzzy_match/similarity.rb:55:Array
-    184 ./benchmark/../lib/fuzzy_match/tightener.rb:14:String
+    184 ./benchmark/../lib/fuzzy_match/normalizer.rb:14:String
     140 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch.bundle:0:__node__
     129 ./benchmark/../lib/fuzzy_match/wrapper.rb:29:__node__
     127 ./benchmark/../lib/fuzzy_match/similarity.rb:55:__node__
@@ -37,13 +37,13 @@
     118 ./benchmark/../lib/fuzzy_match/similarity.rb:12:__scope__
     117 ./benchmark/../lib/fuzzy_match/wrapper.rb:29:__scope__
     117 ./benchmark/../lib/fuzzy_match/wrapper.rb:19:Array
-    102 ./benchmark/../lib/fuzzy_match/tightener.rb:20:Array
-    102 ./benchmark/../lib/fuzzy_match/tightener.rb:19:MatchData
-    101 ./benchmark/../lib/fuzzy_match/tightener.rb:14:MatchData
+    102 ./benchmark/../lib/fuzzy_match/normalizer.rb:20:Array
+    102 ./benchmark/../lib/fuzzy_match/normalizer.rb:19:MatchData
+    101 ./benchmark/../lib/fuzzy_match/normalizer.rb:14:MatchData
      41 ./benchmark/../lib/fuzzy_match/similarity.rb:49:__node__
      36 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:27:Regexp
      28 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:19:__node__
-     26 ./benchmark/../lib/fuzzy_match.rb:187:FuzzyMatch::Tightener
+     26 ./benchmark/../lib/fuzzy_match.rb:187:FuzzyMatch::Normalizer
      22 ./benchmark/../lib/fuzzy_match/similarity.rb:57:__node__
      22 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:20:__node__
      17 ./benchmark/../lib/fuzzy_match/similarity.rb:21:__node__
@@ -65,9 +65,9 @@
       9 ./benchmark/../lib/fuzzy_match/similarity.rb:42:__node__
       9 ./benchmark/../lib/fuzzy_match/similarity.rb:41:__node__
       8 ./benchmark/../lib/fuzzy_match/wrapper.rb:31:__node__
-      8 ./benchmark/../lib/fuzzy_match/tightener.rb:6:__node__
-      8 ./benchmark/../lib/fuzzy_match/tightener.rb:27:__node__
-      8 ./benchmark/../lib/fuzzy_match/tightener.rb:14:__node__
+      8 ./benchmark/../lib/fuzzy_match/normalizer.rb:6:__node__
+      8 ./benchmark/../lib/fuzzy_match/normalizer.rb:27:__node__
+      8 ./benchmark/../lib/fuzzy_match/normalizer.rb:14:__node__
       8 ./benchmark/../lib/fuzzy_match/similarity.rb:38:__node__
       8 ./benchmark/../lib/fuzzy_match/score.rb:13:__node__
       8 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:23:__node__
@@ -77,10 +77,10 @@
       7 ./benchmark/../lib/fuzzy_match/score.rb:17:__node__
       7 ./benchmark/../lib/fuzzy_match/identity.rb:19:__node__
       6 ./benchmark/../lib/fuzzy_match/wrapper.rb:8:__node__
-      6 ./benchmark/../lib/fuzzy_match/tightener.rb:28:__node__
-      6 ./benchmark/../lib/fuzzy_match/tightener.rb:24:__node__
-      6 ./benchmark/../lib/fuzzy_match/tightener.rb:15:__node__
-      6 ./benchmark/../lib/fuzzy_match/tightener.rb:10:__node__
+      6 ./benchmark/../lib/fuzzy_match/normalizer.rb:28:__node__
+      6 ./benchmark/../lib/fuzzy_match/normalizer.rb:24:__node__
+      6 ./benchmark/../lib/fuzzy_match/normalizer.rb:15:__node__
+      6 ./benchmark/../lib/fuzzy_match/normalizer.rb:10:__node__
       6 ./benchmark/../lib/fuzzy_match/similarity.rb:44:__node__
       6 ./benchmark/../lib/fuzzy_match/similarity.rb:15:__node__
       6 ./benchmark/../lib/fuzzy_match/similarity.rb:13:__node__
@@ -89,8 +89,8 @@
       6 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:10:__node__
       5 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/fastercsv-1.5.4/lib/faster_csv.rb:1640:String
       5 ./benchmark/../lib/fuzzy_match/wrapper.rb:34:__node__
-      5 ./benchmark/../lib/fuzzy_match/tightener.rb:9:__node__
-      5 ./benchmark/../lib/fuzzy_match/tightener.rb:19:__node__
+      5 ./benchmark/../lib/fuzzy_match/normalizer.rb:9:__node__
+      5 ./benchmark/../lib/fuzzy_match/normalizer.rb:19:__node__
       5 ./benchmark/../lib/fuzzy_match/similarity.rb:8:__node__
       5 ./benchmark/../lib/fuzzy_match/similarity.rb:33:__node__
       5 ./benchmark/../lib/fuzzy_match/similarity.rb:29:__node__
@@ -100,8 +100,8 @@
       4 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch/version.rb:7:__node__
       4 ./benchmark/../lib/fuzzy_match/wrapper.rb:33:__node__
       4 ./benchmark/../lib/fuzzy_match/wrapper.rb:30:__node__
-      4 ./benchmark/../lib/fuzzy_match/tightener.rb:4:__node__
-      4 ./benchmark/../lib/fuzzy_match/tightener.rb:20:__node__
+      4 ./benchmark/../lib/fuzzy_match/normalizer.rb:4:__node__
+      4 ./benchmark/../lib/fuzzy_match/normalizer.rb:20:__node__
       4 ./benchmark/../lib/fuzzy_match/similarity.rb:59:__node__
       4 ./benchmark/../lib/fuzzy_match/similarity.rb:54:__node__
       4 ./benchmark/../lib/fuzzy_match/score.rb:5:__node__
@@ -116,12 +116,12 @@
       3 ./benchmark/../lib/fuzzy_match/wrapper.rb:18:__node__
       3 ./benchmark/../lib/fuzzy_match/wrapper.rb:15:String
       3 ./benchmark/../lib/fuzzy_match/wrapper.rb:14:__node__
-      3 ./benchmark/../lib/fuzzy_match/tightener.rb:8:__node__
-      3 ./benchmark/../lib/fuzzy_match/tightener.rb:30:__node__
-      3 ./benchmark/../lib/fuzzy_match/tightener.rb:29:__node__
-      3 ./benchmark/../lib/fuzzy_match/tightener.rb:26:__node__
-      3 ./benchmark/../lib/fuzzy_match/tightener.rb:18:__node__
-      3 ./benchmark/../lib/fuzzy_match/tightener.rb:13:__node__
+      3 ./benchmark/../lib/fuzzy_match/normalizer.rb:8:__node__
+      3 ./benchmark/../lib/fuzzy_match/normalizer.rb:30:__node__
+      3 ./benchmark/../lib/fuzzy_match/normalizer.rb:29:__node__
+      3 ./benchmark/../lib/fuzzy_match/normalizer.rb:26:__node__
+      3 ./benchmark/../lib/fuzzy_match/normalizer.rb:18:__node__
+      3 ./benchmark/../lib/fuzzy_match/normalizer.rb:13:__node__
       3 ./benchmark/../lib/fuzzy_match/similarity.rb:7:__node__
       3 ./benchmark/../lib/fuzzy_match/similarity.rb:6:__node__
       3 ./benchmark/../lib/fuzzy_match/similarity.rb:58:__node__
@@ -160,12 +160,12 @@
       2 ./benchmark/../lib/fuzzy_match/wrapper.rb:16:__node__
       2 ./benchmark/../lib/fuzzy_match/wrapper.rb:12:__node__
       2 ./benchmark/../lib/fuzzy_match/wrapper.rb:11:__node__
-      2 ./benchmark/../lib/fuzzy_match/tightener.rb:3:__node__
-      2 ./benchmark/../lib/fuzzy_match/tightener.rb:3:Class
-      2 ./benchmark/../lib/fuzzy_match/tightener.rb:27:String
-      2 ./benchmark/../lib/fuzzy_match/tightener.rb:23:__node__
-      2 ./benchmark/../lib/fuzzy_match/tightener.rb:22:__node__
-      2 ./benchmark/../lib/fuzzy_match/tightener.rb:1:__node__
+      2 ./benchmark/../lib/fuzzy_match/normalizer.rb:3:__node__
+      2 ./benchmark/../lib/fuzzy_match/normalizer.rb:3:Class
+      2 ./benchmark/../lib/fuzzy_match/normalizer.rb:27:String
+      2 ./benchmark/../lib/fuzzy_match/normalizer.rb:23:__node__
+      2 ./benchmark/../lib/fuzzy_match/normalizer.rb:22:__node__
+      2 ./benchmark/../lib/fuzzy_match/normalizer.rb:1:__node__
       2 ./benchmark/../lib/fuzzy_match/similarity.rb:60:__node__
       2 ./benchmark/../lib/fuzzy_match/similarity.rb:50:__node__
       2 ./benchmark/../lib/fuzzy_match/similarity.rb:4:__node__
@@ -218,8 +218,8 @@
       1 ./benchmark/../lib/fuzzy_match/wrapper.rb:25:String
       1 ./benchmark/../lib/fuzzy_match/wrapper.rb:1:__node__
       1 ./benchmark/../lib/fuzzy_match/wrapper.rb:10:String
-      1 ./benchmark/../lib/fuzzy_match/tightener.rb:4:FuzzyMatch::ExtractRegexp
-      1 ./benchmark/../lib/fuzzy_match/tightener.rb:3:String
+      1 ./benchmark/../lib/fuzzy_match/normalizer.rb:4:FuzzyMatch::ExtractRegexp
+      1 ./benchmark/../lib/fuzzy_match/normalizer.rb:3:String
       1 ./benchmark/../lib/fuzzy_match/similarity.rb:9:__node__
       1 ./benchmark/../lib/fuzzy_match/similarity.rb:2:__node__
       1 ./benchmark/../lib/fuzzy_match/similarity.rb:2:String
