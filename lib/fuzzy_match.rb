@@ -5,18 +5,21 @@ if ::ActiveSupport::VERSION::MAJOR >= 3
 end
 require 'to_regexp'
 
+require 'fuzzy_match/normalizer'
+require 'fuzzy_match/stop_word'
+require 'fuzzy_match/blocking'
+require 'fuzzy_match/identity'
+require 'fuzzy_match/result'
+require 'fuzzy_match/wrapper'
+require 'fuzzy_match/similarity'
+require 'fuzzy_match/score'
+
+if defined?(::ActiveRecord)
+  require 'fuzzy_match/cached_result'
+end
+
 # See the README for more information.
 class FuzzyMatch
-  autoload :Normalizer, 'fuzzy_match/normalizer'
-  autoload :StopWord, 'fuzzy_match/stop_word'
-  autoload :Blocking, 'fuzzy_match/blocking'
-  autoload :Identity, 'fuzzy_match/identity'
-  autoload :Result, 'fuzzy_match/result'
-  autoload :Wrapper, 'fuzzy_match/wrapper'
-  autoload :Similarity, 'fuzzy_match/similarity'
-  autoload :Score, 'fuzzy_match/score'
-  autoload :CachedResult, 'fuzzy_match/cached_result'
-  
   DEFAULT_OPTIONS = {
     :first_blocking_decides => false,
     :must_match_blocking => false,
