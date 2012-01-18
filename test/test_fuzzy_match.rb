@@ -65,15 +65,15 @@ class TestFuzzyMatch < Test::Unit::TestCase
     assert_equal 'X', d.find('X', :must_match_blocking => true)
     assert_equal nil, d.find('A', :must_match_blocking => true)
   end
-    
-  def test_011_free
-    d = FuzzyMatch.new %w{ NISSAN HONDA }
-    d.free
-    assert_raises(::RuntimeError, /free/) do
-      d.find('foobar')
+
+  def test_011_free_does_nothing
+    d = FuzzyMatch.new %w{ A B }
+    assert_nothing_raised do
+      d.free
+      d.find 'A'
     end
   end
-  
+
   def test_012_find_all
     d = FuzzyMatch.new [ 'X', 'X22', 'Y', 'Y4' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
     assert_equal ['X', 'X22' ], d.find_all('X')

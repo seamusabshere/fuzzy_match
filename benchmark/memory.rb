@@ -48,7 +48,6 @@ Memprof.start
 
 d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
 record = d.find('boeing 707(100)', :gather_last_result => false)
-# d.free
 
 Memprof.stats
 Memprof.stop

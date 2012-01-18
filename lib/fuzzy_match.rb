@@ -94,8 +94,6 @@ class FuzzyMatch
   end
   
   def find(needle, options = {})
-    raise ::RuntimeError, "[fuzzy_match] Dictionary has already been freed, can't perform more finds" if freed?
-    
     options = options.symbolize_keys.reverse_merge default_options
     
     gather_last_result = options[:gather_last_result]
@@ -105,7 +103,6 @@ class FuzzyMatch
     must_match_at_least_one_word = options[:must_match_at_least_one_word]
     
     if gather_last_result
-      free_last_result
       @last_result = Result.new
       last_result.read = read
       last_result.haystack = haystack
@@ -262,21 +259,7 @@ EOS
     last_result.explain
   end
 
-  def freed?
-    @freed == true
-  end
-  
+  # DEPRECATED - doesn't do anything
   def free
-    free_last_result
-    @haystack.try :clear
-    @haystack = nil
-  ensure
-    @freed = true
-  end
-  
-  private
-  
-  def free_last_result
-    @last_result = nil    
   end
 end
