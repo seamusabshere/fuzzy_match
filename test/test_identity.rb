@@ -30,4 +30,9 @@ class TestIdentity < Test::Unit::TestCase
     i = FuzzyMatch::Identity.new '/\A\\\?\/(.*)etc\/mysql\$$/'
     assert_equal %r{\A\\?/(.*)etc/mysql\$$}, i.regexp
   end
+  
+  def test_007_accepts_case_insensitivity
+    i = FuzzyMatch::Identity.new %r{(A)[ ]*(\d)}i
+    assert_equal true, i.identical?('A1', 'a     1foobar')
+  end
 end

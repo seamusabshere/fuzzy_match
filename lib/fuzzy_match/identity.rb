@@ -14,7 +14,7 @@ class FuzzyMatch
     # Otherwise returns nil.
     def identical?(str1, str2)
       if str1_match_data = regexp.match(str1) and match_data = regexp.match(str2)
-        str1_match_data.captures == match_data.captures
+        str1_match_data.captures.join.downcase == match_data.captures.join.downcase
       else
         nil
       end

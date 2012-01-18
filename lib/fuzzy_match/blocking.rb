@@ -24,7 +24,7 @@ class FuzzyMatch
     def join?(str1, str2)
       if str2_match_data = regexp.match(str2)
         if str1_match_data = regexp.match(str1)
-          str2_match_data.captures == str1_match_data.captures
+          str2_match_data.captures.join.downcase == str1_match_data.captures.join.downcase
         else
           false
         end

@@ -20,4 +20,9 @@ class TestBlocking < Test::Unit::TestCase
     b = FuzzyMatch::Blocking.new %r{apple}
     assert_equal nil, b.join?('orange', 'orange')
   end
+  
+  def test_004_accepts_case_insensitivity
+    b = FuzzyMatch::Blocking.new %r{apple}i
+    assert_equal true, b.match?('2 Apples')
+  end
 end
