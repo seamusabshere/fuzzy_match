@@ -10,12 +10,9 @@ end
 
 task :default => :test
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "fuzzy_match #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+require 'yard'
+require File.expand_path('../lib/fuzzy_match/version.rb', __FILE__)
+YARD::Rake::YardocTask.new do |t|
+  t.files   = ['lib/**/*.rb', 'README.markdown']   # optional
+  # t.options = ['--any', '--extra', '--opts'] # optional
 end
