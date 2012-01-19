@@ -1,34 +1,43 @@
 # fuzzy_match
 
-Find a needle in a haystack based on string similarity (using the Pair Distance algorithm and Levenshtein distance) and regular expressions.
+Find a needle in a haystack based on string similarity and regular expression rules.
 
 Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight_dictionary) because that was a confusing name.
 
 ## Quickstart
 
     >> require 'fuzzy_match'
-    => true 
-    >> FuzzyMatch.new(['seamus', 'andy', 'ben']).find('Shamus')
+    => true
+    >> matcher = FuzzyMatch.new(['seamus', 'andy', 'ben'])
+    => #<FuzzyMatch: [...]>
+    >> matcher.find('Shamus')
     => "seamus"
 
 ## Default matching (string similarity)
 
-If you configure nothing else, string similarity matching is used. That's why we call it fuzzy matching.
+At the core, and even if you configure nothing else, string similarity (calculated by "pair distance" aka Dice's) is used to compare records.
 
-The algorithm is [Dice's Coefficient](http://en.wikipedia.org/wiki/Dice's_coefficient) (aka Pair Distance) because it seemed to work better than Jaro Winkler, etc.
+You can tell `FuzzyMatch` what field or method to use via the `:read` option... for example, let's say you want to match a `Country` object like `<Country name:"Uruguay" iso_3166_code:"UY">`
 
-## Rules (regular expressions)
+    >> matcher = FuzzyMatch.new(Country.all, :read => :name)  # Country#name will be called when comparing
+    => #<FuzzyMatch: [...]>
+    >> matcher.find('youruguay')
+    => <Country name:"Uruguay" iso_3166_code:"UY">            # the matcher returns a Country object
 
-You can improve the default matchings with rules, which are generally regular expressions.
+## Optional rules (regular expressions)
 
-    >> require 'fuzzy_match'
-    => true 
-    >> matcher = FuzzyMatch.new(['Ford F-150', 'Ford F-250', 'GMC 1500', 'GMC 2500'], :blockings => [ /ford/i, /gmc/i ], :normalizers => [ /K(\d500)/i ], :identities => [ /(f)-?(\d\d\d)/i ])
+You can improve the default matchings with rules. There are 4 different kinds of rules. Each rule is a regular expression. Depending on the kind of rule, the results of running the regular expression are used for a particular purpose.
+
+We suggest that you **first try without any rules** and only define them to improve matching, prevent false positives, etc.
+
+    >> matcher = FuzzyMatch.new(['Ford F-150', 'Ford F-250', 'GMC 1500', 'GMC 2500'], :blockings => [ /ford/i, /gmc/i ], :normalizers => [ /K(\d500)/i ], :identities => [ /(f)-?(\d50)/i ])
     => #<FuzzyMatch: [...]> 
     >> matcher.find('fordf250')
     => "Ford F-250" 
     >> matcher.find('gmc truck k1500')
     => "GMC 1500" 
+
+For identities and normalizers (see below), **only the captures are used.** For example, `/(f)-?(\d50)/i` captures the "F" and the "250" but ignores the dash. So place your parentheses carefully! Blockings work the same way, except that if you don't have any captures, a simple match will pass.
 
 ### Blockings
 
@@ -40,13 +49,13 @@ Setting a blocking of `/Airbus/` ensures that strings containing "Airbus" will o
 
 Strip strings down to the essentials.
 
-Adding a normalizer like `/(boeing).*(7\d\d)/i` will cause "BOEING COMPANY 747" and "boeing747" to be scored as if they were "BOEING 747" and "boeing 747", respectively. See also "Case sensitivity" below.
+Adding a normalizer like `/(boeing).*(7\d\d)/i` will cause "BOEING COMPANY 747" and "boeing747" to be normalized to "BOEING 747" and "boeing 747", respectively. Since things are generally downcased before they are compared, these would be an exact match.
 
 ### Identities
 
 Prevent impossible matches.
 
-Adding an identity like `/(F)\-?(\d50)/` ensures that "Ford F-150" and "Ford F-250" never match.
+Adding an identity like `/(f)-?(\d50)/i` ensures that "Ford F-150" and "Ford F-250" never match.
 
 ### Stop words
 
@@ -62,33 +71,44 @@ Adding a stop word like `THE` ensures that it is not taken into account when com
 * `first_blocking_decides`: force records into the first blocking they match, rather than choosing a blocking that will give them a higher score
 * `gather_last_result`: enable `last_result`
 
-### `:read`
-
-So, what if your needle is a string like `youruguay` and your haystack is full of `Country` objects like `<Country name:"Uruguay">`?
-
-    >> FuzzyMatch.new(Country.all, :read => :name).find('youruguay')
-    => <Country name:"Uruguay">
-
 ## Case sensitivity
 
 String similarity is case-insensitive. Everything is downcased before scoring. This is a change from previous versions.
 
 Be careful when trying to use case-sensitivity in your rules; in general, things are downcased before comparing.
 
-## Dice's coefficient edge case
+## String similarity algorithm
+
+The algorithm is [Dice's Coefficient](http://en.wikipedia.org/wiki/Dice's_coefficient) (aka Pair Distance) because it seemed to work better than Longest Substring, Hamming, Jaro Winkler, Levenshtein (although see edge case below) etc.
+
+Here's a great explanation copied from [the wikipedia entry](http://en.wikipedia.org/wiki/Dice%27s_coefficient):
+
+    to calculate the similarity between:
+
+        night
+        nacht
+
+    We would find the set of bigrams in each word:
+
+        {ni,ig,gh,ht}
+        {na,ac,ch,ht}
+
+    Each set has four elements, and the intersection of these two sets has only one element: ht.
+
+    Inserting these numbers into the formula, we calculate, s = (2 · 1) / (4 + 4) = 0.25.
+
+### Edge case: when Dice's fails, use Levenshtein
 
 In edge cases where Dice's finds that two strings are equally similar to a third string, then Levenshtein distance is used. For example, pair distance considers "RATZ" and "CATZ" to be equally similar to "RITZ" so we invoke Levenshtein.
 
-    >> require 'amatch'
-    => true 
     >> 'RITZ'.pair_distance_similar 'RATZ'
     => 0.3333333333333333 
-    >> 'RITZ'.pair_distance_similar 'CATZ'  # <-- pair distance can't tell the difference, so we fall back to levenshtein...
-    => 0.3333333333333333 
+    >> 'RITZ'.pair_distance_similar 'CATZ'
+    => 0.3333333333333333                   # pair distance can't tell the difference, so we fall back to levenshtein...
     >> 'RITZ'.levenshtein_similar 'RATZ'
     => 0.75 
-    >> 'RITZ'.levenshtein_similar 'CATZ'    # <-- which properly shows that RATZ should win
-    => 0.5 
+    >> 'RITZ'.levenshtein_similar 'CATZ'
+    => 0.5                                  # which properly shows that RATZ should win
 
 ## Production use
 
