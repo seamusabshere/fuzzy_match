@@ -17,12 +17,12 @@ Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight
 
 At the core, and even if you configure nothing else, string similarity (calculated by "pair distance" aka Dice's) is used to compare records.
 
-You can tell `FuzzyMatch` what field or method to use via the `:read` option... for example, let's say you want to match a `Country` object like `<Country name:"Uruguay" iso_3166_code:"UY">`
+You can tell `FuzzyMatch` what field or method to use via the `:read` option... for example, let's say you want to match a `Country` object like `#<Country name:"Uruguay" iso_3166_code:"UY">`
 
     >> matcher = FuzzyMatch.new(Country.all, :read => :name)  # Country#name will be called when comparing
     => #<FuzzyMatch: [...]>
     >> matcher.find('youruguay')
-    => <Country name:"Uruguay" iso_3166_code:"UY">            # the matcher returns a Country object
+    => #<Country name:"Uruguay" iso_3166_code:"UY">            # the matcher returns a Country object
 
 ## Optional rules (regular expressions)
 
