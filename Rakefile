@@ -11,8 +11,4 @@ end
 task :default => :test
 
 require 'yard'
-require File.expand_path('../lib/fuzzy_match/version.rb', __FILE__)
-YARD::Rake::YardocTask.new do |t|
-  t.files   = ['lib/**/*.rb', 'README.markdown']   # optional
-  # t.options = ['--any', '--extra', '--opts'] # optional
-end
+YARD::Rake::YardocTask.new
