@@ -45,12 +45,6 @@ Group records together.
 
 Setting a blocking of `/Airbus/` ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better blocking in this case would probably be `/airbus/i`.
 
-### Normalizers (formerly called tighteners)
-
-Strip strings down to the essentials.
-
-Adding a normalizer like `/(boeing).*(7\d\d)/i` will cause "BOEING COMPANY 747" and "boeing747" to be normalized to "BOEING 747" and "boeing 747", respectively. Since things are generally downcased before they are compared, these would be an exact match.
-
 ### Identities
 
 Prevent impossible matches.
@@ -59,9 +53,15 @@ Adding an identity like `/(f)-?(\d50)/i` ensures that "Ford F-150" and "Ford F-2
 
 ### Stop words
 
-Ignore common and/or meaningless words.
+Ignore common and/or meaningless words. Applied before normalizers.
 
 Adding a stop word like `THE` ensures that it is not taken into account when comparing "THE CAT", "THE DAT", and "THE CATT"
+
+### Normalizers (formerly called tighteners)
+
+Strip strings down to the essentials. Applied after stop words.
+
+Adding a normalizer like `/(boeing).*(7\d\d)/i` will cause "BOEING COMPANY 747" and "boeing747" to be normalized to "BOEING 747" and "boeing 747", respectively. Since things are generally downcased before they are compared, these would be an exact match.
 
 ## Find options
 
