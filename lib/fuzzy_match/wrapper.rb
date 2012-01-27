@@ -47,8 +47,10 @@ class FuzzyMatch
 
     alias :to_str :render
 
-    # "Foo's Bar" should be treated as [ "Foo's", "Bar" ], so we don't use traditional regexp word boundaries (\b)
-    WORD_BOUNDARY = %r{\s+}
+    # "Foo's" is one word
+    # "North-west" is just one word
+    # "Bolivia," is just Bolivia
+    WORD_BOUNDARY = %r{\W*(?:\s+|$)}
     def words
       @words ||= render.downcase.split(WORD_BOUNDARY)
     end
