@@ -22,7 +22,7 @@ class FuzzyMatch
     end
     
     def inspect
-      "#<Normalizer regexp=#{regexp.inspect}>"
+      "#<FuzzyMatch::Normalizer regexp=#{regexp.inspect}>"
     end
   end
 end

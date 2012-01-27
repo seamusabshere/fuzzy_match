@@ -262,7 +262,7 @@ EOS
     last_result.explain
   end
 
-  # DEPRECATED - doesn't do anything
+  # DEPRECATED
   def free
   end
 end

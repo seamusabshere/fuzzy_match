@@ -47,7 +47,7 @@ class FuzzyMatch
     end
     
     def inspect
-      %{#<Similarity "#{wrapper2.render}"=>"#{best_wrapper2_variant}" versus "#{wrapper1.render}"=>"#{best_wrapper1_variant}" original_weight=#{"%0.5f" % original_weight} best_score=#{best_score.inspect}>}
+      %{#<FuzzyMatch::Similarity #{wrapper2.render.inspect}=>#{best_wrapper2_variant.inspect} versus #{wrapper1.render.inspect}=>#{best_wrapper1_variant.inspect} original_weight=#{"%0.5f" % original_weight} best_score=#{best_score.inspect}>}
     end
   end
 end

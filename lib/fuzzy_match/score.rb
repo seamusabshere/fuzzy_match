@@ -11,7 +11,7 @@ class FuzzyMatch
     end
 
     def inspect
-      %{#<Score: dices_coefficient=#{dices_coefficient_similar} levenshtein=#{levenshtein_similar}>}
+      %{#<FuzzyMatch::Score: str1=#{str1.inspect} str2=#{str2.inspect} dices_coefficient_similar=#{dices_coefficient_similar} levenshtein_similar=#{levenshtein_similar}>}
     end
 
     def <=>(other)

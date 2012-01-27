@@ -13,7 +13,7 @@ class FuzzyMatch
     end
 
     def inspect
-      "#<Wrapper render=#{render} variants=#{variants.length}>"
+      "#<FuzzyMatch::Wrapper render=#{render.inspect} variants=#{variants.length}>"
     end
     
     def read

@@ -13,7 +13,7 @@ class FuzzyMatch
     end
     
     def inspect
-      "#<StopWord regexp=#{regexp.inspect}>"
+      "#<FuzzyMatch::StopWord regexp=#{regexp.inspect}>"
     end
   end
 end
