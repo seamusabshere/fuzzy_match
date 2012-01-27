@@ -67,7 +67,7 @@ Adding a stop word like `THE` ensures that it is not taken into account when com
 
 * `read`: how to interpret each record in the 'haystack', either a Proc or a symbol
 * `must_match_blocking`: don't return a match unless the needle fits into one of the blockings you specified
-* `must_match_at_least_one_word`: don't return a match unless the needle shares at least one word with the match
+* `must_match_at_least_one_word`: don't return a match unless the needle shares at least one word with the match. Note that "Foo's" is treated like one word (so that it won't match "'s") and "Bolivia," is treated as just "bolivia"
 * `first_blocking_decides`: force records into the first blocking they match, rather than choosing a blocking that will give them a higher score
 * `gather_last_result`: enable `last_result`
 
