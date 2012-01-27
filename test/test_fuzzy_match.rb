@@ -158,6 +158,9 @@ class TestFuzzyMatch < Test::Unit::TestCase
     d = FuzzyMatch.new ["Foo's Bar"], :must_match_at_least_one_word => true
     assert_equal nil, d.find("Jacob's")
     assert_equal "Foo's Bar", d.find("Foo's")
+    
+    d = FuzzyMatch.new ["Bolivia, Plurinational State of"], :must_match_at_least_one_word => true
+    assert_equal "Bolivia, Plurinational State of", d.find("Bolivia")
   end
 
   def test_020_stop_words
