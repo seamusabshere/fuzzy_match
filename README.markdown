@@ -13,6 +13,8 @@ Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight
     >> matcher.find('Shamus')
     => "seamus"
 
+See also the blog post [Fuzzy match in Ruby](http://numbers.brighterplanet.com/2012/01/18/fuzzy-match-in-ruby/).
+
 ## Default matching (string similarity)
 
 At the core, and even if you configure nothing else, string similarity (calculated by "pair distance" aka Dice's) is used to compare records.
