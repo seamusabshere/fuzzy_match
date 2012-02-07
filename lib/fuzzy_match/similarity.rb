@@ -23,7 +23,7 @@ class FuzzyMatch
     end
     
     def best_score
-      @best_score ||= Score.new best_wrapper1_variant, best_wrapper2_variant
+      @best_score ||= FuzzyMatch.score_class.new best_wrapper1_variant, best_wrapper2_variant
     end
     
     def best_wrapper1_variant
@@ -39,8 +39,8 @@ class FuzzyMatch
         wrapper1_variant1, wrapper2_variant1 = tuple1
         wrapper1_variant2, wrapper2_variant2 = tuple2
 
-        score1 = Score.new wrapper1_variant1, wrapper2_variant1
-        score2 = Score.new wrapper1_variant2, wrapper2_variant2
+        score1 = FuzzyMatch.score_class.new wrapper1_variant1, wrapper2_variant1
+        score2 = FuzzyMatch.score_class.new wrapper1_variant2, wrapper2_variant2
         
         score1 <=> score2
       end[-1]

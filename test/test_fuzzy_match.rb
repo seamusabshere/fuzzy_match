@@ -199,4 +199,11 @@ class TestFuzzyMatch < MiniTest::Spec
     d.find('a', :must_match_at_least_one_word => true).must_equal 'A'
   end
 
+  it %{defaults to a pure-ruby engine, but also has amatch} do
+    if defined?($testing_amatch) and $testing_amatch
+      FuzzyMatch.engine.must_equal :amatch
+    else
+      FuzzyMatch.engine.must_equal :pure_ruby
+    end
+  end
 end

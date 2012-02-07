@@ -129,9 +129,13 @@ The admittedly imperfect metaphor is "look for a needle in a haystack"
 * needle: the search term
 * haystack: the records you are searching (<b>your result will be an object from here</b>)
 
-## Credits (and how to make things faster)
+## Using amatch to make it faster
 
-If you add the [`amatch`](http://flori.github.com/amatch/) gem to your Gemfile, it will use that, which is much faster (but [segfaults have been seen in the wild](https://github.com/flori/amatch/issues/3)). Thanks [Flori](https://github.com/flori)!
+You can optionally use [`amatch`](http://flori.github.com/amatch/) by [Florian Frank](https://github.com/flori) (thanks Flori!) to make string similarity calculations in a C extension.
+
+    require 'fuzzy_match'
+    require 'amatch' # note that you have to require this... fuzzy_match won't require it for you
+    FuzzyMatch.engine = :amatch
 
 Otherwise, pure ruby versions of the string similarity algorithms derived from the [answer to a StackOverflow question](http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings) and [the text gem](https://github.com/threedaymonk/text/blob/master/lib/text/levenshtein.rb) are used. Thanks [marzagao](http://stackoverflow.com/users/10997/marzagao) and [threedaymonk](https://github.com/threedaymonk)!
 

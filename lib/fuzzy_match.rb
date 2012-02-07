@@ -20,6 +20,29 @@ end
 
 # See the README for more information.
 class FuzzyMatch
+  class << self
+    def engine
+      @@engine ||= :pure_ruby
+    end
+    
+    def engine=(alt_engine)
+      @@engine = alt_engine
+    end
+    
+    def score_class
+      case engine
+      when :pure_ruby
+        Score::PureRuby
+      when :amatch
+        Score::Amatch
+      else
+        raise ::ArgumentError, "[fuzzy_match] #{engine.inspect} is not a recognized engine."
+      end
+    end
+  end
+  
+  DEFAULT_ENGINE = :pure_ruby
+  
   DEFAULT_OPTIONS = {
     :first_blocking_decides => false,
     :must_match_blocking => false,
