@@ -6,7 +6,7 @@ require 'cohort_scope'
 require 'weighted_average'
 
 ActiveRecord::Base.establish_connection(
-  'adapter' => 'mysql',
+  'adapter' => 'mysql2',
   'database' => 'fuzzy_match_test',
   'username' => 'root',
   'password' => 'password'

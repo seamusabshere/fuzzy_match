@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "minitest"
   s.add_development_dependency 'activerecord', '>=3'
-  s.add_development_dependency 'mysql'
+  s.add_development_dependency 'mysql2'
   s.add_development_dependency 'cohort_scope'
   s.add_development_dependency 'weighted_average'
   s.add_development_dependency 'rake'
