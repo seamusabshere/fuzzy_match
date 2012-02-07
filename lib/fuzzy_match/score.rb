@@ -1,7 +1,5 @@
 class FuzzyMatch
   class Score
-    extend ::ActiveSupport::Memoizable
-    
     attr_reader :str1
     attr_reader :str2
 
@@ -26,30 +24,34 @@ class FuzzyMatch
     if defined?(::Amatch)
 
       def dices_coefficient_similar
-        if str1 == str2
-          return 1.0
+        @dices_coefficient_similar ||= if str1 == str2
+          1.0
         elsif str1.length == 1 and str2.length == 1
-          return 0.0
+          0.0
+        else
+          str1.pair_distance_similar str2
         end
-        str1.pair_distance_similar str2
       end
-      memoize :dices_coefficient_similar
 
       def levenshtein_similar
-        str1.levenshtein_similar str2
+        @levenshtein_similar ||= str1.levenshtein_similar str2
       end
-      memoize :levenshtein_similar
 
     else
 
       SPACE = ' '
       # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
       def dices_coefficient_similar
+        return @dices_coefficient_similar if @dices_coefficient_similar.is_a?(::Float)
+        
         if str1 == str2
-          return 1.0
+          @dices_coefficient_similar = 1.0
+          return @dices_coefficient_similar
         elsif str1.length == 1 and str2.length == 1
-          return 0.0
+          @dices_coefficient_similar = 0.0
+          return @dices_coefficient_similar
         end
+        
         pairs1 = (0..str1.length-2).map do |i|
           str1[i,2]
         end.reject do |pair|
@@ -71,20 +73,22 @@ class FuzzyMatch
             end
           end
         end
-        (2.0 * intersection) / union
+        @dices_coefficient_similar = (2.0 * intersection) / union
       end
-      memoize :dices_coefficient_similar
 
-      # this seems like it would slow things down
       def utf8?
-        (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
+        return @utf8_query[0] if @utf8_query.is_a?(::Array) # ActiveSupport::Memoizable is deprecated in 3.2, how annoying
+        utf8_query = (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
+        @utf8_query = [utf8_query]
+        utf8_query
       end
-      memoize :utf8?
 
       # extracted/adapted from the text gem version 1.0.2
       # normalization added for utf-8 strings
       # lib/text/levenshtein.rb
       def levenshtein_similar
+        return @levenshtein_similar if @levenshtein_similar.is_a?(::Float)
+        
         if utf8?
           unpack_rule = 'U*'
         else
@@ -94,9 +98,12 @@ class FuzzyMatch
         t = str2.unpack(unpack_rule)
         n = s.length
         m = t.length
+        
         if n == 0 or m == 0
-          return 0.0
+          @levenshtein_similar = 0.0
+          return @levenshtein_similar
         end
+        
         d = (0..m).to_a
         x = nil
         (0...n).each do |i|
@@ -119,9 +126,8 @@ class FuzzyMatch
         # } else {
         #     result = rb_float_new(1.0 - ((double) v[p][b_len]) / a_len);
         # }
-        1.0 - x.to_f / [n, m].max
+        @levenshtein_similar = 1.0 - x.to_f / [n, m].max
       end
-      memoize :levenshtein_similar
 
     end
   end

@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_development_dependency "shoulda"
+  s.add_development_dependency "minitest"
   s.add_development_dependency "remote_table"
   s.add_development_dependency 'activerecord', '>=3'
   s.add_development_dependency 'mysql'

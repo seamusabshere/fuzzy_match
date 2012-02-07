@@ -1,181 +1,180 @@
 # -*- encoding: utf-8 -*-
 require 'helper'
 
-class TestFuzzyMatch < Test::Unit::TestCase
-  def test_001_find
+class TestFuzzyMatch < MiniTest::Spec
+  it %{identify the best match based on string similarity} do
     d = FuzzyMatch.new %w{ RATZ CATZ }
-    assert_equal 'RATZ', d.find('RITZ')
-    assert_equal 'RATZ', d.find('RíTZ')
+    d.find('RITZ').must_equal 'RATZ'
+    d.find('RíTZ').must_equal 'RATZ'
 
     d = FuzzyMatch.new [ 'X' ]
-    assert_equal 'X', d.find('X')
-    assert_equal nil, d.find('A')
+    d.find('X').must_equal 'X'
+    d.find('A').must_be_nil
   end
 
-  def test_002_dont_gather_last_result_by_default
+  it %{not gather metadata about the last result by default} do
     d = FuzzyMatch.new %w{ NISSAN HONDA }
     d.find('MISSAM')
-    assert_raises(::RuntimeError, /gather_last_result/) do
+    lambda do
       d.last_result
-    end
+    end.must_raise ::RuntimeError, /gather_last_result/
   end
 
-  def test_003_last_result
+  it %{optionally gather metadata about the last result} do
     d = FuzzyMatch.new %w{ NISSAN HONDA }
     d.find 'MISSAM', :gather_last_result => true
-    assert_equal 0.6, d.last_result.score
-    assert_equal 'NISSAN', d.last_result.winner
+    d.last_result.score.must_equal 0.6
+    d.last_result.winner.must_equal 'NISSAN'
   end
 
-  def test_005_correct_with_normalizer
+  it %{use NORMALIZERS} do
     d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900']
-    assert_equal 'BOEING 737-900', d.find('BOEING 737100 number 900') # false positive without normalizer
+    d.find('BOEING 737100 number 900').must_equal 'BOEING 737-900'
 
     normalizers = [
       %r{(7\d)(7|0)-?(\d{1,3})} # tighten 737-100/200 => 737100, which will cause it to win over 737-900
     ]
     d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], :normalizers => normalizers
-    assert_equal 'BOEING 737-100/200', d.find('BOEING 737100 number 900')
+    d.find('BOEING 737100 number 900').must_equal 'BOEING 737-100/200'
   end
 
-  def test_008_false_positive_without_identity
+  it %{use IDENTITIES} do
+    # false positive without identity
     d = FuzzyMatch.new %w{ foo bar }
-    assert_equal 'bar', d.find('baz')
-  end
+    d.find('baz').must_equal 'bar'
 
-  def test_008_identify_false_positive
     d = FuzzyMatch.new %w{ foo bar }, :identities => [ /ba(.)/ ]
-    assert_equal nil, d.find('baz')
+    d.find('baz').must_be_nil
   end
 
   # TODO this is not very helpful
-  def test_009_blocking
+  it %{use BLOCKINGS} do
     d = FuzzyMatch.new [ 'X' ], :blockings => [ /X/, /Y/ ]
-    assert_equal 'X', d.find('X')
-    assert_equal nil, d.find('A')
+    d.find('X').must_equal 'X'
+    d.find('A').must_be_nil
   end
 
   # TODO this is not very helpful
-  def test_0095_must_match_blocking
+  it %{optionally only attempt matches with records that fit into a blocking} do
     d = FuzzyMatch.new [ 'X' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
-    assert_equal 'X', d.find('X')
-    assert_equal nil, d.find('A')
+    d.find('X').must_equal 'X'
+    d.find('A').must_be_nil
 
     d = FuzzyMatch.new [ 'X' ], :blockings => [ /X/, /Y/ ]
-    assert_equal 'X', d.find('X', :must_match_blocking => true)
-    assert_equal nil, d.find('A', :must_match_blocking => true)
+    d.find('X', :must_match_blocking => true).must_equal 'X'
+    d.find('A', :must_match_blocking => true).must_be_nil
   end
 
-  def test_011_free_does_nothing
+  it %{receive the deprecated FuzzyMatch#free method without complaint} do
     d = FuzzyMatch.new %w{ A B }
-    assert_nothing_raised do
-      d.free
-      d.find 'A'
-    end
+    d.free
+    d.find('A').wont_be_nil
   end
 
-  def test_012_find_all
+  it %{return all records in sorted order} do
     d = FuzzyMatch.new [ 'X', 'X22', 'Y', 'Y4' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
-    assert_equal ['X', 'X22' ], d.find_all('X')
-    assert_equal [], d.find_all('A')
+    d.find_all('X').must_equal ['X', 'X22' ]
+    d.find_all('A').must_equal []
   end
 
-  def test_013_first_blocking_decides
+  it %{optionally force the first blocking to decide} do
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ]
-    assert_equal [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], d.find_all('Boeing 747')
+    d.find_all('Boeing 747').must_equal [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ]
 
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
-    assert_equal [ 'Boeing 747', 'Boeing 747SR' ], d.find_all('Boeing 747')
+    d.find_all('Boeing 747').must_equal [ 'Boeing 747', 'Boeing 747SR' ]
 
     # first_blocking_decides refers to the needle
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
-    assert_equal ["Boeing ER6", "Boeing 747", "Boeing 747SR"], d.find_all('Boeing ER6')
+    d.find_all('Boeing ER6').must_equal ["Boeing ER6", "Boeing 747", "Boeing 747SR"]
 
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing (7|E)/i, /boeing/i ], :first_blocking_decides => true
-    assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
+    d.find_all('Boeing ER6').must_equal [ 'Boeing ER6' ]
 
     # or equivalently with an identity
     d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true, :identities => [ /boeing (7|E)/i ]
-    assert_equal [ 'Boeing ER6' ], d.find_all('Boeing ER6')
+    d.find_all('Boeing ER6').must_equal [ 'Boeing ER6' ]
   end
 
-  MyStruct = Struct.new(:one, :two)
-  def test_014_symbol_read_sends_method
-    ab = MyStruct.new('a', 'b')
-    ba = MyStruct.new('b', 'a')
-    haystack = [ab, ba]
-    by_first = FuzzyMatch.new haystack, :read => :one
-    by_last = FuzzyMatch.new haystack, :read => :two
-    assert_equal :one, by_first.read
-    assert_equal :two, by_last.read
-    assert_equal ab, by_first.find('a')
-    assert_equal ab, by_last.find('b')
-    assert_equal ba, by_first.find('b')
-    assert_equal ba, by_last.find('a')
+  describe "the :read option" do
+    it %{interpret a Numeric as an array index} do
+      ab = ['a', 'b']
+      ba = ['b', 'a']
+      haystack = [ab, ba]
+      by_first = FuzzyMatch.new haystack, :read => 0
+      by_last = FuzzyMatch.new haystack, :read => 1
+      by_first.find('a').must_equal ab
+      by_last.find('b').must_equal ab
+      by_first.find('b').must_equal ba
+      by_last.find('a').must_equal ba
+    end
+
+    it %{interpret a Symbol, etc. as hash key} do
+      ab = { :one => 'a', :two => 'b' }
+      ba = { :one => 'b', :two => 'a' }
+      haystack = [ab, ba]
+      by_first = FuzzyMatch.new haystack, :read => :one
+      by_last = FuzzyMatch.new haystack, :read => :two
+      by_first.find('a').must_equal ab
+      by_last.find('b').must_equal ab
+      by_first.find('b').must_equal ba
+      by_last.find('a').must_equal ba
+    end
+
+    MyStruct = Struct.new(:one, :two)
+    it %{interpret a Symbol as a method id (if the object responds to it)} do
+      ab = MyStruct.new('a', 'b')
+      ba = MyStruct.new('b', 'a')
+      haystack = [ab, ba]
+      by_first = FuzzyMatch.new haystack, :read => :one
+      by_last = FuzzyMatch.new haystack, :read => :two
+      by_first.read.must_equal :one
+      by_last.read.must_equal :two
+      by_first.find('a').must_equal ab
+      by_last.find('b').must_equal ab
+      by_first.find('b').must_equal ba
+      by_last.find('a').must_equal ba
+    end
+
+    it %{treat the deprecrated :haystack_reader option as an alias} do
+      ab = ['a', 'b']
+      ba = ['b', 'a']
+      haystack = [ab, ba]
+      by_first = FuzzyMatch.new haystack, :haystack_reader => 0
+      by_first.find('a').must_equal ab
+      by_first.find('b').must_equal ba
+    end
   end
 
-  def test_015_symbol_read_reads_array
-    ab = ['a', 'b']
-    ba = ['b', 'a']
-    haystack = [ab, ba]
-    by_first = FuzzyMatch.new haystack, :read => 0
-    by_last = FuzzyMatch.new haystack, :read => 1
-    assert_equal ab, by_first.find('a')
-    assert_equal ab, by_last.find('b')
-    assert_equal ba, by_first.find('b')
-    assert_equal ba, by_last.find('a')
+  it %{not return any result if the maximum score is zero} do
+    FuzzyMatch.new(['a']).find('b').must_be_nil
   end
 
-  def test_016_symbol_read_reads_hash
-    ab = { :one => 'a', :two => 'b' }
-    ba = { :one => 'b', :two => 'a' }
-    haystack = [ab, ba]
-    by_first = FuzzyMatch.new haystack, :read => :one
-    by_last = FuzzyMatch.new haystack, :read => :two
-    assert_equal ab, by_first.find('a')
-    assert_equal ab, by_last.find('b')
-    assert_equal ba, by_first.find('b')
-    assert_equal ba, by_last.find('a')
-  end
-
-  def test_017_understands_haystack_reader_option
-    ab = ['a', 'b']
-    ba = ['b', 'a']
-    haystack = [ab, ba]
-    by_first = FuzzyMatch.new haystack, :haystack_reader => 0
-    assert_equal ab, by_first.find('a')
-    assert_equal ba, by_first.find('b')
-  end
-
-  def test_018_no_result_if_best_score_is_zero
-    assert_equal nil, FuzzyMatch.new(['a']).find('b')
-  end
-
-  def test_019_must_match_at_least_one_word
+  it %{optionally require that the matching record share at least one word with the needle} do
     d = FuzzyMatch.new %w{ RATZ CATZ }, :must_match_at_least_one_word => true
-    assert_equal nil, d.find('RITZ')
+    d.find('RITZ').must_be_nil
 
     d = FuzzyMatch.new ["Foo's Bar"], :must_match_at_least_one_word => true
-    assert_equal "Foo's Bar", d.find("Foo's")
-    assert_equal nil, d.find("'s")
-    assert_equal nil, d.find("Foo")
+    d.find("Foo's").must_equal "Foo's Bar"
+    d.find("'s").must_be_nil
+    d.find("Foo").must_be_nil
     
     d = FuzzyMatch.new ["Bolivia, Plurinational State of"], :must_match_at_least_one_word => true
-    assert_equal "Bolivia, Plurinational State of", d.find("Bolivia")
+    d.find("Bolivia").must_equal "Bolivia, Plurinational State of"
   end
 
-  def test_020_stop_words
+  it %{use STOP WORDS} do
     d = FuzzyMatch.new [ 'A HOTEL', 'B HTL' ]
-    assert_equal 'B HTL', d.find('A HTL', :must_match_at_least_one_word => true)
+    d.find('A HTL', :must_match_at_least_one_word => true).must_equal 'B HTL'
 
     d = FuzzyMatch.new [ 'A HOTEL', 'B HTL' ], :must_match_at_least_one_word => true
-    assert_equal 'B HTL', d.find('A HTL')
+    d.find('A HTL').must_equal 'B HTL'
 
     d = FuzzyMatch.new [ 'A HOTEL', 'B HTL' ], :must_match_at_least_one_word => true, :stop_words => [ %r{HO?TE?L} ]
-    assert_equal 'A HOTEL', d.find('A HTL')
+    d.find('A HTL').must_equal 'A HOTEL'
   end
 
-  def test_021_explain_prints_to_stdout
+  it %{print a basic explanation to stdout} do
     require 'stringio'
     capture = StringIO.new
     begin
@@ -187,17 +186,17 @@ class TestFuzzyMatch < Test::Unit::TestCase
       $stdout = old_stdout
     end
     capture.rewind
-    assert capture.read.include?('CATZ')
+    capture.read.must_include 'CATZ'
   end
 
-  def test_022_compare_words_with_words
+  it %{not be fooled by substrings (but rather compare whole words to whole words)} do
     d = FuzzyMatch.new [ 'PENINSULA HOTELS' ], :must_match_at_least_one_word => true
-    assert_equal nil, d.find('DOLCE LA HULPE BXL FI')
+    d.find('DOLCE LA HULPE BXL FI').must_be_nil
   end
 
-  def test_023_must_match_at_least_one_word_is_case_insensitive
+  it %{not be case-sensitive when checking for sharing of words} do
     d = FuzzyMatch.new [ 'A', 'B' ]
-    assert_equal 'A', d.find('a', :must_match_at_least_one_word => true)
+    d.find('a', :must_match_at_least_one_word => true).must_equal 'A'
   end
 
 end

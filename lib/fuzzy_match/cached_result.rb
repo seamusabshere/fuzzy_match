@@ -1,6 +1,10 @@
 class FuzzyMatch
   class CachedResult < ::ActiveRecord::Base
-    set_table_name :fuzzy_match_cached_results
+    if ::ActiveRecord::VERSION::STRING >= '3.2'
+      self.table_name = :fuzzy_match_cached_results
+    else
+      set_table_name :fuzzy_match_cached_results
+    end
     
     def self.create_table
       connection.create_table :fuzzy_match_cached_results do |t|
@@ -17,7 +21,7 @@ class FuzzyMatch
     
     def self.setup(from_scratch = false)
       connection.drop_table :fuzzy_match_cached_results if from_scratch and table_exists?
-      create_table unless table_exists?
+      create_table
     end
     
     module ActiveRecordBaseExtension

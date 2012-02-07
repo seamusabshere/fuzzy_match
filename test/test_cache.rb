@@ -99,32 +99,32 @@ FlightSegment.find_each do |fs|
   fs.cache_aircraft!
 end
 
-class TestCache < Test::Unit::TestCase
-  def test_002_one_degree_of_separation
+class TestCache < MiniTest::Spec
+  it %{joins aircraft to flight segments} do
     aircraft = Aircraft.find('B742')
-    assert_equal 2, aircraft.flight_segments.count
+    aircraft.flight_segments.count.must_equal 2
   end
   
-  def test_003_standard_sql_calculations
+  it %{allow simple SQL operations} do
     aircraft = Aircraft.find('B742')
-    assert_equal 110, aircraft.flight_segments.sum(:passengers)
+    aircraft.flight_segments.sum(:passengers).must_equal 110
   end
   
-  def test_004_weighted_average
+  it %{works with weighted_average} do
     aircraft = Aircraft.find('B742')
-    assert_equal 5.45455, aircraft.flight_segments.weighted_average(:seats, :weighted_by => :passengers)
+    aircraft.flight_segments.weighted_average(:seats, :weighted_by => :passengers).must_equal 5.45455
   end
   
-  def test_005_right_way_to_do_cohorts
+  it %{works with cohort_scope (albeit rather clumsily)} do
     aircraft = Aircraft.find('B742')
-    assert_equal 2, FlightSegment.big_cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).count
+    FlightSegment.big_cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).count.must_equal 2
   end
   
-  def test_006_you_can_get_aircraft_from_flight_segments
-    fs = FlightSegment.first
-    # you need to add an aircraft_description column
-    assert_raises(ActiveRecord::StatementInvalid) do
-      assert_equal 2, fs.aircraft.count
-    end
-  end
+  # def test_006_you_can_get_aircraft_from_flight_segments
+  #   fs = FlightSegment.first
+  #   # you need to add an aircraft_description column
+  #   lambda do
+  #     fs.aircraft.count.must_equal 2
+  #   end.must_raise ActiveRecord::StatementInvalid
+  # end
 end

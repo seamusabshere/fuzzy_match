@@ -1,38 +1,36 @@
 require 'helper'
 
-class TestIdentity < Test::Unit::TestCase
-  def test_001_identical
+class TestIdentity < MiniTest::Spec
+  it %{determines whether two records COULD be identical} do
     i = FuzzyMatch::Identity.new %r{(A)[ ]*(\d)}
-    assert_equal true, i.identical?('A1', 'A     1foobar')
+    i.identical?('A1', 'A     1foobar').must_equal true
   end
   
-  def test_002_certainly_different
+  it %{determines that two records MUST NOT be identical} do
     i = FuzzyMatch::Identity.new %r{(A)[ ]*(\d)}
-    assert_equal false, i.identical?('A1', 'A     2foobar')    
+    i.identical?('A1', 'A     2foobar').must_equal false
   end
   
-  def test_003_no_information_ie_possible_identical
+  it %{returns nil indicating no information} do
     i = FuzzyMatch::Identity.new %r{(A)[ ]*(\d)}
-    assert_equal nil, i.identical?('B1', 'A     2foobar')    
+    i.identical?('B1', 'A     2foobar').must_equal nil
   end
 
-  def test_004_regexp
+  it %{can be initialized with a regexp} do
     i = FuzzyMatch::Identity.new %r{\A\\?/(.*)etc/mysql\$$}
-    assert_equal %r{\A\\?/(.*)etc/mysql\$$}, i.regexp
+    i.regexp.must_equal %r{\A\\?/(.*)etc/mysql\$$}
   end
   
-  def test_005_regexp_from_string
+  it %{can be initialized from a string (via to_regexp gem)} do
     i = FuzzyMatch::Identity.new '%r{\A\\\?/(.*)etc/mysql\$$}'
-    assert_equal %r{\A\\?/(.*)etc/mysql\$$}, i.regexp
-  end
-  
-  def test_006_regexp_from_string_using_slash_delim
+    i.regexp.must_equal %r{\A\\?/(.*)etc/mysql\$$}
+
     i = FuzzyMatch::Identity.new '/\A\\\?\/(.*)etc\/mysql\$$/'
-    assert_equal %r{\A\\?/(.*)etc/mysql\$$}, i.regexp
+    i.regexp.must_equal %r{\A\\?/(.*)etc/mysql\$$}
   end
   
-  def test_007_accepts_case_insensitivity
+  it %{embraces case insensitivity} do
     i = FuzzyMatch::Identity.new %r{(A)[ ]*(\d)}i
-    assert_equal true, i.identical?('A1', 'a     1foobar')
+    i.identical?('A1', 'a     1foobar').must_equal true
   end
 end

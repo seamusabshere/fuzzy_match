@@ -1,7 +1,5 @@
 require File.expand_path('../../../test/helper.rb', __FILE__)
 
-require 'shoulda'
-
 # How to iteratively develop a dictionary.
 
 # ruby ./examples/bts_aircraft/test_bts_aircraft.rb
@@ -70,36 +68,36 @@ FINAL_OPTIONS = {
   :blockings => BLOCKINGS
 }
 
-class TestBtsAircraft < Test::Unit::TestCase
-  should "understand records by using the haystack reader" do
+class TestBtsAircraft < MiniTest::Spec
+  it "understand records by using the haystack reader" do
     d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
-    assert d.haystack.map { |record| record.to_str }.include?('boeing boeing 707-100')
+    d.haystack.map { |record| record.to_str }.must_include 'boeing boeing 707-100'
   end
 
-  should "find an easy match" do
+  it "find an easy match" do
     d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
     record = d.find('boeing 707(100)')
-    assert_equal HAYSTACK_RECORD_CLASS, record.class
-    assert_equal HAYSTACK_READER.call(record), 'boeing boeing 707-100'
+    record.class.must_equal HAYSTACK_RECORD_CLASS
+    HAYSTACK_READER.call(record).must_equal 'boeing boeing 707-100'
   end
   
   POSITIVES.each do |row|
     needle = row['needle']
     correct_record = row['haystack']
-    should %{find #{correct_record.blank? ? 'nothing' : correct_record} when looking for #{needle}} do
+    it %{find #{correct_record.blank? ? 'nothing' : correct_record} when looking for #{needle}} do
       d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
       record = d.find(needle.downcase)
-      assert_equal correct_record.downcase, HAYSTACK_READER.call(record)
+      HAYSTACK_READER.call(record).must_equal correct_record.downcase
     end
   end
   
   NEGATIVES.each do |row|
     needle = row['needle']
     incorrect_record = row['haystack']
-    should %{not find #{incorrect_record} when looking for #{needle}} do
+    it %{not find #{incorrect_record} when looking for #{needle}} do
       d = FuzzyMatch.new HAYSTACK, FINAL_OPTIONS
       record = d.find(needle.downcase)
-      assert(incorrect_record.downcase != HAYSTACK_READER.call(record))
+      HAYSTACK_READER.call(record)).wont_equal incorrect_record.downcase
     end
   end
 end
