@@ -12,7 +12,9 @@ ActiveRecord::Base.establish_connection(
   'password' => 'password'
 )
 
+# require 'logger'
 # ActiveRecord::Base.logger = Logger.new $stderr
+# ActiveRecord::Base.logger.level = Logger::DEBUG
 
 ActiveSupport::Inflector.inflections do |inflect|
   inflect.uncountable 'aircraft'
@@ -21,7 +23,6 @@ end
 require 'fuzzy_match/cached_result'
 
 ::FuzzyMatch::CachedResult.setup(true)
-::FuzzyMatch::CachedResult.delete_all
 
 class Aircraft < ActiveRecord::Base
   set_primary_key :icao_code

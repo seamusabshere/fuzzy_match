@@ -20,8 +20,10 @@ class FuzzyMatch
     end
     
     def self.setup(from_scratch = false)
-      connection.drop_table :fuzzy_match_cached_results if from_scratch and table_exists?
-      create_table
+      if from_scratch or not table_exists?
+        connection.drop_table :fuzzy_match_cached_results rescue nil
+        create_table rescue nil
+      end
     end
     
     module ActiveRecordBaseExtension
