@@ -1,4 +1,14 @@
-source "http://rubygems.org"
+source :rubygems
 
-# Specify your gem's dependencies in fuzzy_match.gemspec
 gemspec
+
+# development dependencies
+gem 'minitest-reporters'
+gem "minitest"
+gem 'activerecord', '>=3'
+gem 'mysql2'
+gem 'cohort_scope'
+gem 'weighted_average'
+gem 'rake'
+gem 'yard'
+gem 'amatch'
