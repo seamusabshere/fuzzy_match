@@ -22,7 +22,7 @@
      28 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:19:__node__
      22 ./benchmark/../lib/fuzzy_match/similarity.rb:57:__node__
      22 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:20:__node__
-     21 ./benchmark/../lib/fuzzy_match.rb:199:FuzzyMatch::Blocking
+     21 ./benchmark/../lib/fuzzy_match.rb:199:FuzzyMatch::Grouping
      17 ./benchmark/../lib/fuzzy_match/similarity.rb:21:__node__
      16 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch.bundle:0:Class
      14 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch/version.rb:4:__node__
@@ -50,7 +50,7 @@
       8 ./benchmark/../lib/fuzzy_match/similarity.rb:38:__node__
       8 ./benchmark/../lib/fuzzy_match/score.rb:13:__node__
       8 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:23:__node__
-      8 ./benchmark/../lib/fuzzy_match/blocking.rb:24:__node__
+      8 ./benchmark/../lib/fuzzy_match/grouping.rb:24:__node__
       7 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch/version.rb:7:__node__
       7 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch/version.rb:6:__node__
       7 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch/version.rb:5:__node__
@@ -59,7 +59,7 @@
       7 ./benchmark/../lib/fuzzy_match/similarity.rb:45:__node__
       7 ./benchmark/../lib/fuzzy_match/score.rb:17:__node__
       7 ./benchmark/../lib/fuzzy_match/identity.rb:19:__node__
-      7 ./benchmark/../lib/fuzzy_match/blocking.rb:27:__node__
+      7 ./benchmark/../lib/fuzzy_match/grouping.rb:27:__node__
       7 ./benchmark/../lib/fuzzy_match.rb:209:String
       6 ./benchmark/../lib/fuzzy_match/wrapper.rb:8:__node__
       6 ./benchmark/../lib/fuzzy_match/similarity.rb:44:__node__
@@ -68,7 +68,7 @@
       6 ./benchmark/../lib/fuzzy_match/score.rb:25:__node__
       6 ./benchmark/../lib/fuzzy_match/score.rb:21:__node__
       6 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:10:__node__
-      6 ./benchmark/../lib/fuzzy_match/blocking.rb:22:__node__
+      6 ./benchmark/../lib/fuzzy_match/grouping.rb:22:__node__
       5 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/fastercsv-1.5.4/lib/faster_csv.rb:1640:String
       5 ./benchmark/../lib/fuzzy_match/wrapper.rb:34:__node__
       5 ./benchmark/../lib/fuzzy_match/normalizer.rb:9:__node__
@@ -80,9 +80,9 @@
       5 ./benchmark/../lib/fuzzy_match/score.rb:9:__node__
       5 ./benchmark/../lib/fuzzy_match/result.rb:16:__node__
       5 ./benchmark/../lib/fuzzy_match/identity.rb:10:__node__
-      5 ./benchmark/../lib/fuzzy_match/blocking.rb:26:__node__
-      5 ./benchmark/../lib/fuzzy_match/blocking.rb:25:__node__
-      5 ./benchmark/../lib/fuzzy_match/blocking.rb:15:__node__
+      5 ./benchmark/../lib/fuzzy_match/grouping.rb:26:__node__
+      5 ./benchmark/../lib/fuzzy_match/grouping.rb:25:__node__
+      5 ./benchmark/../lib/fuzzy_match/grouping.rb:15:__node__
       4 ./benchmark/../lib/fuzzy_match/wrapper.rb:33:__node__
       4 ./benchmark/../lib/fuzzy_match/wrapper.rb:30:__node__
       4 ./benchmark/../lib/fuzzy_match/normalizer.rb:20:__node__
@@ -142,8 +142,8 @@
       3 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:18:__node__
       3 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:16:String
       3 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:15:String
-      3 ./benchmark/../lib/fuzzy_match/blocking.rb:33:__node__
-      3 ./benchmark/../lib/fuzzy_match/blocking.rb:14:__node__
+      3 ./benchmark/../lib/fuzzy_match/grouping.rb:33:__node__
+      3 ./benchmark/../lib/fuzzy_match/grouping.rb:14:__node__
       3 ./benchmark/../lib/fuzzy_match.rb:77:Array
       2 /Users/seamus/.rvm/rubies/ruby-1.8.7-p334/lib/ruby/1.8/uri/common.rb:387:String
       2 /Users/seamus/.rvm/gems/ruby-1.8.7-p334/gems/amatch-0.2.5/lib/amatch/version.rb:3:String
@@ -200,14 +200,14 @@
       2 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:5:__node__
       2 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:23:String
       2 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:12:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:9:Class
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:34:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:32:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:30:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:29:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:23:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:16:__node__
-      2 ./benchmark/../lib/fuzzy_match/blocking.rb:12:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:9:Class
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:34:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:32:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:30:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:29:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:23:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:16:__node__
+      2 ./benchmark/../lib/fuzzy_match/grouping.rb:12:__node__
       2 ./benchmark/../lib/fuzzy_match.rb:86:Array
       1 benchmark/memory.rb:50:String
       1 benchmark/memory.rb:49:FuzzyMatch
@@ -265,10 +265,10 @@
       1 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:1:__node__
       1 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:17:Hash
       1 ./benchmark/../lib/fuzzy_match/extract_regexp.rb:10:String
-      1 ./benchmark/../lib/fuzzy_match/blocking.rb:9:__node__
-      1 ./benchmark/../lib/fuzzy_match/blocking.rb:9:String
-      1 ./benchmark/../lib/fuzzy_match/blocking.rb:1:__node__
-      1 ./benchmark/../lib/fuzzy_match/blocking.rb:10:FuzzyMatch::ExtractRegexp
+      1 ./benchmark/../lib/fuzzy_match/grouping.rb:9:__node__
+      1 ./benchmark/../lib/fuzzy_match/grouping.rb:9:String
+      1 ./benchmark/../lib/fuzzy_match/grouping.rb:1:__node__
+      1 ./benchmark/../lib/fuzzy_match/grouping.rb:10:FuzzyMatch::ExtractRegexp
       1 ./benchmark/../lib/fuzzy_match.rb:62:FuzzyMatch::Wrapper
       1 ./benchmark/../lib/fuzzy_match.rb:39:String
       1 ./benchmark/../lib/fuzzy_match.rb:39:FuzzyMatch::Result

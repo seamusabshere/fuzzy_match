@@ -42,7 +42,7 @@ class TestFuzzyMatchConvoluted < MiniTest::Spec
     ]
     @tightenings = []
     @identities = []
-    @blockings = []
+    @groupings = []
     @positives = []
     @negatives = []
   end
@@ -55,23 +55,23 @@ class TestFuzzyMatchConvoluted < MiniTest::Spec
     @_ltd ||= FuzzyMatch.new  @haystack,
                                         :tightenings => @tightenings,
                                         :identities => @identities,
-                                        :blockings => @blockings,
+                                        :groupings => @groupings,
                                         :positives => @positives,
                                         :negatives => @negatives,
-                                        :blocking_only => @blocking_only,
+                                        :grouping_only => @grouping_only,
                                         :log => $log
   end
 
-  should "optionally only pay attention to things that match blockings" do
+  should "optionally only pay attention to things that match groupings" do
     assert_equal @a_haystack, ltd.improver.match(@a_needle)
 
     clear_ltd
-    @blocking_only = true
+    @grouping_only = true
     assert_equal nil, ltd.improver.match(@a_needle)
 
     clear_ltd
-    @blocking_only = true
-    @blockings.push ['/dash/i']
+    @grouping_only = true
+    @groupings.push ['/dash/i']
     assert_equal @a_haystack, ltd.improver.match(@a_needle)
   end
   
@@ -111,7 +111,7 @@ class TestFuzzyMatchConvoluted < MiniTest::Spec
     end
   end
   
-  should "have a false match without blocking" do
+  should "have a false match without grouping" do
     # @d_needle will be our victim
     @haystack.push @d_lookalike
     @tightenings.push @t_1
@@ -119,19 +119,19 @@ class TestFuzzyMatchConvoluted < MiniTest::Spec
     assert_equal @d_lookalike, ltd.improver.match(@d_needle)
   end
   
-  should "do blocking if the needle matches a block" do
+  should "do grouping if the needle matches a group" do
     # @d_needle will be our victim
     @haystack.push @d_lookalike
     @tightenings.push @t_1
-    @blockings.push ['/(bombardier|de ?havilland)/i']
+    @groupings.push ['/(bombardier|de ?havilland)/i']
     
     assert_equal @d_haystack, ltd.improver.match(@d_needle)
   end
   
-  should "treat blocks as exclusive" do
+  should "treat groups as exclusive" do
     @haystack = [ @d_needle ]
     @tightenings.push @t_1
-    @blockings.push ['/(bombardier|de ?havilland)/i']
+    @groupings.push ['/(bombardier|de ?havilland)/i']
 
     assert_equal nil, ltd.improver.match(@d_lookalike)
   end

@@ -8,6 +8,10 @@ class FuzzyMatch
       @regexp = regexp_or_str.to_regexp
     end
     
+    def ==(other)
+      regexp == other.regexp
+    end
+    
     # Two strings are "identical" if they both match this identity and the captures are equal.
     #
     # Only returns true/false if both strings match the regexp.

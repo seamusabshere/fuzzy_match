@@ -32,26 +32,30 @@ You can improve the default matchings with rules. There are 4 different kinds of
 
 We suggest that you **first try without any rules** and only define them to improve matching, prevent false positives, etc.
 
-    >> matcher = FuzzyMatch.new(['Ford F-150', 'Ford F-250', 'GMC 1500', 'GMC 2500'], :blockings => [ /ford/i, /gmc/i ], :normalizers => [ /K(\d500)/i ], :identities => [ /(f)-?(\d50)/i ])
+    >> matcher = FuzzyMatch.new(['Ford F-150', 'Ford F-250', 'GMC 1500', 'GMC 2500'], :groupings => [ /ford/i, /gmc/i ], :normalizers => [ /K(\d500)/i ], :identities => [ /(f)-?(\d50)/i ])
     => #<FuzzyMatch: [...]> 
     >> matcher.find('fordf250')
     => "Ford F-250" 
     >> matcher.find('gmc truck k1500')
     => "GMC 1500" 
 
-For identities and normalizers (see below), **only the captures are used.** For example, `/(f)-?(\d50)/i` captures the "F" and the "250" but ignores the dash. So place your parentheses carefully! Blockings work the same way, except that if you don't have any captures, a simple match will pass.
+For identities and normalizers (see below), **only the captures are used.** For example, `/(f)-?(\d50)/i` captures the "F" and the "250" but ignores the dash. So place your parentheses carefully! Groupings work the same way, except that if you don't have any captures, a simple match will pass.
 
-### Blockings
+### Groupings
 
 Group records together.
 
-Setting a blocking of `/Airbus/` ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better blocking in this case would probably be `/airbus/i`.
+Setting a grouping of `/Airbus/` ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better grouping in this case would probably be `/airbus/i`.
+
+Formerly called "blockings," but that was jargon that confused people.
 
 ### Identities
 
 Prevent impossible matches.
 
 Adding an identity like `/(f)-?(\d50)/i` ensures that "Ford F-150" and "Ford F-250" never match.
+
+Note that identities do not establish certainty. They just say whether two records **could** be identical... then string similarity takes over.
 
 ### Stop words
 
@@ -68,9 +72,9 @@ Adding a normalizer like `/(boeing).*(7\d\d)/i` will cause "BOEING COMPANY 747" 
 ## Find options
 
 * `read`: how to interpret each record in the 'haystack', either a Proc or a symbol
-* `must_match_blocking`: don't return a match unless the needle fits into one of the blockings you specified
+* `must_match_grouping`: don't return a match unless the needle fits into one of the groupings you specified
 * `must_match_at_least_one_word`: don't return a match unless the needle shares at least one word with the match. Note that "Foo's" is treated like one word (so that it won't match "'s") and "Bolivia," is treated as just "bolivia"
-* `first_blocking_decides`: force records into the first blocking they match, rather than choosing a blocking that will give them a higher score
+* `first_grouping_decides`: force records into the first grouping they match, rather than choosing a grouping that will give them a higher score
 * `gather_last_result`: enable `last_result`
 
 ## Case sensitivity

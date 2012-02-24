@@ -7,6 +7,10 @@ class FuzzyMatch
       @regexp = regexp_or_str.to_regexp
     end
     
+    def ==(other)
+      regexp == other.regexp
+    end
+    
     # A normalizer applies when its regexp matches and captures a new (shorter) string
     def apply?(str)
       !!(regexp.match(str))

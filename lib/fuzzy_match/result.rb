@@ -28,7 +28,7 @@ ERB
     attr_accessor :haystack
     attr_accessor :options
     attr_accessor :normalizers
-    attr_accessor :blockings
+    attr_accessor :groupings
     attr_accessor :identities
     attr_accessor :stop_words
     attr_accessor :winner

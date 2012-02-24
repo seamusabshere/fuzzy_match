@@ -20,13 +20,13 @@ HAYSTACK = RemoteTable.new :url => "file://#{File.expand_path('../../examples/bt
 # Note the downcase!
 HAYSTACK_READER = lambda { |record| "#{record['Manufacturer']} #{record['Long Name']}".downcase }
 
-# Whether to even bother trying to find a match for something without an explicit block
+# Whether to even bother trying to find a match for something without an explicit group
 # (Example) False, which is the default, which means we have more work to do
-MUST_MATCH_BLOCKING = false
+MUST_MATCH_GROUPING = false
 
-# Blockings
+# Groupings
 # (Example) We made these by trial and error
-BLOCKINGS = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/bts_aircraft/blockings.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
+GROUPINGS = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/bts_aircraft/groupings.csv", __FILE__)}", :headers => :first_row).map { |row| row['regexp'] }
 
 # Normalizers
 # (Example) We made these by trial and error
@@ -38,10 +38,10 @@ IDENTITIES = RemoteTable.new(:url => "file://#{File.expand_path("../../examples/
 
 FINAL_OPTIONS = {
   :read => HAYSTACK_READER,
-  :must_match_blocking => MUST_MATCH_BLOCKING,
+  :must_match_grouping => MUST_MATCH_GROUPING,
   :normalizers => NORMALIZERS,
   :identities => IDENTITIES,
-  :blockings => BLOCKINGS
+  :groupings => GROUPINGS
 }
 
 Memprof.start

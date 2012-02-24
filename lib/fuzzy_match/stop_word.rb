@@ -7,6 +7,10 @@ class FuzzyMatch
       @regexp = regexp_or_str.to_regexp
     end
     
+    def ==(other)
+      regexp == other.regexp
+    end
+    
     # Destructively remove stop words from the string
     def apply!(str)
       str.gsub! regexp, ''

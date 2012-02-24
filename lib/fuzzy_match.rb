@@ -7,7 +7,7 @@ require 'to_regexp'
 
 require 'fuzzy_match/normalizer'
 require 'fuzzy_match/stop_word'
-require 'fuzzy_match/blocking'
+require 'fuzzy_match/grouping'
 require 'fuzzy_match/identity'
 require 'fuzzy_match/result'
 require 'fuzzy_match/wrapper'
@@ -44,15 +44,15 @@ class FuzzyMatch
   DEFAULT_ENGINE = :pure_ruby
   
   DEFAULT_OPTIONS = {
-    :first_blocking_decides => false,
-    :must_match_blocking => false,
+    :first_grouping_decides => false,
+    :must_match_grouping => false,
     :must_match_at_least_one_word => false,
     :gather_last_result => false,
     :find_all => false
   }
   
   attr_reader :haystack
-  attr_reader :blockings
+  attr_reader :groupings
   attr_reader :identities
   attr_reader :normalizers
   attr_reader :stop_words
@@ -64,34 +64,40 @@ class FuzzyMatch
   # Rules (can only be specified at initialization or by using a setter)
   # * :<tt>normalizers</tt> - regexps (see README)
   # * :<tt>identities</tt> - regexps
-  # * :<tt>blockings</tt> - regexps
+  # * :<tt>groupings</tt> - regexps
   # * :<tt>stop_words</tt> - regexps
   #
   # Options (can be specified at initialization or when calling #find)
   # * :<tt>read</tt> - how to interpret each record in the 'haystack', either a Proc or a symbol
-  # * :<tt>must_match_blocking</tt> - don't return a match unless the needle fits into one of the blockings you specified
+  # * :<tt>must_match_grouping</tt> - don't return a match unless the needle fits into one of the groupings you specified
   # * :<tt>must_match_at_least_one_word</tt> - don't return a match unless the needle shares at least one word with the match
-  # * :<tt>first_blocking_decides</tt> - force records into the first blocking they match, rather than choosing a blocking that will give them a higher score
+  # * :<tt>first_grouping_decides</tt> - force records into the first grouping they match, rather than choosing a grouping that will give them a higher score
   # * :<tt>gather_last_result</tt> - enable <tt>last_result</tt>
   def initialize(competitors, options_and_rules = {})
     options_and_rules = options_and_rules.symbolize_keys
 
     # rules
-    self.blockings = options_and_rules.delete(:blockings) || []
+    self.groupings = options_and_rules.delete(:groupings) || options_and_rules.delete(:blockings) || []
     self.identities = options_and_rules.delete(:identities) || []
     self.normalizers = options_and_rules.delete(:normalizers) || options_and_rules.delete(:tighteners) || []
     self.stop_words = options_and_rules.delete(:stop_words) || []
     @read = options_and_rules.delete(:read) || options_and_rules.delete(:haystack_reader)
 
     # options
+    if deprecated = options_and_rules.delete(:first_blocking_decides)
+      options_and_rules[:first_grouping_decides] = deprecated
+    end
+    if deprecated = options_and_rules.delete(:must_match_blocking)
+      options_and_rules[:must_match_grouping] = deprecated
+    end
     @default_options = options_and_rules.reverse_merge(DEFAULT_OPTIONS).freeze
 
     # do this last
     self.haystack = competitors
   end
   
-  def blockings=(ary)
-    @blockings = ary.map { |regexp_or_str| Blocking.new regexp_or_str }
+  def groupings=(ary)
+    @groupings = ary.map { |regexp_or_str| Grouping.new regexp_or_str }
   end
   
   def identities=(ary)
@@ -124,8 +130,8 @@ class FuzzyMatch
     
     gather_last_result = options[:gather_last_result]
     is_find_all = options[:find_all]
-    first_blocking_decides = options[:first_blocking_decides]
-    must_match_blocking = options[:must_match_blocking]
+    first_grouping_decides = options[:first_grouping_decides]
+    must_match_grouping = options[:must_match_grouping]
     must_match_at_least_one_word = options[:must_match_at_least_one_word]
     
     if gather_last_result
@@ -142,7 +148,7 @@ EOS
     if gather_last_result
       last_result.normalizers = normalizers
       last_result.identities = identities
-      last_result.blockings = blockings
+      last_result.groupings = groupings
       last_result.stop_words = stop_words
     end
     
@@ -156,11 +162,11 @@ The needle's #{needle.variants.length} variants were enumerated.
 EOS
     end
     
-    if must_match_blocking and blockings.any? and blockings.none? { |blocking| blocking.match? needle }
+    if must_match_grouping and groupings.any? and groupings.none? { |grouping| grouping.match? needle }
       if gather_last_result
         last_result.timeline << <<-EOS
-The needle didn't match any of the #{blockings.length} blocking, which was a requirement.
-\tBlockings (first 3): #{blockings[0,3].map(&:inspect).join(', ')}
+The needle didn't match any of the #{groupings.length} grouping, which was a requirement.
+\tGroupings (first 3): #{groupings[0,3].map(&:inspect).join(', ')}
 EOS
       end
       
@@ -187,18 +193,18 @@ EOS
       passed_word_requirement = haystack
     end
     
-    if blockings.any?
+    if groupings.any?
       joint = passed_word_requirement.select do |straw|
-        if first_blocking_decides
-          blockings.detect { |blocking| blocking.match? needle }.try :join?, needle, straw
+        if first_grouping_decides
+          groupings.detect { |grouping| grouping.match? needle }.try :join?, needle, straw
         else
-          blockings.any? { |blocking| blocking.join? needle, straw }
+          groupings.any? { |grouping| grouping.join? needle, straw }
         end
       end
       if gather_last_result
         last_result.timeline << <<-EOS
-Since there were blockings, the competition was reduced to records in the same block as the needle.
-\tBlockings (first 3): #{blockings[0,3].map(&:inspect).join(', ')}
+Since there were groupings, the competition was reduced to records in the same group as the needle.
+\tGroupings (first 3): #{groupings[0,3].map(&:inspect).join(', ')}
 \tPassed (first 3): #{joint[0,3].map(&:render).map(&:inspect).join(', ')}
 \tFailed (first 3): #{(passed_word_requirement-joint)[0,3].map(&:render).map(&:inspect).join(', ')}
 EOS
@@ -208,10 +214,10 @@ EOS
     end
     
     if joint.none?
-      if must_match_blocking
+      if must_match_grouping
         if gather_last_result
           last_result.timeline << <<-EOS
-Since :must_match_at_least_one_word => true and none of the competition was in the same block as the needle, the search stopped.
+Since :must_match_at_least_one_word => true and none of the competition was in the same group as the needle, the search stopped.
 EOS
         end
         if is_find_all
@@ -258,13 +264,13 @@ EOS
     
     winner = nil
 
-    if best_similarity = similarities.first and best_similarity.best_score.dices_coefficient_similar > 0
+    if best_similarity = similarities.first and (best_similarity.best_score.dices_coefficient_similar > 0 or best_similarity.best_score.levenshtein_similar > 0)
       winner = best_similarity.wrapper2.record
       if gather_last_result
         last_result.winner = winner
         last_result.score = best_similarity.best_score.dices_coefficient_similar
         last_result.timeline << <<-EOS
-A winner was determined because the similarity score #{best_similarity.best_score.dices_coefficient_similar} is greater than zero.
+A winner was determined because the Dice's Coefficient similarity (#{best_similarity.best_score.dices_coefficient_similar}) or the Levenshtein similarity (#{best_similarity.best_score.levenshtein_similar}) is greater than zero.
 EOS
       end
     elsif gather_last_result

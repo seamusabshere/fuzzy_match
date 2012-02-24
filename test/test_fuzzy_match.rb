@@ -47,52 +47,46 @@ class TestFuzzyMatch < MiniTest::Spec
     d.find('baz').must_be_nil
   end
 
-  # TODO this is not very helpful
-  it %{use BLOCKINGS} do
-    d = FuzzyMatch.new [ 'X' ], :blockings => [ /X/, /Y/ ]
-    d.find('X').must_equal 'X'
-    d.find('A').must_be_nil
+  it %{use GROUPINGS} do
+    d = FuzzyMatch.new [ 'Barack Obama', 'George Bush' ], :groupings => [ /Obama/, /Bush/ ]
+    d.find('Barack Bush').must_equal 'George Bush'
+    d.find('George Obama').must_equal 'Barack Obama'
+    d.find('Z').must_be_nil
   end
 
   # TODO this is not very helpful
-  it %{optionally only attempt matches with records that fit into a blocking} do
-    d = FuzzyMatch.new [ 'X' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
+  it %{optionally only attempt matches with records that fit into a grouping} do
+    d = FuzzyMatch.new [ 'X' ], :groupings => [ /X/, /Y/ ], :must_match_grouping => true
     d.find('X').must_equal 'X'
     d.find('A').must_be_nil
 
-    d = FuzzyMatch.new [ 'X' ], :blockings => [ /X/, /Y/ ]
-    d.find('X', :must_match_blocking => true).must_equal 'X'
-    d.find('A', :must_match_blocking => true).must_be_nil
-  end
-
-  it %{receive the deprecated FuzzyMatch#free method without complaint} do
-    d = FuzzyMatch.new %w{ A B }
-    d.free
-    d.find('A').wont_be_nil
+    d = FuzzyMatch.new [ 'X' ], :groupings => [ /X/, /Y/ ]
+    d.find('X', :must_match_grouping => true).must_equal 'X'
+    d.find('A', :must_match_grouping => true).must_be_nil
   end
 
   it %{return all records in sorted order} do
-    d = FuzzyMatch.new [ 'X', 'X22', 'Y', 'Y4' ], :blockings => [ /X/, /Y/ ], :must_match_blocking => true
+    d = FuzzyMatch.new [ 'X', 'X22', 'Y', 'Y4' ], :groupings => [ /X/, /Y/ ], :must_match_grouping => true
     d.find_all('X').must_equal ['X', 'X22' ]
     d.find_all('A').must_equal []
   end
 
-  it %{optionally force the first blocking to decide} do
-    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ]
+  it %{optionally force the first grouping to decide} do
+    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :groupings => [ /(boeing \d{3})/i, /boeing/i ]
     d.find_all('Boeing 747').must_equal [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ]
 
-    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
+    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :groupings => [ /(boeing \d{3})/i, /boeing/i ], :first_grouping_decides => true
     d.find_all('Boeing 747').must_equal [ 'Boeing 747', 'Boeing 747SR' ]
 
-    # first_blocking_decides refers to the needle
-    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true
+    # first_grouping_decides refers to the needle
+    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :groupings => [ /(boeing \d{3})/i, /boeing/i ], :first_grouping_decides => true
     d.find_all('Boeing ER6').must_equal ["Boeing ER6", "Boeing 747", "Boeing 747SR"]
 
-    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing (7|E)/i, /boeing/i ], :first_blocking_decides => true
+    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :groupings => [ /(boeing \d{3})/i, /boeing (7|E)/i, /boeing/i ], :first_grouping_decides => true
     d.find_all('Boeing ER6').must_equal [ 'Boeing ER6' ]
 
     # or equivalently with an identity
-    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :blockings => [ /(boeing \d{3})/i, /boeing/i ], :first_blocking_decides => true, :identities => [ /boeing (7|E)/i ]
+    d = FuzzyMatch.new [ 'Boeing 747', 'Boeing 747SR', 'Boeing ER6' ], :groupings => [ /(boeing \d{3})/i, /boeing/i ], :first_grouping_decides => true, :identities => [ /boeing (7|E)/i ]
     d.find_all('Boeing ER6').must_equal [ 'Boeing ER6' ]
   end
 
@@ -135,15 +129,6 @@ class TestFuzzyMatch < MiniTest::Spec
       by_first.find('b').must_equal ba
       by_last.find('a').must_equal ba
     end
-
-    it %{treat the deprecrated :haystack_reader option as an alias} do
-      ab = ['a', 'b']
-      ba = ['b', 'a']
-      haystack = [ab, ba]
-      by_first = FuzzyMatch.new haystack, :haystack_reader => 0
-      by_first.find('a').must_equal ab
-      by_first.find('b').must_equal ba
-    end
   end
 
   it %{not return any result if the maximum score is zero} do
@@ -158,7 +143,7 @@ class TestFuzzyMatch < MiniTest::Spec
     d.find("Foo's").must_equal "Foo's Bar"
     d.find("'s").must_be_nil
     d.find("Foo").must_be_nil
-    
+
     d = FuzzyMatch.new ["Bolivia, Plurinational State of"], :must_match_at_least_one_word => true
     d.find("Bolivia").must_equal "Bolivia, Plurinational State of"
   end
@@ -204,6 +189,39 @@ class TestFuzzyMatch < MiniTest::Spec
       FuzzyMatch.engine.must_equal :amatch
     else
       FuzzyMatch.engine.must_equal :pure_ruby
+    end
+  end
+
+  describe 'deprecations' do
+    it %{takes :must_match_blocking as :must_match_grouping} do
+      d = FuzzyMatch.new [], :must_match_blocking => :a
+      d.default_options[:must_match_grouping].must_equal :a
+    end
+
+    it %{takes :first_blocking_decides as :first_grouping_decides} do
+      d = FuzzyMatch.new [], :first_blocking_decides => :b
+      d.default_options[:first_grouping_decides].must_equal :b
+    end
+
+    it %{takes :haystack_reader as :read} do
+      d = FuzzyMatch.new [], :haystack_reader => :c
+      d.read.must_equal :c
+    end
+
+    it %{takes :blockings as :groupings} do
+      d = FuzzyMatch.new [], :blockings => [ /X/, /Y/ ]
+      d.groupings.must_equal [ FuzzyMatch::Grouping.new(/X/), FuzzyMatch::Grouping.new(/Y/) ]
+    end
+
+    it %{takes :tighteners as :normalizers} do
+      d = FuzzyMatch.new [], :tighteners => [ /X/, /Y/ ]
+      d.normalizers.must_equal [ FuzzyMatch::Normalizer.new(/X/), FuzzyMatch::Normalizer.new(/Y/) ]
+    end
+
+    it %{receives #free method, but doesn't do anything} do
+      d = FuzzyMatch.new %w{ A B }
+      d.free
+      d.find('A').wont_be_nil
     end
   end
 end
