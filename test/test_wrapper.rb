@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestWrapper < MiniTest::Spec
+describe FuzzyMatch::Wrapper do
   it %{does not treat "'s" as a word} do
     assert_split ["foo's", "bar"], "Foo's Bar"
   end
