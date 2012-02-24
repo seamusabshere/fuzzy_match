@@ -5,10 +5,11 @@ if ::ActiveSupport::VERSION::MAJOR >= 3
 end
 require 'to_regexp'
 
-require 'fuzzy_match/normalizer'
-require 'fuzzy_match/stop_word'
-require 'fuzzy_match/grouping'
-require 'fuzzy_match/identity'
+require 'fuzzy_match/rule'
+require 'fuzzy_match/rule/normalizer'
+require 'fuzzy_match/rule/stop_word'
+require 'fuzzy_match/rule/grouping'
+require 'fuzzy_match/rule/identity'
 require 'fuzzy_match/result'
 require 'fuzzy_match/wrapper'
 require 'fuzzy_match/similarity'
@@ -97,19 +98,19 @@ class FuzzyMatch
   end
   
   def groupings=(ary)
-    @groupings = ary.map { |regexp_or_str| Grouping.new regexp_or_str }
+    @groupings = ary.map { |regexp_or_str| Rule::Grouping.new regexp_or_str }
   end
   
   def identities=(ary)
-    @identities = ary.map { |regexp_or_str| Identity.new regexp_or_str }
+    @identities = ary.map { |regexp_or_str| Rule::Identity.new regexp_or_str }
   end
   
   def normalizers=(ary)
-    @normalizers = ary.map { |regexp_or_str| Normalizer.new regexp_or_str }
+    @normalizers = ary.map { |regexp_or_str| Rule::Normalizer.new regexp_or_str }
   end
   
   def stop_words=(ary)
-    @stop_words = ary.map { |regexp_or_str| StopWord.new regexp_or_str }
+    @stop_words = ary.map { |regexp_or_str| Rule::StopWord.new regexp_or_str }
   end
   
   def haystack=(ary)

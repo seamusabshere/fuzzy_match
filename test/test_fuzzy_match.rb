@@ -210,12 +210,12 @@ class TestFuzzyMatch < MiniTest::Spec
 
     it %{takes :blockings as :groupings} do
       d = FuzzyMatch.new [], :blockings => [ /X/, /Y/ ]
-      d.groupings.must_equal [ FuzzyMatch::Grouping.new(/X/), FuzzyMatch::Grouping.new(/Y/) ]
+      d.groupings.must_equal [ FuzzyMatch::Rule::Grouping.new(/X/), FuzzyMatch::Rule::Grouping.new(/Y/) ]
     end
 
     it %{takes :tighteners as :normalizers} do
       d = FuzzyMatch.new [], :tighteners => [ /X/, /Y/ ]
-      d.normalizers.must_equal [ FuzzyMatch::Normalizer.new(/X/), FuzzyMatch::Normalizer.new(/Y/) ]
+      d.normalizers.must_equal [ FuzzyMatch::Rule::Normalizer.new(/X/), FuzzyMatch::Rule::Normalizer.new(/Y/) ]
     end
 
     it %{receives #free method, but doesn't do anything} do
