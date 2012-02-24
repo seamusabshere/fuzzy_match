@@ -1,0 +1,13 @@
+== 1.3.2 / 2012-02-24
+
+* Start keeping a changelog!
+
+* Enhancements
+
+  * renamed blockings to groupings
+  * cleaned up tests
+
+* Bug fixes
+
+  * better handling for one-letter similiarities like 'X foo' vs 'X bar' which couldn't be detected by pair distance
+  * take deprecated option :tighteners as :normalizers
