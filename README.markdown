@@ -8,9 +8,7 @@ Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight
 
     >> require 'fuzzy_match'
     => true
-    >> matcher = FuzzyMatch.new(['seamus', 'andy', 'ben'])
-    => #<FuzzyMatch: [...]>
-    >> matcher.find('Shamus')
+    >> FuzzyMatch.new(['seamus', 'andy', 'ben']).find('Shamus)
     => "seamus"
 
 See also the blog post [Fuzzy match in Ruby](http://numbers.brighterplanet.com/2012/01/18/fuzzy-match-in-ruby/).
