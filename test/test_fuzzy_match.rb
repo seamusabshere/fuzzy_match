@@ -224,4 +224,15 @@ class TestFuzzyMatch < MiniTest::Spec
       d.find('A').wont_be_nil
     end
   end
+  
+  it %{should not return false negatives because of one-letter similarities} do
+    # dices coefficient doesn't think these two are similar at all because it looks at pairs
+    FuzzyMatch.score_class.new('X foo', 'X bar').dices_coefficient_similar.must_equal 0
+    # so we must compensate for that somewhere
+    d = FuzzyMatch.new ['X foo', 'randomness']
+    d.find('X bar').must_equal 'X foo'
+    # without making false positives
+    d.find('Y bar').must_be_nil
+  end
+  
 end

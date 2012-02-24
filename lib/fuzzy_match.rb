@@ -263,20 +263,21 @@ EOS
       return similarities.map { |similarity| similarity.wrapper2.record }
     end
     
+    best_similarity = similarities.first
     winner = nil
 
-    if best_similarity = similarities.first and (best_similarity.best_score.dices_coefficient_similar > 0 or best_similarity.best_score.levenshtein_similar > 0)
+    if best_similarity and (best_similarity.best_score.dices_coefficient_similar > 0 or (needle.words & best_similarity.wrapper2.words).any?)
       winner = best_similarity.wrapper2.record
       if gather_last_result
         last_result.winner = winner
         last_result.score = best_similarity.best_score.dices_coefficient_similar
         last_result.timeline << <<-EOS
-A winner was determined because the Dice's Coefficient similarity (#{best_similarity.best_score.dices_coefficient_similar}) or the Levenshtein similarity (#{best_similarity.best_score.levenshtein_similar}) is greater than zero.
+A winner was determined because the Dice's Coefficient similarity (#{best_similarity.best_score.dices_coefficient_similar}) is greater than zero or because it shared a word with the needle.
 EOS
       end
     elsif gather_last_result
         last_result.timeline << <<-EOS
-No winner assigned because similarity score was zero.
+No winner assigned because the score of the best similarity (#{best_similarity.try(:wrapper2).try(:record).try(:inspect)}) was zero and it didn't match any words with the needle (#{needle.inspect}).
 EOS
     end
     
