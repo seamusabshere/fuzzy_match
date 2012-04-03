@@ -2,6 +2,10 @@ source :rubygems
 
 gemspec
 
+# bin dependencies
+gem 'remote_table'
+gem 'thor'
+
 # development dependencies
 gem 'minitest-reporters'
 gem "minitest"
