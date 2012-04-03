@@ -16,6 +16,8 @@ class FuzzyMatch
     method_option :show_success, :default => false, :type => :boolean, :desc => "Whether to print successful matches as you go"
     method_option :downcase, :default => false, :type => :boolean, :desc => "Whether to downcase everything (except regexes, where you have to do /foo/i)"
     def check(url)
+      puts "Checking matches using fuzzy_match version #{FuzzyMatch::VERSION}..."
+
       t = RemoteTable.new(url, :headers => :first_row)
       if (violators = %w{needle grouping correct_match stop_word identity normalizer find_option} & t.rows.first.keys).any?
         raise ArgumentError, "Make sure you pluralize your right row headers (violators: #{violators.map(&:inspect).join(', ')}"
@@ -46,7 +48,7 @@ class FuzzyMatch
         correct_match = nil if correct_match.blank?
         match = fm.find needle
         if options.show_success? or match != correct_match
-          puts "#{needle.inspect} => #{match.inspect}"
+          puts "  #{needle.inspect} => #{match.inspect}"
         end
         unless match == correct_match
           puts "MISMATCH: #{needle.inspect} should match #{correct_match.inspect}"
@@ -55,7 +57,7 @@ class FuzzyMatch
         count += 1
       end
 
-      puts "Correctly matched #{count} needles"
+      puts "Correctly matched #{count} needles."
       exit 0
     end
   end
