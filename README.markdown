@@ -4,6 +4,21 @@ Find a needle in a haystack based on string similarity and regular expression ru
 
 Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight_dictionary) because that was a confusing name.
 
+## Real-world usage
+
+<p><a href="http://brighterplanet.com"><img src="https://s3.amazonaws.com/static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png" alt="Brighter Planet logo"/></a></p>
+
+We use `fuzzy_match` for [data science at Brighter Planet](http://brighterplanet.com/research) and in production at
+
+* [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com)
+* [Brighter Planet's reference data web service](http://data.brighterplanet.com)
+
+We often combine it with [`remote_table`](https://github.com/seamusabshere/remote_table) and [`errata`](https://github.com/seamusabshere/errata):
+
+- download table with `remote_table`
+- correct serious or repeated errors with `errata`
+- `fuzzy_match` the rest
+
 ## Quickstart
 
     >> require 'fuzzy_match'
@@ -113,16 +128,6 @@ In edge cases where Dice's finds that two strings are equally similar to a third
     => 0.75 
     >> 'RITZ'.levenshtein_similar 'CATZ'
     => 0.5                                  # which properly shows that RATZ should win
-
-## Production use
-
-Over 2 years in [Brighter Planet's impact estimate API](http://impact.brighterplanet.com) and [reference data service](http://data.brighterplanet.com).
-
-We often combine `fuzzy_match` with [`remote_table`](https://github.com/seamusabshere/remote_table) and [`errata`](https://github.com/seamusabshere/errata):
-
-- download table with `remote_table`
-- correct serious or repeated errors with `errata`
-- `fuzzy_match` the rest
 
 ## Cached results
 
