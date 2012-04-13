@@ -1,3 +1,5 @@
+require 'active_record_inline_schema'
+
 class FuzzyMatch
   class CachedResult < ::ActiveRecord::Base
     if ::ActiveRecord::VERSION::STRING >= '3.2'
@@ -5,26 +7,23 @@ class FuzzyMatch
     else
       set_table_name :fuzzy_match_cached_results
     end
-    
-    def self.create_table
-      connection.create_table :fuzzy_match_cached_results do |t|
-        t.string :a_class
-        t.string :a
-        t.string :b_class
-        t.string :b
-      end
-      connection.add_index :fuzzy_match_cached_results, [:a_class, :b_class, :a], :name => 'aba'
-      connection.add_index :fuzzy_match_cached_results, [:a_class, :b_class, :b], :name => 'abb'
-      connection.add_index :fuzzy_match_cached_results, [:a_class, :b_class, :a, :b], :name => 'abab'
-      reset_column_information
-    end
-    
-    def self.setup(from_scratch = false)
-      if from_scratch or not table_exists?
-        connection.drop_table :fuzzy_match_cached_results rescue nil
-        create_table rescue nil
+
+    class << self
+      def setup(from_scratch = false)
+        if from_scratch
+          connection.drop_table :fuzzy_match_cached_results rescue nil
+        end
+        auto_upgrade!
       end
     end
+
+    col :a_class
+    col :a
+    col :b_class
+    col :b
+    add_index [:a_class, :b_class, :a], :name => 'aba'
+    add_index [:a_class, :b_class, :b], :name => 'abb'
+    add_index [:a_class, :b_class, :a, :b], :name => 'abab'
     
     module ActiveRecordBaseExtension
       # required options:

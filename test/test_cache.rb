@@ -2,7 +2,7 @@ require 'helper'
 
 require 'active_support/all'
 require 'active_record'
-require 'cohort_scope'
+require 'cohort_analysis'
 require 'weighted_average'
 
 ActiveRecord::Base.establish_connection(
@@ -25,7 +25,7 @@ require 'fuzzy_match/cached_result'
 ::FuzzyMatch::CachedResult.setup(true)
 
 class Aircraft < ActiveRecord::Base
-  set_primary_key :icao_code
+  self.primary_key = 'icao_code'
   
   cache_fuzzy_match_with :flight_segments, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
     
@@ -52,12 +52,9 @@ CREATE TABLE `aircraft` (
 end
 
 class FlightSegment < ActiveRecord::Base
-  set_primary_key :row_hash
+  self.primary_key = 'row_hash'
   
   cache_fuzzy_match_with :aircraft, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
-  
-  extend CohortScope
-  self.minimum_cohort_size = 1
   
   def self.create_table
     connection.drop_table(:flight_segments) rescue nil
@@ -96,11 +93,11 @@ fs.passengers = 100
 fs.seats = 5
 fs.save!
 
-FlightSegment.find_each do |fs|
+FlightSegment.all.each do |fs|
   fs.cache_aircraft!
 end
 
-class TestCache < MiniTest::Spec
+describe FuzzyMatch::CachedResult do
   it %{joins aircraft to flight segments} do
     aircraft = Aircraft.find('B742')
     aircraft.flight_segments.count.must_equal 2
@@ -118,7 +115,8 @@ class TestCache < MiniTest::Spec
   
   it %{works with cohort_scope (albeit rather clumsily)} do
     aircraft = Aircraft.find('B742')
-    FlightSegment.big_cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).count.must_equal 2
+    FlightSegment.cohort({:aircraft_description => aircraft.flight_segments_foreign_keys}, :minimum_size => 2).count.must_equal 2
+    # FlightSegment.cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).must_equal []
   end
   
   # def test_006_you_can_get_aircraft_from_flight_segments

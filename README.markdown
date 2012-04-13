@@ -116,13 +116,17 @@ In edge cases where Dice's finds that two strings are equally similar to a third
 
 ## Production use
 
-Over 2 years in [Brighter Planet's environmental impact API](http://impact.brighterplanet.com) and [reference data service](http://data.brighterplanet.com).
+Over 2 years in [Brighter Planet's impact estimate API](http://impact.brighterplanet.com) and [reference data service](http://data.brighterplanet.com).
 
 We often combine `fuzzy_match` with [`remote_table`](https://github.com/seamusabshere/remote_table) and [`errata`](https://github.com/seamusabshere/errata):
 
 - download table with `remote_table`
 - correct serious or repeated errors with `errata`
 - `fuzzy_match` the rest
+
+## Cached results
+
+TODO write documentation. For now, please see how [we manually cache matches between aircraft and flight segments](https://github.com/brighterplanet/earth/blob/master/lib/earth/air/aircraft.rb).
 
 ## Glossary
 

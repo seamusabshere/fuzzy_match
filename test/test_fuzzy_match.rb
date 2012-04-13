@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 require 'helper'
 
-class TestFuzzyMatch < MiniTest::Spec
+describe FuzzyMatch do
   describe '#find' do
     it %{identifies the best match based on string similarity} do
       d = FuzzyMatch.new %w{ RATZ CATZ }

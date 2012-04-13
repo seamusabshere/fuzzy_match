@@ -15,10 +15,6 @@ require 'fuzzy_match/wrapper'
 require 'fuzzy_match/similarity'
 require 'fuzzy_match/score'
 
-if defined?(::ActiveRecord)
-  require 'fuzzy_match/cached_result'
-end
-
 # See the README for more information.
 class FuzzyMatch
   class << self

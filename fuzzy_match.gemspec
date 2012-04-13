@@ -1,11 +1,9 @@
 # -*- encoding: utf-8 -*-
-$:.push File.expand_path("../lib", __FILE__)
-require "fuzzy_match/version"
+require File.expand_path("../lib/fuzzy_match/version", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "fuzzy_match"
   s.version     = FuzzyMatch::VERSION
-  s.platform    = Gem::Platform::RUBY
   s.authors     = ["Seamus Abshere"]
   s.email       = ["seamus@abshere.net"]
   s.homepage    = "https://github.com/seamusabshere/fuzzy_match"
@@ -21,4 +19,5 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'activesupport', '>=3'
   s.add_runtime_dependency 'to_regexp', '>=0.0.3'
+  s.add_runtime_dependency 'active_record_inline_schema', '>=0.4.0'
 end
