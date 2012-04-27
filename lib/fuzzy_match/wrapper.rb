@@ -1,6 +1,11 @@
 class FuzzyMatch
   # Wrappers are the tokens that are passed around when doing scoring and optimizing.
   class Wrapper #:nodoc: all
+    # "Foo's" is one word
+    # "North-west" is just one word
+    # "Bolivia," is just Bolivia
+    WORD_BOUNDARY = %r{\W*(?:\s+|$)}
+
     attr_reader :fuzzy_match
     attr_reader :record
     attr_reader :literal
@@ -10,6 +15,9 @@ class FuzzyMatch
       @fuzzy_match = fuzzy_match
       @record = record
       @literal = literal
+      @render_mutex = ::Mutex.new
+      @words_mutex = ::Mutex.new
+      @variants_mutex = ::Mutex.new
     end
 
     def inspect
@@ -21,38 +29,39 @@ class FuzzyMatch
     end
 
     def render
-      return @render if rendered
-      str = case read
-      when ::Proc
-        read.call record
-      when ::Symbol
-        if record.respond_to?(read)
-          record.send read
+      return @render if @rendered == true
+      @render_mutex.synchronize do
+        return @render if @rendered == true
+        memo = case read
+        when ::Proc
+          read.call record
+        when ::Symbol
+          if record.respond_to?(read)
+            record.send read
+          else
+            record[read]
+          end
+        when ::NilClass
+          record
         else
           record[read]
+        end.to_s.dup
+        fuzzy_match.stop_words.each do |stop_word|
+          stop_word.apply! memo
         end
-      when ::NilClass
-        record
-      else
-        record[read]
-      end.to_s.dup
-      fuzzy_match.stop_words.each do |stop_word|
-        stop_word.apply! str
+        memo.strip!
+        @render = memo.freeze
+        @rendered = true
       end
-      str.strip!
-      @render = str.freeze
-      @rendered = true
       @render
     end
 
     alias :to_str :render
 
-    # "Foo's" is one word
-    # "North-west" is just one word
-    # "Bolivia," is just Bolivia
-    WORD_BOUNDARY = %r{\W*(?:\s+|$)}
     def words
-      @words ||= render.downcase.split(WORD_BOUNDARY)
+      @words || @words_mutex.synchronize do
+        @words ||= render.downcase.split(WORD_BOUNDARY)
+      end
     end
 
     def similarity(other)
@@ -60,12 +69,16 @@ class FuzzyMatch
     end
 
     def variants
-      @variants ||= fuzzy_match.normalizers.inject([ render ]) do |memo, normalizer|
-        if normalizer.apply? render
-          memo.push normalizer.apply(render)
+      @variants || @variants_mutex.synchronize do
+        @variants ||= begin
+          fuzzy_match.normalizers.inject([ render ]) do |memo, normalizer|
+            if normalizer.apply? render
+              memo << normalizer.apply(render)
+            end
+            memo
+          end.uniq
         end
-        memo
-      end.uniq
+      end
     end
   end
 end

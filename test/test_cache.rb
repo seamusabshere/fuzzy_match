@@ -25,6 +25,7 @@ require 'fuzzy_match/cached_result'
 ::FuzzyMatch::CachedResult.setup(true)
 
 class Aircraft < ActiveRecord::Base
+  MUTEX = ::Mutex.new
   self.primary_key = 'icao_code'
   
   cache_fuzzy_match_with :flight_segments, :primary_key => :aircraft_description, :foreign_key => :aircraft_description
@@ -34,7 +35,9 @@ class Aircraft < ActiveRecord::Base
   end
   
   def self.fuzzy_match
-    @fuzzy_match ||= FuzzyMatch.new all, :read => ::Proc.new { |straw| straw.aircraft_description }
+    @fuzzy_match || MUTEX.synchronize do
+      @fuzzy_match||= FuzzyMatch.new(all, :read => ::Proc.new { |straw| straw.aircraft_description })
+    end
   end
   
   def self.create_table

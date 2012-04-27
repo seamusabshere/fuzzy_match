@@ -1,4 +1,10 @@
-== 1.3.3 / 2012-04-13
+1.3.4 / 2012-04-26
+
+* Enhancements
+
+  * Add thread safety with some fine-grained locks (mutexes)
+
+1.3.3 / 2012-04-13
 
 * Enhancements
 
@@ -7,7 +13,7 @@
   * Test against CohortAnalysis, the replacement for CohortScope
   * Fix some other random deprecations (like set_primary_key)
 
-== 1.3.2 / 2012-02-24
+1.3.2 / 2012-02-24
 
 * Enhancements
 

@@ -19,10 +19,6 @@ The haystack contained <%= haystack.length %> records like <%= haystack[0, 3].ma
 <% end %>
 ERB
 
-    def timeline
-      @timeline ||= []
-    end
-
     attr_accessor :needle
     attr_accessor :read
     attr_accessor :haystack
@@ -33,6 +29,11 @@ ERB
     attr_accessor :stop_words
     attr_accessor :winner
     attr_accessor :score
+    attr_reader :timeline
+
+    def initialize
+      @timeline = []
+    end
     
     def explain
       $stdout.puts ::ERB.new(EXPLANATION, 0, '%<').result(binding)

@@ -1,3 +1,5 @@
+require 'thread'
+
 require 'active_support'
 require 'active_support/version'
 if ::ActiveSupport::VERSION::MAJOR >= 3
@@ -19,11 +21,11 @@ require 'fuzzy_match/score'
 class FuzzyMatch
   class << self
     def engine
-      @@engine ||= :pure_ruby
+      @engine
     end
     
     def engine=(alt_engine)
-      @@engine = alt_engine
+      @engine = alt_engine
     end
     
     def score_class
@@ -47,6 +49,8 @@ class FuzzyMatch
     :gather_last_result => false,
     :find_all => false
   }
+
+  self.engine = DEFAULT_ENGINE
   
   attr_reader :haystack
   attr_reader :groupings
