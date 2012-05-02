@@ -30,14 +30,14 @@ class FuzzyMatch
       %{#<FuzzyMatch::Similarity #{wrapper2.render.inspect}=>#{best_wrapper2_variant.inspect} versus #{wrapper1.render.inspect}=>#{best_wrapper1_variant.inspect} original_weight=#{"%0.5f" % original_weight} best_score=#{best_score.inspect}>}
     end
 
-    private
-
     # Weight things towards short original strings
     def original_weight
       @original_weight || @original_weight_mutex.synchronize do
         @original_weight ||= (1.0 / (wrapper1.render.length * wrapper2.render.length))
       end
     end
+
+    private
         
     def best_wrapper1_variant
       best_variants[0]
