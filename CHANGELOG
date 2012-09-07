@@ -1,4 +1,4 @@
-unreleased
+1.4.0 / 2012-09-07
 
 * Breaking changes
 
@@ -8,14 +8,7 @@ unreleased
 * Enhancements
 
   * Tiny bit better #explain(needle)
-  * Remove paranoid mutexes
   * Remove dependency on ActiveSupport
-
-1.3.4 / 2012-04-26
-
-* Enhancements
-
-  * Add thread safety with some fine-grained locks (mutexes)
 
 1.3.3 / 2012-04-13
 
