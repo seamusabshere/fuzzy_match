@@ -9,8 +9,6 @@ class FuzzyMatch
     def initialize(str1, str2)
       @str1 = str1.downcase
       @str2 = str2.downcase
-      @dices_coefficient_similar_mutex = ::Mutex.new
-      @levenshtein_similar_mutex = ::Mutex.new
     end
 
     def <=>(other)

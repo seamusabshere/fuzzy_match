@@ -8,21 +8,17 @@ class FuzzyMatch
       end
 
       def dices_coefficient_similar
-        @dices_coefficient_similar || @dices_coefficient_similar_mutex.synchronize do
-          @dices_coefficient_similar ||= if str1 == str2
-            1.0
-          elsif str1.length == 1 and str2.length == 1
-            0.0
-          else
-            str1.pair_distance_similar str2
-          end
+        @dices_coefficient_similar ||= if str1 == str2
+          1.0
+        elsif str1.length == 1 and str2.length == 1
+          0.0
+        else
+          str1.pair_distance_similar str2
         end
       end
 
       def levenshtein_similar
-        @levenshtein_similar || @levenshtein_similar_mutex.synchronize do
-          @levenshtein_similar ||= str1.levenshtein_similar str2
-        end
+        @levenshtein_similar ||= str1.levenshtein_similar str2
       end
     end
   end

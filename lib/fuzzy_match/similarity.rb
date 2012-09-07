@@ -6,9 +6,6 @@ class FuzzyMatch
     def initialize(wrapper1, wrapper2)
       @wrapper1 = wrapper1
       @wrapper2 = wrapper2
-      @original_weight_mutex = ::Mutex.new
-      @best_score_mutex = ::Mutex.new
-      @best_variants_mutex = ::Mutex.new
     end
     
     def <=>(other)
@@ -21,9 +18,7 @@ class FuzzyMatch
     end
     
     def best_score
-      @best_score || @best_score_mutex.synchronize do
-        @best_score ||= FuzzyMatch.score_class.new(best_wrapper1_variant, best_wrapper2_variant)
-      end
+      @best_score ||= FuzzyMatch.score_class.new(best_wrapper1_variant, best_wrapper2_variant)
     end
 
     def inspect
@@ -32,9 +27,7 @@ class FuzzyMatch
 
     # Weight things towards short original strings
     def original_weight
-      @original_weight || @original_weight_mutex.synchronize do
-        @original_weight ||= (1.0 / (wrapper1.render.length * wrapper2.render.length))
-      end
+      @original_weight ||= (1.0 / (wrapper1.render.length * wrapper2.render.length))
     end
 
     private
@@ -48,16 +41,14 @@ class FuzzyMatch
     end
     
     def best_variants
-      @best_variants || @best_variants_mutex.synchronize do
-        @best_variants ||= begin
-          wrapper1.variants.product(wrapper2.variants).sort do |tuple1, tuple2|
-            wrapper1_variant1, wrapper2_variant1 = tuple1
-            wrapper1_variant2, wrapper2_variant2 = tuple2
-            score1 = FuzzyMatch.score_class.new wrapper1_variant1, wrapper2_variant1
-            score2 = FuzzyMatch.score_class.new wrapper1_variant2, wrapper2_variant2
-            score1 <=> score2
-          end.last
-        end
+      @best_variants ||= begin
+        wrapper1.variants.product(wrapper2.variants).sort do |tuple1, tuple2|
+          wrapper1_variant1, wrapper2_variant1 = tuple1
+          wrapper1_variant2, wrapper2_variant2 = tuple2
+          score1 = FuzzyMatch.score_class.new wrapper1_variant1, wrapper2_variant1
+          score2 = FuzzyMatch.score_class.new wrapper1_variant2, wrapper2_variant2
+          score1 <=> score2
+        end.last
       end
     end
   end

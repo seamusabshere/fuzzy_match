@@ -1,5 +1,3 @@
-require 'thread'
-
 require 'active_support'
 require 'active_support/version'
 if ::ActiveSupport::VERSION::MAJOR >= 3

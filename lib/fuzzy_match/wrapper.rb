@@ -15,9 +15,6 @@ class FuzzyMatch
       @fuzzy_match = fuzzy_match
       @record = record
       @literal = literal
-      @render_mutex = ::Mutex.new
-      @words_mutex = ::Mutex.new
-      @variants_mutex = ::Mutex.new
     end
 
     def inspect
@@ -29,9 +26,7 @@ class FuzzyMatch
     end
 
     def render
-      return @render if @rendered == true
-      @render_mutex.synchronize do
-        return @render if @rendered == true
+      @render ||= begin
         memo = case read
         when ::Proc
           read.call record
@@ -51,17 +46,13 @@ class FuzzyMatch
         end
         memo.strip!
         @render = memo.freeze
-        @rendered = true
       end
-      @render
     end
 
     alias :to_str :render
 
     def words
-      @words || @words_mutex.synchronize do
-        @words ||= render.downcase.split(WORD_BOUNDARY)
-      end
+      @words ||= render.downcase.split(WORD_BOUNDARY)
     end
 
     def similarity(other)
@@ -69,15 +60,13 @@ class FuzzyMatch
     end
 
     def variants
-      @variants || @variants_mutex.synchronize do
-        @variants ||= begin
-          fuzzy_match.normalizers.inject([ render ]) do |memo, normalizer|
-            if normalizer.apply? render
-              memo << normalizer.apply(render)
-            end
-            memo
-          end.uniq
-        end
+      @variants ||= begin
+        fuzzy_match.normalizers.inject([ render ]) do |memo, normalizer|
+          if normalizer.apply? render
+            memo << normalizer.apply(render)
+          end
+          memo
+        end.uniq
       end
     end
   end
