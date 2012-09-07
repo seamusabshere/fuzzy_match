@@ -118,7 +118,8 @@ describe FuzzyMatch::CachedResult do
   
   it %{works with cohort_scope (albeit rather clumsily)} do
     aircraft = Aircraft.find('B742')
-    FlightSegment.cohort({:aircraft_description => aircraft.flight_segments_foreign_keys}, :minimum_size => 2).count.must_equal 2
+    cohort = FlightSegment.cohort({:aircraft_description => aircraft.flight_segments_foreign_keys}, :minimum_size => 2)
+    FlightSegment.connection.select_value(cohort.project('COUNT(*)').to_sql).must_equal 2
     # FlightSegment.cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).must_equal []
   end
   
