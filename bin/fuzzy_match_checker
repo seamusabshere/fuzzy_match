@@ -52,6 +52,7 @@ class FuzzyMatch
         end
         unless match == correct_match
           puts "MISMATCH: #{needle.inspect} should match #{correct_match.inspect}"
+          puts fm.explain needle
           exit 1
         end
         count += 1

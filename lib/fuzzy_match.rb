@@ -241,21 +241,21 @@ EOS
       if gather_last_result
         last_result.timeline << <<-EOS
 Since there were identities, the competition was reduced to records that might be identical to the needle (in other words, are not certainly different)
-\Identities (first 3): #{identities[0,3].map(&:inspect).join(', ')}
-\tPassed (first 3): #{possibly_identical[0,3].map(&:render).map(&:inspect).join(', ')}
-\tFailed (first 3): #{(joint-possibly_identical)[0,3].map(&:render).map(&:inspect).join(', ')}
+\tIdentities (first 10 of #{identities.length}): #{identities[0,9].map(&:inspect).join(', ')}
+\tPassed (first 10 of #{possibly_identical.length}): #{possibly_identical[0,9].map(&:render).map(&:inspect).join(', ')}
+\tFailed (first 10 of #{(joint-possibly_identical).length}): #{(joint-possibly_identical)[0,9].map(&:render).map(&:inspect).join(', ')}
 EOS
       end
     else
       possibly_identical = joint.dup
     end
-        
+    
     similarities = possibly_identical.map { |straw| needle.similarity straw }.sort.reverse
         
     if gather_last_result
-        last_result.timeline << <<-EOS
+      last_result.timeline << <<-EOS
 The competition was sorted in order of similarity to the needle.
-\tSimilar (first 3): #{(similarities)[0,3].map(&:wrapper2).map(&:render).map(&:inspect).join(', ')}
+\tSimilar (first 10 of #{similarities.length}): #{similarities[0,9].map { |s| "#{s.wrapper2.render.inspect} (#{[s.best_score.dices_coefficient_similar, s.best_score.levenshtein_similar].map { |v| v.round(5) }.join('/')})" }.join(', ')}
 EOS
     end
     
