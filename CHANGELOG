@@ -1,9 +1,15 @@
 unreleased
 
+* Breaking changes
+
+  * Option keys are no longer symbolized automatically - make sure you do that if there's any chance they'll be strings
+  * active_record_inline_schema is no longer a runtime dependency - add it to your Gemfile if you use FuzzyMatch::CachedResult
+
 * Enhancements
 
   * Tiny bit better #explain(needle)
   * Remove paranoid mutexes
+  * Remove dependency on ActiveSupport
 
 1.3.4 / 2012-04-26
 

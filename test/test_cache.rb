@@ -1,6 +1,5 @@
 require 'helper'
 
-require 'active_support/all'
 require 'active_record'
 require 'cohort_analysis'
 require 'weighted_average'

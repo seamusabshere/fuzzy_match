@@ -1,8 +1,3 @@
-require 'active_support'
-require 'active_support/version'
-if ::ActiveSupport::VERSION::MAJOR >= 3
-  require 'active_support/core_ext'
-end
 require 'to_regexp'
 
 require 'fuzzy_match/rule'
@@ -73,7 +68,7 @@ class FuzzyMatch
   # * :<tt>first_grouping_decides</tt> - force records into the first grouping they match, rather than choosing a grouping that will give them a higher score
   # * :<tt>gather_last_result</tt> - enable <tt>last_result</tt>
   def initialize(competitors, options_and_rules = {})
-    options_and_rules = options_and_rules.symbolize_keys
+    options_and_rules = options_and_rules.dup
 
     # rules
     self.groupings = options_and_rules.delete(:groupings) || options_and_rules.delete(:blockings) || []
@@ -89,7 +84,7 @@ class FuzzyMatch
     if deprecated = options_and_rules.delete(:must_match_blocking)
       options_and_rules[:must_match_grouping] = deprecated
     end
-    @default_options = options_and_rules.reverse_merge(DEFAULT_OPTIONS).freeze
+    @default_options = DEFAULT_OPTIONS.merge(options_and_rules).freeze
 
     # do this last
     self.haystack = competitors
@@ -120,12 +115,12 @@ class FuzzyMatch
   end
   
   def find_all(needle, options = {})
-    options = options.symbolize_keys.merge(:find_all => true)
+    options = options.merge(:find_all => true)
     find needle, options
   end
   
   def find(needle, options = {})
-    options = options.symbolize_keys.reverse_merge default_options
+    options = default_options.merge options
     
     gather_last_result = options[:gather_last_result]
     is_find_all = options[:find_all]
@@ -195,7 +190,9 @@ EOS
     if groupings.any?
       joint = passed_word_requirement.select do |straw|
         if first_grouping_decides
-          groupings.detect { |grouping| grouping.match? needle }.try :join?, needle, straw
+          if first_grouping = groupings.detect { |grouping| grouping.match? needle }
+            first_grouping.join? needle, straw
+          end
         else
           groupings.any? { |grouping| grouping.join? needle, straw }
         end
@@ -253,7 +250,7 @@ EOS
     if gather_last_result
       last_result.timeline << <<-EOS
 The competition was sorted in order of similarity to the needle.
-\tSimilar (first 10 of #{similarities.length}): #{similarities[0,9].map { |s| "#{s.wrapper2.render.inspect} (#{[s.best_score.dices_coefficient_similar, s.best_score.levenshtein_similar].map { |v| v.round(5) }.join('/')})" }.join(', ')}
+\tSimilar (first 10 of #{similarities.length}): #{similarities[0,9].map { |s| "#{s.wrapper2.render.inspect} (#{[s.best_score.dices_coefficient_similar, s.best_score.levenshtein_similar].map { |v| '%0.5f' % v }.join('/')})" }.join(', ')}
 EOS
     end
     
@@ -274,8 +271,11 @@ A winner was determined because the Dice's Coefficient similarity (#{best_simila
 EOS
       end
     elsif gather_last_result
-        last_result.timeline << <<-EOS
-No winner assigned because the score of the best similarity (#{best_similarity.try(:wrapper2).try(:record).try(:inspect)}) was zero and it didn't match any words with the needle (#{needle.inspect}).
+      best_similarity_record = if best_similarity and best_similarity.wrapper2
+        best_similarity.wrapper2.record
+      end
+      last_result.timeline << <<-EOS
+No winner assigned because the score of the best similarity (#{best_similarity_record.inspect}) was zero and it didn't match any words with the needle (#{needle.inspect}).
 EOS
     end
     

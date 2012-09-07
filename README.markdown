@@ -131,6 +131,8 @@ In edge cases where Dice's finds that two strings are equally similar to a third
 
 ## Cached results
 
+Make sure you add active\_record\_inline\_schema to your gemfile.
+
 TODO write documentation. For now, please see how [we manually cache matches between aircraft and flight segments](https://github.com/brighterplanet/earth/blob/master/lib/earth/air/aircraft.rb).
 
 ## Glossary

@@ -1,10 +1,14 @@
 #!/usr/bin/env ruby
 
-if File.exist?(File.join(Dir.pwd, 'fuzzy_match.gemspec'))
-  require 'bundler/setup'
+if File.exist?(File.join(Dir.pwd, 'lib', 'fuzzy_match.rb'))
+  $LOAD_PATH.unshift File.join(Dir.pwd, 'lib')
+  require File.join(Dir.pwd, 'lib', 'fuzzy_match')
+else
+  require 'fuzzy_match'
 end
+require 'fuzzy_match/version'
 
-require 'fuzzy_match'
+# note: not included in gemfile but neither is bundler used here
 require 'active_support/core_ext'
 require 'remote_table'
 require 'thor'
