@@ -40,7 +40,8 @@ class FuzzyMatch
     :must_match_grouping => false,
     :must_match_at_least_one_word => false,
     :gather_last_result => false,
-    :find_all => false
+    :find_all => false,
+    :find_all_with_score => false,
   }
 
   self.engine = DEFAULT_ENGINE
@@ -118,12 +119,18 @@ class FuzzyMatch
     options = options.merge(:find_all => true)
     find needle, options
   end
+
+  def find_all_with_score(needle, options = {})
+    options = options.merge(:find_all_with_score => true)
+    find needle, options
+  end
   
   def find(needle, options = {})
     options = default_options.merge options
     
     gather_last_result = options[:gather_last_result]
-    is_find_all = options[:find_all]
+    is_find_all_with_score = options[:find_all_with_score]
+    is_find_all = options[:find_all] || is_find_all_with_score
     first_grouping_decides = options[:first_grouping_decides]
     must_match_grouping = options[:must_match_grouping]
     must_match_at_least_one_word = options[:must_match_at_least_one_word]
@@ -254,6 +261,10 @@ The competition was sorted in order of similarity to the needle.
 EOS
     end
     
+    if is_find_all_with_score
+      return similarities.map { |similarity| bs = similarity.best_score; [similarity.wrapper2.record, bs.dices_coefficient_similar, bs.levenshtein_similar] }
+    end
+
     if is_find_all
       return similarities.map { |similarity| similarity.wrapper2.record }
     end

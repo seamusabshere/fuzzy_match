@@ -1,3 +1,9 @@
+unreleased
+
+* Enhancements
+
+  * FuzzyMatch#find_all_with_score returns a sorted array of records with their scores - thanks @brycesenz! (https://github.com/seamusabshere/fuzzy_match/issues/3)
+
 1.4.0 / 2012-09-07
 
 * Breaking changes
