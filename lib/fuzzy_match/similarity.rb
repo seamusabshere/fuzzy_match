@@ -21,6 +21,12 @@ class FuzzyMatch
       @best_score ||= FuzzyMatch.score_class.new(best_wrapper1_variant, best_wrapper2_variant)
     end
 
+    def satisfy?(needle, threshold)
+      best_score.dices_coefficient_similar > threshold or
+        ((wrapper2.render.length == 1 or needle.render.length == 1) and best_score.levenshtein_similar > 0) or
+        (needle.words & wrapper2.words).any?
+    end
+
     def inspect
       %{#<FuzzyMatch::Similarity #{wrapper2.render.inspect}=>#{best_wrapper2_variant.inspect} versus #{wrapper1.render.inspect}=>#{best_wrapper1_variant.inspect} original_weight=#{"%0.5f" % original_weight} best_score=#{best_score.inspect}>}
     end

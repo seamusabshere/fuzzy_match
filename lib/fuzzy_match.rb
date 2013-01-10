@@ -42,6 +42,7 @@ class FuzzyMatch
     :gather_last_result => false,
     :find_all => false,
     :find_all_with_score => false,
+    :threshold => 0
   }
 
   self.engine = DEFAULT_ENGINE
@@ -51,7 +52,7 @@ class FuzzyMatch
   attr_reader :identities
   attr_reader :normalizers
   attr_reader :stop_words
-  attr_reader :read
+  attr_accessor :read
   attr_reader :default_options
 
   # haystack - a bunch of records that will compete to see who best matches the needle
@@ -61,13 +62,14 @@ class FuzzyMatch
   # * :<tt>identities</tt> - regexps
   # * :<tt>groupings</tt> - regexps
   # * :<tt>stop_words</tt> - regexps
+  # * :<tt>read</tt> - how to interpret each record in the 'haystack', either a Proc or a symbol
   #
   # Options (can be specified at initialization or when calling #find)
-  # * :<tt>read</tt> - how to interpret each record in the 'haystack', either a Proc or a symbol
   # * :<tt>must_match_grouping</tt> - don't return a match unless the needle fits into one of the groupings you specified
   # * :<tt>must_match_at_least_one_word</tt> - don't return a match unless the needle shares at least one word with the match
   # * :<tt>first_grouping_decides</tt> - force records into the first grouping they match, rather than choosing a grouping that will give them a higher score
   # * :<tt>gather_last_result</tt> - enable <tt>last_result</tt>
+  # * :<tt>threshold</tt> - set a score threshold below which not to return results (not generally recommended - please test the results of setting a threshold thoroughly - one set of results and their scores probably won't be enough to determine the appropriate number). Only checked against the Pair Distance score and ignored when one string or the other is of length 1.
   def initialize(competitors, options_and_rules = {})
     options_and_rules = options_and_rules.dup
 
@@ -128,6 +130,7 @@ class FuzzyMatch
   def find(needle, options = {})
     options = default_options.merge options
     
+    threshold = options[:threshold]
     gather_last_result = options[:gather_last_result]
     is_find_all_with_score = options[:find_all_with_score]
     is_find_all = options[:find_all] || is_find_all_with_score
@@ -262,17 +265,30 @@ EOS
     end
     
     if is_find_all_with_score
-      return similarities.map { |similarity| bs = similarity.best_score; [similarity.wrapper2.record, bs.dices_coefficient_similar, bs.levenshtein_similar] }
+      memo = []
+      similarities.each do |similarity|
+        if similarity.satisfy?(needle, threshold)
+          bs = similarity.best_score
+          memo << [similarity.wrapper2.record, bs.dices_coefficient_similar, bs.levenshtein_similar]
+        end
+      end
+      return memo
     end
 
     if is_find_all
-      return similarities.map { |similarity| similarity.wrapper2.record }
+      memo = []
+      similarities.each do |similarity|
+        if similarity.satisfy?(needle, threshold)
+          memo << similarity.wrapper2.record
+        end
+      end
+      return memo
     end
     
     best_similarity = similarities.first
     winner = nil
 
-    if best_similarity and (best_similarity.best_score.dices_coefficient_similar > 0 or (needle.words & best_similarity.wrapper2.words).any?)
+    if best_similarity and best_similarity.satisfy?(needle, threshold)
       winner = best_similarity.wrapper2.record
       if gather_last_result
         last_result.winner = winner
