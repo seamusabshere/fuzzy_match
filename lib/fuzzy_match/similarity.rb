@@ -23,7 +23,7 @@ class FuzzyMatch
 
     def satisfy?(needle, threshold)
       best_score.dices_coefficient_similar > threshold or
-        ((wrapper2.render.length == 1 or needle.render.length == 1) and best_score.levenshtein_similar > 0) or
+        ((wrapper2.render.length < 3 or needle.render.length < 3) and best_score.levenshtein_similar > 0) or
         (needle.words & wrapper2.words).any?
     end
 

@@ -236,6 +236,13 @@ describe FuzzyMatch do
       # without making false positives
       d.find('Y bar').must_be_nil
     end
+
+    it %{finds possible matches even when pair distance fails} do
+      d = FuzzyMatch.new ['XX', '2 A']
+      d.find('2A').must_equal '2 A'
+      d = FuzzyMatch.new ['XX', '2A']
+      d.find('2 A').must_equal '2A'
+    end
   end
 
   describe 'deprecations' do
