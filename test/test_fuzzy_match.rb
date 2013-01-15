@@ -243,6 +243,14 @@ describe FuzzyMatch do
       d = FuzzyMatch.new ['XX', '2A']
       d.find('2 A').must_equal '2A'
     end
+
+    it %{weird blow ups} do
+      d = FuzzyMatch.new ['XX', '2 A']
+      d.find('A').must_equal '2 A'
+      d = FuzzyMatch.new ['XX', 'A']
+      d.find('2 A').must_equal 'A'
+    end
+
   end
 
   describe 'deprecations' do

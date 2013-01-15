@@ -1,5 +1,9 @@
 unreleased
 
+* Bug fixes
+
+  * Don't die when you're comparing a string of length 1 and another string of length less than three (thanks @ihough !)
+
 * Enhancements
 
   * '2A' is allowed to match '2 A'... funky stuff with pair distance and short strings

@@ -12,8 +12,9 @@ class FuzzyMatch
     end
 
     def <=>(other)
-      by_dices_coefficient = (dices_coefficient_similar <=> other.dices_coefficient_similar)
-      if by_dices_coefficient == 0
+      a = dices_coefficient_similar
+      b = other.dices_coefficient_similar
+      if a.nan? or b.nan? or (by_dices_coefficient = (a <=> b)) == 0
         levenshtein_similar <=> other.levenshtein_similar
       else
         by_dices_coefficient
