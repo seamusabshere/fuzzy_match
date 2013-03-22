@@ -289,7 +289,6 @@ EOS
         if similarity.satisfy?(needle, threshold)
           bs = similarity.best_score
           best_bs ||= bs
-          puts({bs: bs, best_bs: best_bs}.inspect)
           if bs >= best_bs
             memo << similarity.wrapper2.record
           else
