@@ -26,6 +26,14 @@ describe FuzzyMatch do
     end
   end
 
+  describe '#find_best' do
+    it %{returns one or more records with the best score} do
+      d = FuzzyMatch.new [ 'X', 'X', 'X22', 'Y', 'Y', 'Y4' ], :groupings => [ /X/, /Y/ ], :must_match_grouping => true
+      d.find_best('X').must_equal ['X', 'X' ]
+      d.find_best('A').must_equal []
+    end
+  end
+
   describe '#find_all_with_score' do
     it %{return records with 2 scores} do
       d = FuzzyMatch.new [ 'X', 'X22', 'Y', 'Y4' ], :groupings => [ /X/, /Y/ ], :must_match_grouping => true

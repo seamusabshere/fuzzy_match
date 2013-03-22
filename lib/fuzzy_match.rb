@@ -42,7 +42,8 @@ class FuzzyMatch
     :gather_last_result => false,
     :find_all => false,
     :find_all_with_score => false,
-    :threshold => 0
+    :threshold => 0,
+    :find_best => false,
   }
 
   self.engine = DEFAULT_ENGINE
@@ -122,6 +123,11 @@ class FuzzyMatch
     find needle, options
   end
 
+  def find_best(needle, options = {})
+    options = options.merge(:find_best => true)
+    find needle, options
+  end
+
   def find_all_with_score(needle, options = {})
     options = options.merge(:find_all_with_score => true)
     find needle, options
@@ -133,7 +139,8 @@ class FuzzyMatch
     threshold = options[:threshold]
     gather_last_result = options[:gather_last_result]
     is_find_all_with_score = options[:find_all_with_score]
-    is_find_all = options[:find_all] || is_find_all_with_score
+    is_find_best = options[:find_best]
+    is_find_all = options[:find_all] || is_find_all_with_score || is_find_best
     first_grouping_decides = options[:first_grouping_decides]
     must_match_grouping = options[:must_match_grouping]
     must_match_at_least_one_word = options[:must_match_at_least_one_word]
@@ -270,6 +277,24 @@ EOS
         if similarity.satisfy?(needle, threshold)
           bs = similarity.best_score
           memo << [similarity.wrapper2.record, bs.dices_coefficient_similar, bs.levenshtein_similar]
+        end
+      end
+      return memo
+    end
+
+    if is_find_best
+      memo = []
+      best_bs = nil
+      similarities.each do |similarity|
+        if similarity.satisfy?(needle, threshold)
+          bs = similarity.best_score
+          best_bs ||= bs
+          puts({bs: bs, best_bs: best_bs}.inspect)
+          if bs >= best_bs
+            memo << similarity.wrapper2.record
+          else
+            break
+          end
         end
       end
       return memo
