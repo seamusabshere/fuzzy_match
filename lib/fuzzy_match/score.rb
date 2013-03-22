@@ -3,6 +3,8 @@ require 'fuzzy_match/score/amatch'
 
 class FuzzyMatch
   class Score
+    include Comparable
+    
     attr_reader :str1
     attr_reader :str2
 
