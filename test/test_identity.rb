@@ -21,12 +21,10 @@ describe FuzzyMatch::Rule::Identity do
     i.regexp.must_equal %r{\A\\?/(.*)etc/mysql\$$}
   end
   
-  it %{can be initialized from a string (via to_regexp gem)} do
-    i = FuzzyMatch::Rule::Identity.new '%r{\A\\\?/(.*)etc/mysql\$$}'
-    i.regexp.must_equal %r{\A\\?/(.*)etc/mysql\$$}
-
-    i = FuzzyMatch::Rule::Identity.new '/\A\\\?\/(.*)etc\/mysql\$$/'
-    i.regexp.must_equal %r{\A\\?/(.*)etc/mysql\$$}
+  it %{does not automatically convert strings to regexps} do
+    lambda do
+      FuzzyMatch::Rule::Identity.new '%r{\A\\\?/(.*)etc/mysql\$$}'
+    end.must_raise ArgumentError, /regexp/i
   end
   
   it %{embraces case insensitivity} do

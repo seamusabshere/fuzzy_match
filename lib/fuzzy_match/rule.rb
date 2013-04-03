@@ -3,8 +3,11 @@ class FuzzyMatch
   class Rule
     attr_reader :regexp
     
-    def initialize(regexp_or_str)
-      @regexp = regexp_or_str.to_regexp
+    def initialize(regexp)
+      unless regexp.is_a?(::Regexp)
+        raise ArgumentError, "[FuzzyMatch] Rules must be set with Regexp objects, but got #{regexp.inspect} (#{regexp.class.name})"
+      end
+      @regexp = regexp
     end
     
     def ==(other)

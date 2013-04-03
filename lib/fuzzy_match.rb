@@ -1,5 +1,3 @@
-require 'to_regexp'
-
 require 'fuzzy_match/rule'
 require 'fuzzy_match/rule/normalizer'
 require 'fuzzy_match/rule/stop_word'
@@ -95,19 +93,19 @@ class FuzzyMatch
   end
   
   def groupings=(ary)
-    @groupings = ary.map { |regexp_or_str| Rule::Grouping.new regexp_or_str }
+    @groupings = ary.map { |regexp| Rule::Grouping.new regexp }
   end
   
   def identities=(ary)
-    @identities = ary.map { |regexp_or_str| Rule::Identity.new regexp_or_str }
+    @identities = ary.map { |regexp| Rule::Identity.new regexp }
   end
   
   def normalizers=(ary)
-    @normalizers = ary.map { |regexp_or_str| Rule::Normalizer.new regexp_or_str }
+    @normalizers = ary.map { |regexp| Rule::Normalizer.new regexp }
   end
   
   def stop_words=(ary)
-    @stop_words = ary.map { |regexp_or_str| Rule::StopWord.new regexp_or_str }
+    @stop_words = ary.map { |regexp| Rule::StopWord.new regexp }
   end
   
   def haystack=(ary)
