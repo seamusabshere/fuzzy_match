@@ -33,6 +33,7 @@ class FuzzyMatch
   
   DEFAULT_ENGINE = :pure_ruby
   
+  #TODO refactor at least all the :find_X things
   DEFAULT_OPTIONS = {
     :first_grouping_decides => false,
     :must_match_grouping => false,
@@ -42,6 +43,7 @@ class FuzzyMatch
     :find_all_with_score => false,
     :threshold => 0,
     :find_best => false,
+    :find_with_score => false,
   }
 
   self.engine = DEFAULT_ENGINE
@@ -116,18 +118,27 @@ class FuzzyMatch
     @last_result || raise(::RuntimeError, "[fuzzy_match] You can't access the last result until you've run a find with :gather_last_result => true")
   end
   
+  # Return everything in sorted order
   def find_all(needle, options = {})
     options = options.merge(:find_all => true)
     find needle, options
   end
 
+  # Return the top results with the same score
   def find_best(needle, options = {})
     options = options.merge(:find_best => true)
     find needle, options
   end
 
+  # Return everything in sorted order with score
   def find_all_with_score(needle, options = {})
     options = options.merge(:find_all_with_score => true)
+    find needle, options
+  end
+
+  # Return one with score
+  def find_with_score(needle, options = {})
+    options = options.merge(:find_with_score => true)
     find needle, options
   end
   
@@ -137,6 +148,7 @@ class FuzzyMatch
     threshold = options[:threshold]
     gather_last_result = options[:gather_last_result]
     is_find_all_with_score = options[:find_all_with_score]
+    is_find_with_score = options[:find_with_score]
     is_find_best = options[:find_best]
     is_find_all = options[:find_all] || is_find_all_with_score || is_find_best
     first_grouping_decides = options[:first_grouping_decides]
@@ -319,6 +331,12 @@ EOS
 A winner was determined because the Dice's Coefficient similarity (#{best_similarity.best_score.dices_coefficient_similar}) is greater than zero or because it shared a word with the needle.
 EOS
       end
+      if is_find_with_score
+        bs = best_similarity.best_score
+        return [winner, bs.dices_coefficient_similar, bs.levenshtein_similar]
+      else
+        return winner
+      end
     elsif gather_last_result
       best_similarity_record = if best_similarity and best_similarity.wrapper2
         best_similarity.wrapper2.record
@@ -327,8 +345,8 @@ EOS
 No winner assigned because the score of the best similarity (#{best_similarity_record.inspect}) was zero and it didn't match any words with the needle (#{needle.inspect}).
 EOS
     end
-    
-    winner
+
+    nil # ugly
   end
   
   # Explain is like mysql's EXPLAIN command. You give it a needle and it tells you about how it was located (successfully or not) in the haystack.

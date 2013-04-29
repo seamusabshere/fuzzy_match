@@ -42,6 +42,14 @@ describe FuzzyMatch do
     end
   end
 
+  describe '#find_with_score' do
+    it %{return record with dice's and lev's scores} do
+      d = FuzzyMatch.new [ 'X', 'X22', 'Y', 'Y4' ], :groupings => [ /X/, /Y/ ], :must_match_grouping => true
+      d.find_with_score('X').must_equal ['X', 1, 1], ['X22', 0, 0.33333333333333337]
+      d.find_with_score('A').must_be_nil
+    end
+  end
+
   describe '#explain' do
     before do
       require 'stringio'

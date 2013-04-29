@@ -1,3 +1,9 @@
+unreleased
+
+* Enhancements
+
+  * FuzzyMatch#find_with_score returns [record, dice_score, lev_score]
+
 1.5.0 / 2013-04-03
 
 * Breaking changes
