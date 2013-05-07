@@ -1,4 +1,4 @@
-require 'helper'
+require 'spec_helper'
 
 require 'active_record'
 require 'cohort_analysis'
@@ -102,31 +102,31 @@ end
 describe FuzzyMatch::CachedResult do
   it %{joins aircraft to flight segments} do
     aircraft = Aircraft.find('B742')
-    aircraft.flight_segments.count.must_equal 2
+    aircraft.flight_segments.count.should == 2
   end
   
   it %{allow simple SQL operations} do
     aircraft = Aircraft.find('B742')
-    aircraft.flight_segments.sum(:passengers).must_equal 110
+    aircraft.flight_segments.sum(:passengers).should == 110
   end
   
   it %{works with weighted_average} do
     aircraft = Aircraft.find('B742')
-    aircraft.flight_segments.weighted_average(:seats, :weighted_by => :passengers).must_equal 5.45455
+    aircraft.flight_segments.weighted_average(:seats, :weighted_by => :passengers).should == 5.45455
   end
   
   it %{works with cohort_scope (albeit rather clumsily)} do
     aircraft = Aircraft.find('B742')
     cohort = FlightSegment.cohort({:aircraft_description => aircraft.flight_segments_foreign_keys}, :minimum_size => 2)
-    FlightSegment.connection.select_value(cohort.project('COUNT(*)').to_sql).must_equal 2
-    # FlightSegment.cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).must_equal []
+    FlightSegment.connection.select_value(cohort.project('COUNT(*)').to_sql).should == 2
+    # FlightSegment.cohort(:aircraft_description => aircraft.flight_segments_foreign_keys).should == []
   end
   
   # def test_006_you_can_get_aircraft_from_flight_segments
   #   fs = FlightSegment.first
   #   # you need to add an aircraft_description column
   #   lambda do
-  #     fs.aircraft.count.must_equal 2
+  #     fs.aircraft.count.should == 2
   #   end.must_raise ActiveRecord::StatementInvalid
   # end
 end

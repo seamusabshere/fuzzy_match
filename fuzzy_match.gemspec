@@ -21,14 +21,14 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'active_record_inline_schema', '>=0.4.0'
 
   # development dependencies
-  s.add_development_dependency "minitest"
+  s.add_development_dependency 'pry'
+  s.add_development_dependency 'rspec-core'
+  s.add_development_dependency 'rspec-expectations'
+  s.add_development_dependency 'rspec-mocks'
   s.add_development_dependency 'activerecord', '>=3'
   s.add_development_dependency 'mysql2'
   s.add_development_dependency 'cohort_analysis'
   s.add_development_dependency 'weighted_average'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'amatch'
-  if RUBY_VERSION >= '1.9'
-    s.add_development_dependency 'minitest-reporters'
-  end
 end

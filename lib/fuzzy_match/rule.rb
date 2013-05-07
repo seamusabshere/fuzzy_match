@@ -11,7 +11,7 @@ class FuzzyMatch
     end
     
     def ==(other)
-      regexp == other.regexp
+      other.class == self.class and regexp == other.regexp
     end
   end
 end

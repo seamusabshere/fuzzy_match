@@ -1,6 +1,5 @@
 unless RUBY_PLATFORM == 'java'
-  require 'helper'
-  require 'test_fuzzy_match'
+  require 'spec_helper'
   require 'amatch'
   
   describe FuzzyMatch do

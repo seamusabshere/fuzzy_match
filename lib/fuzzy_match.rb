@@ -35,7 +35,6 @@ class FuzzyMatch
   
   #TODO refactor at least all the :find_X things
   DEFAULT_OPTIONS = {
-    :first_grouping_decides => false,
     :must_match_grouping => false,
     :must_match_at_least_one_word => false,
     :gather_last_result => false,
@@ -68,7 +67,6 @@ class FuzzyMatch
   # Options (can be specified at initialization or when calling #find)
   # * :<tt>must_match_grouping</tt> - don't return a match unless the needle fits into one of the groupings you specified
   # * :<tt>must_match_at_least_one_word</tt> - don't return a match unless the needle shares at least one word with the match
-  # * :<tt>first_grouping_decides</tt> - force records into the first grouping they match, rather than choosing a grouping that will give them a higher score
   # * :<tt>gather_last_result</tt> - enable <tt>last_result</tt>
   # * :<tt>threshold</tt> - set a score threshold below which not to return results (not generally recommended - please test the results of setting a threshold thoroughly - one set of results and their scores probably won't be enough to determine the appropriate number). Only checked against the Pair Distance score and ignored when one string or the other is of length 1.
   def initialize(competitors, options_and_rules = {})
@@ -82,9 +80,6 @@ class FuzzyMatch
     @read = options_and_rules.delete(:read) || options_and_rules.delete(:haystack_reader)
 
     # options
-    if deprecated = options_and_rules.delete(:first_blocking_decides)
-      options_and_rules[:first_grouping_decides] = deprecated
-    end
     if deprecated = options_and_rules.delete(:must_match_blocking)
       options_and_rules[:must_match_grouping] = deprecated
     end
@@ -95,7 +90,7 @@ class FuzzyMatch
   end
   
   def groupings=(ary)
-    @groupings = ary.map { |regexp| Rule::Grouping.new regexp }
+    @groupings = ary.map { |regexp| Rule::Grouping.make regexp }.flatten
   end
   
   def identities=(ary)
@@ -151,7 +146,6 @@ class FuzzyMatch
     is_find_with_score = options[:find_with_score]
     is_find_best = options[:find_best]
     is_find_all = options[:find_all] || is_find_all_with_score || is_find_best
-    first_grouping_decides = options[:first_grouping_decides]
     must_match_grouping = options[:must_match_grouping]
     must_match_at_least_one_word = options[:must_match_at_least_one_word]
     
@@ -160,10 +154,6 @@ class FuzzyMatch
       last_result.read = read
       last_result.haystack = haystack
       last_result.options = options
-      last_result.timeline << <<-EOS
-Options were set, either by you or by falling back to defaults.
-\tOptions: #{options.inspect}
-EOS
     end
     
     if gather_last_result
@@ -182,15 +172,18 @@ The needle's #{needle.variants.length} variants were enumerated.
 \tVariants: #{needle.variants.map(&:inspect).join(', ')}
 EOS
     end
-    
-    if must_match_grouping and groupings.any? and groupings.none? { |grouping| grouping.match? needle }
+
+    first_grouping = if groupings.any?
+      groupings.detect { |grouping| grouping.xtarget? needle }
+    end
+
+    if must_match_grouping and not first_grouping
       if gather_last_result
         last_result.timeline << <<-EOS
-The needle didn't match any of the #{groupings.length} grouping, which was a requirement.
+The needle didn't match any of the #{groupings.length} groupings, which was a requirement.
 \tGroupings (first 3): #{groupings[0,3].map(&:inspect).join(', ')}
 EOS
       end
-      
       if is_find_all
         return []
       else
@@ -198,8 +191,16 @@ EOS
       end
     end
 
+    if groupings.any? and not first_grouping
+      passed_grouping_requirement = haystack.reject do |straw|
+        groupings.any? { |grouping| grouping.xtarget? straw }
+      end
+    else
+      passed_grouping_requirement = haystack
+    end
+
     if must_match_at_least_one_word
-      passed_word_requirement = haystack.select do |straw|
+      passed_word_requirement = passed_grouping_requirement.select do |straw|
         (needle.words & straw.words).any?
       end
       if gather_last_result
@@ -207,23 +208,18 @@ EOS
 Since :must_match_at_least_one_word => true, the competition was reduced to records sharing at least one word with the needle.
 \tNeedle words: #{needle.words.map(&:inspect).join(', ')}
 \tPassed (first 3): #{passed_word_requirement[0,3].map(&:render).map(&:inspect).join(', ')}
-\tFailed (first 3): #{(haystack-passed_word_requirement)[0,3].map(&:render).map(&:inspect).join(', ')}
+\tFailed (first 3): #{(passed_grouping_requirement-passed_word_requirement)[0,3].map(&:render).map(&:inspect).join(', ')}
 EOS
       end
     else
-      passed_word_requirement = haystack
+      passed_word_requirement = passed_grouping_requirement
     end
-    
-    if groupings.any?
+        
+    if first_grouping
       joint = passed_word_requirement.select do |straw|
-        if first_grouping_decides
-          if first_grouping = groupings.detect { |grouping| grouping.match? needle }
-            first_grouping.join? needle, straw
-          end
-        else
-          groupings.any? { |grouping| grouping.join? needle, straw }
-        end
+        first_grouping.xjoin? needle, straw
       end
+      # binding.pry      
       if gather_last_result
         last_result.timeline << <<-EOS
 Since there were groupings, the competition was reduced to records in the same group as the needle.
@@ -277,7 +273,7 @@ EOS
     if gather_last_result
       last_result.timeline << <<-EOS
 The competition was sorted in order of similarity to the needle.
-\tSimilar (first 10 of #{similarities.length}): #{similarities[0,9].map { |s| "#{s.wrapper2.render.inspect} (#{[s.best_score.dices_coefficient_similar, s.best_score.levenshtein_similar].map { |v| '%0.5f' % v }.join('/')})" }.join(', ')}
+\tSimilar (first 10 of #{similarities.length}): #{similarities[0,9].map { |s| "#{s.wrapper2.similarity(needle).inspect}" }.join(', ')}
 EOS
     end
     

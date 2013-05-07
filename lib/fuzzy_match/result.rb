@@ -1,19 +1,28 @@
+# encoding: utf-8
 require 'erb'
+require 'yaml'
 
 class FuzzyMatch
   class Result #:nodoc: all
     EXPLANATION = <<-ERB
-You looked for <%= needle.render.inspect %>
+#####################################################
+# SUMMARY
+#####################################################
 
-<% if winner %>It was matched with "<%= winner %>"<% else %>No match was found<% end %>
+<%= YAML.dump(needle: needle.render.inspect, match: winner.inspect) %>
 
-# THE HAYSTACK
+#####################################################
+# HAYSTACK
+#####################################################
 
-The haystack reader was <%= read.inspect %>.
+<%= YAML.dump(size: haystack.length, reader: read.inspect, examples: haystack[0, 3].map(&:render).map(&:inspect)) %>
 
-The haystack contained <%= haystack.length %> records like <%= haystack[0, 3].map(&:render).map(&:inspect).join(', ') %>
+#####################################################
+# OPTIONS
+#####################################################
 
-# HOW IT WAS MATCHED
+<%= YAML.dump(options) %>
+
 <% timeline.each_with_index do |event, index| %>
 (<%= index+1 %>) <%= event %>
 <% end %>

@@ -20,7 +20,7 @@ class FuzzyMatch
     def inspect
       "#<FuzzyMatch::Wrapper render=#{render.inspect} variants=#{variants.length}>"
     end
-    
+
     def read
       fuzzy_match.read unless literal
     end
@@ -50,6 +50,7 @@ class FuzzyMatch
     end
 
     alias :to_str :render
+    alias :to_s :render
 
     def words
       @words ||= render.downcase.split(WORD_BOUNDARY)

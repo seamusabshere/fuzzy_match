@@ -1,4 +1,4 @@
-require 'helper'
+require 'spec_helper'
 
 describe FuzzyMatch::Wrapper do
   it %{does not treat "'s" as a word} do
@@ -20,7 +20,7 @@ describe FuzzyMatch::Wrapper do
   private
   
   def assert_split(ary, str)
-    FuzzyMatch::Wrapper.new(null_fuzzy_match, str, true).words.must_equal ary
+    FuzzyMatch::Wrapper.new(null_fuzzy_match, str, true).words.should == ary
   end
   
   def null_fuzzy_match
