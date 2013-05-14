@@ -25,7 +25,7 @@ class FuzzyMatch
       fuzzy_match.read unless literal
     end
 
-    def render
+    def render(remove_stop_words = true)
       @render ||= begin
         memo = case read
         when ::Proc
@@ -41,11 +41,17 @@ class FuzzyMatch
         else
           record[read]
         end.to_s.dup
+        memo.strip!
+        @render = memo.freeze
+      end
+      if remove_stop_words
+        memo = @render.dup
         fuzzy_match.stop_words.each do |stop_word|
           stop_word.apply! memo
         end
-        memo.strip!
-        @render = memo.freeze
+        memo.strip
+      else
+        @render
       end
     end
 

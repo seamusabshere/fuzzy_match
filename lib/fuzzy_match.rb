@@ -217,7 +217,7 @@ EOS
         
     if first_grouping
       joint = passed_word_requirement.select do |straw|
-        first_grouping.xjoin? needle, straw
+        first_grouping.xjoin? needle.render(false), straw.render(false)
       end
       # binding.pry      
       if gather_last_result
@@ -252,7 +252,7 @@ EOS
     if identities.any?
       possibly_identical = joint.select do |straw|
         identities.all? do |identity|
-          answer = identity.identical? needle, straw
+          answer = identity.identical? needle.render(false), straw.render(false)
           answer.nil? or answer == true
         end
       end
