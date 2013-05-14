@@ -3,18 +3,23 @@ require 'spec_helper'
 
 describe FuzzyMatch do
   describe '#find' do
-    it %{identifies the best match based on string similarity} do
+    it %{finds the best match using string similarity} do
       d = FuzzyMatch.new %w{ RATZ CATZ }
       d.find('RITZ').should == 'RATZ'
-      d.find('RíTZ').should == 'RATZ'
+    end
 
-      d = FuzzyMatch.new [ 'X' ]
-      d.find('X').should == 'X'
-      d.find('A').should be_nil
+    it %{doesn't mind crazy characters} do
+      d = FuzzyMatch.new %w{ RATZ CATZ }
+      d.find('RíTZ').should == 'RATZ'
     end
   
     it %{not return any result if the maximum score is zero} do
       FuzzyMatch.new(['a']).find('b').should be_nil
+    end
+
+    it %{finds exact matches} do
+      d = FuzzyMatch.new [ 'X' ]
+      d.find('X').should == 'X'
     end
   end
   
@@ -100,6 +105,15 @@ describe FuzzyMatch do
     it %{can be used to improve results} do
       d = FuzzyMatch.new %w{ foo bar }, :identities => [ /ba(.)/ ]
       d.find('baz').should be_nil
+    end
+
+    it %{is sort of like backreferences} do
+      one = '1 sauk ONEONEONEONEONE'
+      two = '2 sauk TWOTWOTWOTWO'
+      d = FuzzyMatch.new([one, two])
+      d.find('1 sauk TWOTWOTWOTWO').should == two # wrong
+      d = FuzzyMatch.new([one, two], identities: [/\A(\d+)\s+(\w+)/])
+      d.find('1 sauk TWOTWOTWOTWO').should == one # correct
     end
   end
 
