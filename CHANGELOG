@@ -1,4 +1,4 @@
-unreleased
+2.0.0 / 2013-05-22
 
 * Breaking changes
 
@@ -8,6 +8,8 @@ unreleased
 
 * Enhancements
 
+  * chained groupings!
+  * faster and simpler structure
   * FuzzyMatch#find_with_score returns [record, dice_score, lev_score]
 
 1.5.0 / 2013-04-03

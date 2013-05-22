@@ -4,7 +4,9 @@ Find a needle in a haystack based on string similarity and regular expression ru
 
 Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight_dictionary) because that was a confusing name.
 
-![diagram of matching process](https://raw.github.com/seamusabshere/fuzzy_match/v2/highlevel.png)
+Warning! `normalizers` are gone in version 2 and above! See the CHANGELOG and check out enhanced (and hopefully more intuitive) `groupings`.
+
+![diagram of matching process](https://raw.github.com/seamusabshere/fuzzy_match/master/highlevel.png)
 
 ## Quickstart
 
@@ -46,7 +48,7 @@ The two laws of chained groupings: (new in v2.0 and rather important)
 
 Hopefully they are rather intuitive once you start using them.
 
-[![screenshot of spreadsheet of groupings](https://raw.github.com/seamusabshere/fuzzy_match/v2/groupings-screenshot.png)](https://docs.google.com/spreadsheet/pub?key=0AkCJNpm9Ks6JdG4xSWhfWFlOV1RsZ2NCeU9seGx6cnc&single=true&gid=0&output=html)
+[![screenshot of spreadsheet of groupings](https://raw.github.com/seamusabshere/fuzzy_match/master/groupings-screenshot.png)](https://docs.google.com/spreadsheet/pub?key=0AkCJNpm9Ks6JdG4xSWhfWFlOV1RsZ2NCeU9seGx6cnc&single=true&gid=0&output=html)
 
 That will...
 
