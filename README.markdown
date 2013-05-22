@@ -46,8 +46,7 @@ The two laws of chained groupings: (new in v2.0 and rather important)
 
 Hopefully they are rather intuitive once you start using them.
 
-<iframe width='500' height='300' frameborder='0' src='https://docs.google.com/spreadsheet/pub?key=0AkCJNpm9Ks6JdG4xSWhfWFlOV1RsZ2NCeU9seGx6cnc&amp;single=true&amp;gid=0&amp;output=html&amp;widget=true'>
-</iframe>
+[![screenshot of spreadsheet of groupings](https://raw.github.com/seamusabshere/fuzzy_match/v2/groupings-screenshot.png)](https://docs.google.com/spreadsheet/pub?key=0AkCJNpm9Ks6JdG4xSWhfWFlOV1RsZ2NCeU9seGx6cnc&single=true&gid=0&output=html)
 
 That will...
 
