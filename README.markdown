@@ -4,20 +4,7 @@ Find a needle in a haystack based on string similarity and regular expression ru
 
 Replaces [`loose_tight_dictionary`](https://github.com/seamusabshere/loose_tight_dictionary) because that was a confusing name.
 
-## Real-world usage
-
-<p><a href="http://brighterplanet.com"><img src="https://s3.amazonaws.com/static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png" alt="Brighter Planet logo"/></a></p>
-
-We use `fuzzy_match` for [data science at Brighter Planet](http://brighterplanet.com/research) and in production at
-
-* [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com)
-* [Brighter Planet's reference data web service](http://data.brighterplanet.com)
-
-We often combine it with [`remote_table`](https://github.com/seamusabshere/remote_table) and [`errata`](https://github.com/seamusabshere/errata):
-
-- download table with `remote_table`
-- correct serious or repeated errors with `errata`
-- `fuzzy_match` the rest
+![diagram of matching process](https://raw.github.com/seamusabshere/fuzzy_match/v2/highlevel.png)
 
 ## Quickstart
 
@@ -30,41 +17,63 @@ See also the blog post [Fuzzy match in Ruby](http://numbers.brighterplanet.com/2
 
 ## Default matching (string similarity)
 
-At the core, and even if you configure nothing else, string similarity (calculated by "pair distance" aka Dice's) is used to compare records.
+At the core, and even if you configure nothing else, string similarity (calculated by "pair distance" aka Dice's Coefficient) is used to compare records.
 
 You can tell `FuzzyMatch` what field or method to use via the `:read` option... for example, let's say you want to match a `Country` object like `#<Country name:"Uruguay" iso_3166_code:"UY">`
 
-    >> matcher = FuzzyMatch.new(Country.all, :read => :name)  # Country#name will be called when comparing
+    >> fz = FuzzyMatch.new(Country.all, :read => :name)
     => #<FuzzyMatch: [...]>
-    >> matcher.find('youruguay')
-    => #<Country name:"Uruguay" iso_3166_code:"UY">            # the matcher returns a Country object
+    >> fz.find('youruguay')
+    => #<Country name:"Uruguay" iso_3166_code:"UY">
 
 ## Optional rules (regular expressions)
 
-You can improve the default matchings with rules. There are 4 different kinds of rules. Each rule is a regular expression. Depending on the kind of rule, the results of running the regular expression are used for a particular purpose.
+You can improve the default matchings with rules. There are 3 different kinds of rules. Each rule is a regular expression.
 
 We suggest that you **first try without any rules** and only define them to improve matching, prevent false positives, etc.
 
-    >> matcher = FuzzyMatch.new(['Ford F-150', 'Ford F-250', 'GMC 1500', 'GMC 2500'], :groupings => [ /ford/i, /gmc/i ], :normalizers => [ /K(\d500)/i ], :identities => [ /(f)-?(\d50)/i ])
-    => #<FuzzyMatch: [...]> 
-    >> matcher.find('fordf250')
-    => "Ford F-250" 
-    >> matcher.find('gmc truck k1500')
-    => "GMC 1500" 
-
-For identities and normalizers (see below), **only the captures are used.** For example, `/(f)-?(\d50)/i` captures the "F" and the "250" but ignores the dash. So place your parentheses carefully! Groupings work the same way, except that if you don't have any captures, a simple match will pass.
-
 ### Groupings
 
-Group records together.
+Group records together. The two laws of groupings:
 
-Setting a grouping of `/Airbus/` ensures that strings containing "Airbus" will only be scored against to other strings containing "Airbus". A better grouping in this case would probably be `/airbus/i`.
+1. If a needle matches a grouping, only compare it with straws in the same grouping; (the "buddies vs buddies" rule)
+2. If a needle doesn't match any grouping, only compare it with straws that also don't match ANY grouping (the "misfits vs misfits" rule)
+
+The two laws of chained groupings: (new in v2.0 and rather important)
+
+1. Sub-groupings (e.g., `/plaza/i` below) only match if their primary (e.g., `/ramada/i`) does
+2. In final grouping decisions, sub-groupings win over primaries (so "Ramada Inn" is NOT grouped with "Ramada Plaza", but if you removed `/plaza/i` sub-grouping, then they would be grouped together)
+
+Hopefully they are rather intuitive once you start using them.
+
+<iframe width='500' height='300' frameborder='0' src='https://docs.google.com/spreadsheet/pub?key=0AkCJNpm9Ks6JdG4xSWhfWFlOV1RsZ2NCeU9seGx6cnc&amp;single=true&amp;gid=0&amp;output=html&amp;widget=true'>
+</iframe>
+
+That will...
+
+* separate "Orient Express Hotel" and "Ramada Conference Center Mandarin" from real Mandarin Oriental hotels
+* keep "Trump Hotel Collection" away from "Luxury Collection" (another real hotel brand) without messing with the word "Luxury"
+* make sure that "Ramada Plaza" are always grouped with other RPs&mdash;and not with plain old Ramadas&mdash;and vice versa
+* splits out Hyatts into their different brands
+* and more
+
+You specify chained groupings as arrays of regexps:
+
+    groupings = [
+      /mandarin/i,
+      /trump/i,
+      [ /ramada/i, /plaza/i ],
+      ...
+    ]
+    fz = FuzzyMatch.new(haystack, groupings: groupings)
+
+This way of specifying groupings is meant to be easy to load from a CSV, like `bin/fuzzy_match` does.
 
 Formerly called "blockings," but that was jargon that confused people.
 
 ### Identities
 
-Prevent impossible matches.
+Prevent impossible matches. Can be very confusing&mdash;see if you can make things work with groupings first.
 
 Adding an identity like `/(f)-?(\d50)/i` ensures that "Ford F-150" and "Ford F-250" never match.
 
@@ -72,29 +81,24 @@ Note that identities do not establish certainty. They just say whether two recor
 
 ### Stop words
 
-Ignore common and/or meaningless words. Applied before normalizers.
+Ignore common and/or meaningless words when doing string similarity.
 
 Adding a stop word like `THE` ensures that it is not taken into account when comparing "THE CAT", "THE DAT", and "THE CATT"
 
-### Normalizers (formerly called tighteners)
-
-Strip strings down to the essentials. Applied after stop words.
-
-Adding a normalizer like `/(boeing).*(7\d\d)/i` will cause "BOEING COMPANY 747" and "boeing747" to be normalized to "BOEING 747" and "boeing 747", respectively. Since things are generally downcased before they are compared, these would be an exact match.
+Stop words are NOT removed when checking `:must_match_at_least_one_word` and when doing identities and groupings.
 
 ## Find options
 
 * `read`: how to interpret each record in the 'haystack', either a Proc or a symbol
 * `must_match_grouping`: don't return a match unless the needle fits into one of the groupings you specified
 * `must_match_at_least_one_word`: don't return a match unless the needle shares at least one word with the match. Note that "Foo's" is treated like one word (so that it won't match "'s") and "Bolivia," is treated as just "bolivia"
-* `first_grouping_decides`: force records into the first grouping they match, rather than choosing a grouping that will give them a higher score
 * `gather_last_result`: enable `last_result`
 
 ## Case sensitivity
 
 String similarity is case-insensitive. Everything is downcased before scoring. This is a change from previous versions.
 
-Be careful when trying to use case-sensitivity in your rules; in general, things are downcased before comparing.
+Be careful with uppercase letters in your rules; in general, things are downcased before comparing.
 
 ## String similarity algorithm
 
@@ -151,6 +155,21 @@ You can optionally use [`amatch`](http://flori.github.com/amatch/) by [Florian F
     FuzzyMatch.engine = :amatch
 
 Otherwise, pure ruby versions of the string similarity algorithms derived from the [answer to a StackOverflow question](http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings) and [the text gem](https://github.com/threedaymonk/text/blob/master/lib/text/levenshtein.rb) are used. Thanks [marzagao](http://stackoverflow.com/users/10997/marzagao) and [threedaymonk](https://github.com/threedaymonk)!
+
+## Real-world usage
+
+<p><a href="http://brighterplanet.com"><img src="https://s3.amazonaws.com/static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png" alt="Brighter Planet logo"/></a></p>
+
+We use `fuzzy_match` for [data science at Brighter Planet](http://brighterplanet.com/research) and in production at
+
+* [Brighter Planet's impact estimate web service](http://impact.brighterplanet.com)
+* [Brighter Planet's reference data web service](http://data.brighterplanet.com)
+
+We often combine it with [`remote_table`](https://github.com/seamusabshere/remote_table) and [`errata`](https://github.com/seamusabshere/errata):
+
+- download table with `remote_table`
+- correct serious or repeated errors with `errata`
+- `fuzzy_match` the rest
 
 ## Authors
 

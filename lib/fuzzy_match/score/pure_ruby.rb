@@ -4,10 +4,6 @@ class FuzzyMatch
 
       SPACE = ' '
 
-      def inspect
-        %{#<FuzzyMatch::Score::PureRuby: str1=#{str1.inspect} str2=#{str2.inspect} dices_coefficient_similar=#{dices_coefficient_similar} levenshtein_similar=#{levenshtein_similar}>}
-      end
-
       # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
       def dices_coefficient_similar
         @dices_coefficient_similar ||= begin
@@ -90,10 +86,8 @@ class FuzzyMatch
       private
     
       def utf8?
-        return @utf8_query[0] if @utf8_query.is_a?(::Array) # ActiveSupport::Memoizable is deprecated in 3.2, how annoying
-        utf8_query = (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
-        @utf8_query = [utf8_query]
-        utf8_query
+        return @utf8_query if defined?(@utf8_query)
+        @utf8_query = (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
       end
     end
   end

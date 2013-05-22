@@ -80,17 +80,14 @@ describe FuzzyMatch do
     end
   end
 
-  describe "normalizers" do
+  describe "groupings replacings normalizers" do
     it %{sometimes gets false results without them} do
       d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900']
       d.find('BOEING 737100 number 900').should == 'BOEING 737-900'
     end
 
     it %{can be used to improve results} do
-      normalizers = [
-        %r{(7\d)(7|0)-?(\d{1,3})} # tighten 737-100/200 => 737100, which will cause it to win over 737-900
-      ]
-      d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], :normalizers => normalizers
+      d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], groupings: [ [/boeing/i, /7(\d\d)-?(\d\d\d)?/]]
       d.find('BOEING 737100 number 900').should == 'BOEING 737-100/200'
     end
   end
@@ -344,17 +341,6 @@ describe FuzzyMatch do
     it %{takes :blockings as :groupings} do
       d = FuzzyMatch.new [], :blockings => [ /X/, /Y/ ]
       d.groupings.should == [ FuzzyMatch::Rule::Grouping.new(/X/), FuzzyMatch::Rule::Grouping.new(/Y/) ]
-    end
-
-    it %{takes :tighteners as :normalizers} do
-      d = FuzzyMatch.new [], :tighteners => [ /X/, /Y/ ]
-      d.normalizers.should == [ FuzzyMatch::Rule::Normalizer.new(/X/), FuzzyMatch::Rule::Normalizer.new(/Y/) ]
-    end
-
-    it %{receives #free method, but doesn't do anything} do
-      d = FuzzyMatch.new %w{ A B }
-      d.free
-      d.find('A').should_not be_nil
     end
   end
   

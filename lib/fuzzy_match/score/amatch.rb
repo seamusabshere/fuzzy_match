@@ -3,10 +3,6 @@ class FuzzyMatch
     # be sure to `require 'amatch'` before you use this class
     class Amatch < Score
 
-      def inspect
-        %{#<FuzzyMatch::Score::Amatch: str1=#{str1.inspect} str2=#{str2.inspect} dices_coefficient_similar=#{dices_coefficient_similar} levenshtein_similar=#{levenshtein_similar}>}
-      end
-
       def dices_coefficient_similar
         @dices_coefficient_similar ||= if str1 == str2
           1.0

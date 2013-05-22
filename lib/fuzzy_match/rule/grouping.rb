@@ -1,3 +1,4 @@
+# require 'pry'
 class FuzzyMatch
   class Rule
     # "Record linkage typically involves two main steps: grouping and scoring..."
@@ -15,8 +16,12 @@ class FuzzyMatch
             new regexps
           when ::Array
             chain = regexps.flatten.map { |regexp| new regexp }
-            chain.each { |grouping| grouping.chain = chain }
-            chain
+            if chain.length == 1
+              chain[0] # not really a chain after all
+            else
+              chain.each { |grouping| grouping.chain = chain }
+              chain
+            end
           else
             raise ArgumentError, "[fuzzy_match] Groupings should be specified as single regexps or an array of regexps (got #{regexps.inspect})"
           end
@@ -25,23 +30,28 @@ class FuzzyMatch
 
       attr_accessor :chain
 
-      def target?(str)
-        !!(regexp.match(str))
+      def inspect
+        memo = []
+        memo << "#{regexp.inspect}"
+        if chain
+          memo << "(#{chain.find_index(self)} of #{chain.length})"
+        end
+        memo.join ' '
       end
 
-      def xtarget?(str)
+      def xmatch?(record)
         if primary?
-          target?(str) and subs.none? { |grouping| grouping.target?(str) }
+          match?(record) and subs.none? { |sub| sub.match?(record) }
         else
-          target?(str) and primary.target?(str)
+          match?(record) and primary.match?(record)
         end
       end
 
       def xjoin?(needle, straw)
         if primary?
-          join?(needle, straw) and subs.none? { |grouping| grouping.xtarget?(straw) }
+          join?(needle, straw) and subs.none? { |sub| sub.match?(straw) } # maybe xmatch here?
         else
-          join?(needle, straw) and primary.target?(straw)
+          join?(needle, straw) and primary.match?(straw)
         end
       end
 
@@ -60,9 +70,13 @@ class FuzzyMatch
         chain ? chain[1..-1] : []
       end
 
+      def match?(record)
+        !!(regexp.match(record.whole))
+      end
+
       def join?(needle, straw)
-        if straw_match_data = regexp.match(straw)
-          if needle_match_data = regexp.match(needle)
+        if straw_match_data = regexp.match(straw.whole)
+          if needle_match_data = regexp.match(needle.whole)
             straw_match_data.captures.join.downcase == needle_match_data.captures.join.downcase
           else
             false

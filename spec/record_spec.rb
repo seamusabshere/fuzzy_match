@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe FuzzyMatch::Wrapper do
+describe FuzzyMatch::Record do
   it %{does not treat "'s" as a word} do
     assert_split ["foo's", "bar"], "Foo's Bar"
   end
@@ -20,10 +20,6 @@ describe FuzzyMatch::Wrapper do
   private
   
   def assert_split(ary, str)
-    FuzzyMatch::Wrapper.new(null_fuzzy_match, str, true).words.should == ary
-  end
-  
-  def null_fuzzy_match
-    FuzzyMatch.new []
+    FuzzyMatch::Record.new(str).words.should == ary
   end
 end

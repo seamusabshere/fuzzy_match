@@ -1,5 +1,11 @@
 unreleased
 
+* Breaking changes
+
+  * normalizers removed - use groupings instead
+  * first_grouping_decides removed
+  * FuzzyMatch#free gone
+
 * Enhancements
 
   * FuzzyMatch#find_with_score returns [record, dice_score, lev_score]

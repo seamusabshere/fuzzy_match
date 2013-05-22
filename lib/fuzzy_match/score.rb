@@ -13,6 +13,10 @@ class FuzzyMatch
       @str2 = str2.downcase
     end
 
+    def inspect
+      %{(dice=#{"%0.5f" % dices_coefficient_similar},lev=#{"%0.5f" % levenshtein_similar})}
+    end
+
     def <=>(other)
       a = dices_coefficient_similar
       b = other.dices_coefficient_similar
