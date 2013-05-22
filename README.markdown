@@ -178,4 +178,4 @@ We often combine it with [`remote_table`](https://github.com/seamusabshere/remot
 
 ## Copyright
 
-Copyright 2012 Brighter Planet, Inc.
+Copyright 2013 Seamus Abshere
