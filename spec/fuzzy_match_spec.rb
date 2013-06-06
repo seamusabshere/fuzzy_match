@@ -87,7 +87,7 @@ describe FuzzyMatch do
     end
 
     it %{can be used to improve results} do
-      d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], groupings: [ [/boeing/i, /7(\d\d)-?(\d\d\d)?/]]
+      d = FuzzyMatch.new ['BOEING 737-100/200', 'BOEING 737-900'], :groupings => [ [/boeing/i, /7(\d\d)-?(\d\d\d)?/]]
       d.find('BOEING 737100 number 900').should == 'BOEING 737-100/200'
     end
   end
@@ -109,7 +109,7 @@ describe FuzzyMatch do
       two = '2 sauk TWOTWOTWOTWO'
       d = FuzzyMatch.new([one, two])
       d.find('1 sauk TWOTWOTWOTWO').should == two # wrong
-      d = FuzzyMatch.new([one, two], identities: [/\A(\d+)\s+(\w+)/])
+      d = FuzzyMatch.new([one, two], :identities => [/\A(\d+)\s+(\w+)/])
       d.find('1 sauk TWOTWOTWOTWO').should == one # correct
     end
   end
@@ -130,7 +130,7 @@ describe FuzzyMatch do
     it %{stays within the group} do
       d = FuzzyMatch.new [ 'AB', 'CD' ]
       d.find('ABCDCD').should == 'CD'
-      d = FuzzyMatch.new [ 'AB', 'CD' ], groupings: [/A/]
+      d = FuzzyMatch.new [ 'AB', 'CD' ], :groupings => [/A/]
       d.find('ABCDCD').should == 'AB'
     end
 
@@ -141,7 +141,7 @@ describe FuzzyMatch do
           @h = 'Hyatt'
           @hgarden = 'Hyatt Garden'
           @grandhotel = 'Grand Hotel'
-          @fz = FuzzyMatch.new([@grandh, @h, @hgarden, @grandhotel], groupings: [ [ /hyatt/i, /garden/i, /grand/i ] ], stop_words: [ /hotel/i ])
+          @fz = FuzzyMatch.new([@grandh, @h, @hgarden, @grandhotel], :groupings => [ [ /hyatt/i, /garden/i, /grand/i ] ], :stop_words => [ /hotel/i ])
         end
 
         it %{works as expected} do

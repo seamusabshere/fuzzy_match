@@ -80,7 +80,7 @@ class FuzzyMatch
     end
     @default_options = DEFAULT_OPTIONS.merge(o).freeze
 
-    @haystack = haystack.map { |original| Record.new original, stop_words: @stop_words, read: @read }
+    @haystack = haystack.map { |original| Record.new original, :stop_words => @stop_words, :read => @read }
   end
     
   def last_result

@@ -1,3 +1,9 @@
+2.0.1 / 2013-06-06
+
+* Bug fixes
+
+  * Fix Ruby 1.8 compatibility - thanks @trishume @fuzzy76 ! https://github.com/seamusabshere/fuzzy_match/issues/5
+
 2.0.0 / 2013-05-22
 
 * Breaking changes
