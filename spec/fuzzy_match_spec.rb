@@ -96,12 +96,17 @@ describe FuzzyMatch do
     it %{sometimes gets false results without them} do
       # false positive without identity
       d = FuzzyMatch.new %w{ foo bar }
+      d.find('bar').should == 'bar'
+      d.find('bare').should == 'bar'
       d.find('baz').should == 'bar'
     end
 
     it %{can be used to improve results} do
       d = FuzzyMatch.new %w{ foo bar }, :identities => [ /ba(.)/ ]
+      d.find('bar').should == 'bar'
+      d.find('bare').should == 'bar'
       d.find('baz').should be_nil
+      d.find('baze').should be_nil
     end
 
     it %{is sort of like backreferences} do
@@ -111,6 +116,14 @@ describe FuzzyMatch do
       d.find('1 sauk TWOTWOTWOTWO').should == two # wrong
       d = FuzzyMatch.new([one, two], :identities => [/\A(\d+)\s+(\w+)/])
       d.find('1 sauk TWOTWOTWOTWO').should == one # correct
+    end
+
+    it %{has a proc form} do
+      d = FuzzyMatch.new %w{ foo bar }, :identities => [ lambda { |a, b| (a.start_with?('ba') and b.start_with?('ba') ? a[2] == b[2] : nil) } ]
+      d.find('bar').should == 'bar'
+      d.find('bare').should == 'bar'
+      d.find('baz').should be_nil
+      d.find('baze').should be_nil
     end
   end
 
