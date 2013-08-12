@@ -1,3 +1,9 @@
+2.0.3 / 2013-08-11
+
+* Enhancements
+
+  * If you pass a non-String to #find, the :read will be automatically applied
+
 2.0.2 / 2013-08-11
 
 * Enhancements
