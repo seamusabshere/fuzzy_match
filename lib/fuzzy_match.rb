@@ -136,7 +136,12 @@ class FuzzyMatch
       last_result.stop_words = stop_words
     end
     
-    needle = Record.new needle
+    needle = case needle
+    when String
+      Record.new needle
+    else
+      Record.new needle, read: read
+    end
     
     if gather_last_result
       last_result.needle = needle
