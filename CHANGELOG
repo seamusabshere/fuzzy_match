@@ -1,3 +1,5 @@
+2.0.2 / 2013-08-11
+
 * Enhancements
 
   * You can pass identity rules as procs that take record1 and record2 in their original forms (note they should return nil if not sure)
