@@ -12,7 +12,7 @@ Warning! `normalizers` are gone in version 2 and above! See the CHANGELOG and ch
 
     >> require 'fuzzy_match'
     => true
-    >> FuzzyMatch.new(['seamus', 'andy', 'ben']).find('Shamus)
+    >> FuzzyMatch.new(['seamus', 'andy', 'ben']).find('Shamus')
     => "seamus"
 
 See also the blog post [Fuzzy match in Ruby](http://numbers.brighterplanet.com/2012/01/18/fuzzy-match-in-ruby/).
