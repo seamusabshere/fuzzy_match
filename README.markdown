@@ -1,4 +1,12 @@
-# fuzzy_match
+## Top 3 reasons you should use FuzzyMatch
+
+1. *intelligent defaults*: it uses a combination of Pair Distance (2-gram) and Levenshtein Edit Distance to effectively match many examples with no configuration
+2. *all-vs-all*: it takes care of finding the optimal match by comparing everything against everything else (when that's necessary)
+3. *refinable*: you might get to 90% with no configuration, but if you need to go beyond you can use regexps, grouping, and stop words
+
+It solves many mid-range matching problems &mdash; if your haystack is ~10k records &mdash; if you can winnow down the initial possibilities at the database level and only bring good contenders into app memory &mdash; why not give it a shot?
+
+# FuzzyMatch
 
 Find a needle in a haystack based on string similarity and regular expression rules.
 
