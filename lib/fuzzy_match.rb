@@ -140,7 +140,7 @@ class FuzzyMatch
     when String
       Record.new needle
     else
-      Record.new needle, read: read
+      Record.new needle, :read => read
     end
     
     if gather_last_result

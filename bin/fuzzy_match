@@ -18,15 +18,15 @@ require 'to_regexp'
 class FuzzyMatch
   class Cli < ::Thor
     desc :match, "Print out matches between A and B, where A is haystack and B is a bunch of needles."
-    method_option :csv, default: false, type: :boolean, desc: "CSV output"
-    method_option :a_col, default: 0, type: :string, desc: "Column name in A. Defaults to first column."
-    method_option :b_col, default: 0, type: :string, desc: "Column name in B. Defaults to first column."
-    method_option :downcase, default: true, type: :boolean, desc: "Whether to downcase everything (except regexes, where you have to do /foo/i)"
-    method_option :groupings, default: nil, type: :string, desc: "Spreadsheet with groupings - no headers, multi-part groupings on the same row"
-    method_option :rules, default: nil, type: :string, desc: "Spreadsheet with headers: stop_words, identities, find_options. Listing a find_option like must_match_grouping makes it true."
-    method_option :explain, default: false, type: :boolean
-    method_option :grep, default: nil, type: :string
-    method_option :limit, default: 1.0/0, type: :numeric
+    method_option :csv, :default => false, :type => :boolean, :desc => "CSV output"
+    method_option :a_col, :default => 0, :type => :string, :desc => "Column name in A. Defaults to first column."
+    method_option :b_col, :default => 0, :type => :string, :desc => "Column name in B. Defaults to first column."
+    method_option :downcase, :default => true, :type => :boolean, :desc => "Whether to downcase everything (except regexes, where you have to do /foo/i)"
+    method_option :groupings, :default => nil, :type => :string, :desc => "Spreadsheet with groupings - no headers, multi-part groupings on the same row"
+    method_option :rules, :default => nil, :type => :string, :desc => "Spreadsheet with headers: stop_words, identities, find_options. Listing a find_option like must_match_grouping makes it true."
+    method_option :explain, :default => false, :type => :boolean
+    method_option :grep, :default => nil, :type => :string
+    method_option :limit, :default => 1.0/0, :type => :numeric
     def match(a_url, b_url)
       puts "Checking matches using fuzzy_match version #{FuzzyMatch::VERSION}..."
       fz = mkfz a_url
@@ -84,12 +84,12 @@ class FuzzyMatch
     def fz_options
       memo = {}
       if options.groupings
-        memo[:groupings] = RemoteTable.new(options.groupings, headers: false).map do |row|
+        memo[:groupings] = RemoteTable.new(options.groupings, :headers => false).map do |row|
           row.to_a.select(&:present?).map { |v| v.to_regexp(detect: true) }
         end
       end
       if options.rules
-        t = RemoteTable.new(options.rules, headers: :first_row)
+        t = RemoteTable.new(options.rules, :headers => :first_row)
         find_options = t.rows.map { |row| row['find_options'] }
         memo.merge!(
           identities: t.rows.map { |row| row['identities'] }.select(&:present?).map { |v| v.to_regexp(detect: true) },
