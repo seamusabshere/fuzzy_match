@@ -1,5 +1,4 @@
-source :rubygems
-
+source 'https://rubygems.org'
 gemspec
 
 # bin/fuzzy_match development
