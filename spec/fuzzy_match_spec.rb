@@ -319,6 +319,15 @@ describe FuzzyMatch do
       d.find('Y bar').should be_nil
     end
 
+    it %{should not return false positives because of one-letter similarities if a threshold is used} do
+      # dices coefficient doesn't think these two are similar at all because it looks at pairs
+      FuzzyMatch.score_class.new('X foo', 'X bar').dices_coefficient_similar.should == 0
+      # so we must compensate for that somewhere
+      d = FuzzyMatch.new ['A great place to go for a drink is a bar', 'Some people enjoy congregating at their local bar, or "watering hole"']
+      d.find('chinup bar').should_not be_nil
+      d.find('chinup bar', threshold: 0.5).should be_nil
+    end
+
     it %{finds possible matches even when pair distance fails} do
       d = FuzzyMatch.new ['XX', '2 A']
       d.find('2A').should == '2 A'
