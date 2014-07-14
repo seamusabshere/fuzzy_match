@@ -38,7 +38,7 @@ class FuzzyMatch
     :gather_last_result => false,
     :find_all => false,
     :find_all_with_score => false,
-    :threshold => 0,
+    :threshold => nil,
     :find_best => false,
     :find_with_score => false,
   }
