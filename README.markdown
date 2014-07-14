@@ -180,11 +180,12 @@ We often combine it with [`remote_table`](https://github.com/seamusabshere/remot
 - correct serious or repeated errors with `errata`
 - `fuzzy_match` the rest
 
-## Authors
+## Contributors
 
 * Seamus Abshere <seamus@abshere.net>
 * Ian Hough <ijhough@gmail.com>
 * Andy Rossmeissl <andy@rossmeissl.net>
+* Luke Rodgers [@lukeasrodgers](https://github.com/lukeasrodgers)
 
 ## Copyright
 
