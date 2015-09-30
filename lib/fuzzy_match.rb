@@ -138,9 +138,9 @@ class FuzzyMatch
     
     needle = case needle
     when String
-      Record.new needle
+      Record.new needle, :stop_words => stop_words
     else
-      Record.new needle, :read => read
+      Record.new needle, :read => read, :stop_words => stop_words
     end
     
     if gather_last_result
