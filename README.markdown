@@ -165,6 +165,23 @@ You can optionally use [`amatch`](http://flori.github.com/amatch/) by [Florian F
 
 Otherwise, pure ruby versions of the string similarity algorithms derived from the [answer to a StackOverflow question](http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings) and [the text gem](https://github.com/threedaymonk/text/blob/master/lib/text/levenshtein.rb) are used. Thanks [marzagao](http://stackoverflow.com/users/10997/marzagao) and [threedaymonk](https://github.com/threedaymonk)!
 
+## JRuby usage
+
+In addition to amatch you can also use JRuby with a Java library.
+In order to do that, you have to add jbundler to your Gemfile:
+
+    platform :jruby do
+      gem 'jbundler'
+    end
+
+and you need a Jarfile containing
+
+    jar 'info.debatty:java-string-similarity'
+
+The engine has to be set to jruby then:
+
+    FuzzyMatch.engine = :jruby
+
 ## Real-world usage
 
 <p><a href="http://brighterplanet.com"><img src="https://s3.amazonaws.com/static.brighterplanet.com/assets/logos/flush-left/inline/green/rasterized/brighter_planet-160-transparent.png" alt="Brighter Planet logo"/></a></p>
