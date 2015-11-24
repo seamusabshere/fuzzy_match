@@ -1,7 +1,7 @@
 unless RUBY_PLATFORM == 'java'
   require 'spec_helper'
   require 'amatch'
-  
+
   describe FuzzyMatch do
     describe %{when using the :amatch string similarity engine} do
       before do

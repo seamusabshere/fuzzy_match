@@ -19,6 +19,8 @@ class FuzzyMatch
     
     def score_class
       case engine
+      when :jruby
+        Score::JRuby
       when :pure_ruby
         Score::PureRuby
       when :amatch

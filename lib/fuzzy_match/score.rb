@@ -1,5 +1,6 @@
 require 'fuzzy_match/score/pure_ruby'
 require 'fuzzy_match/score/amatch'
+require 'fuzzy_match/score/jruby'
 
 class FuzzyMatch
   class Score
