@@ -6,35 +6,20 @@ class FuzzyMatch
 
       # http://stackoverflow.com/questions/653157/a-better-similarity-ranking-algorithm-for-variable-length-strings
       def dices_coefficient_similar
+        return 1.0 if str1 == str2
         @dices_coefficient_similar ||= begin
-          if str1 == str2
-            1.0
-          elsif str1.length == 1 and str2.length == 1
-            0.0
-          else
-            pairs1 = (0..str1.length-2).map do |i|
-              str1[i,2]
-            end.reject do |pair|
-              pair.include? SPACE
+          pair_sets    = [str1, str2].map { |str| split_as_bigrams(str) }
+          union        = pair_sets.map(&:size).reduce(:+)
+          intersection = 0
+
+          pair_sets[0].each do |pair|
+            if (i = pair_sets[1].index(pair))
+              intersection += 1
+              pair_sets[1].slice!(i)
             end
-            pairs2 = (0..str2.length-2).map do |i|
-              str2[i,2]
-            end.reject do |pair|
-              pair.include? SPACE
-            end
-            union = pairs1.size + pairs2.size
-            intersection = 0
-            pairs1.each do |p1|
-              0.upto(pairs2.size-1) do |i|
-                if p1 == pairs2[i]
-                  intersection += 1
-                  pairs2.slice!(i)
-                  break
-                end
-              end
-            end
-            (2.0 * intersection) / union
           end
+
+          (2.0 * intersection) / union
         end
       end
 
@@ -88,6 +73,12 @@ class FuzzyMatch
       def utf8?
         return @utf8_query if defined?(@utf8_query)
         @utf8_query = (defined?(::Encoding) ? str1.encoding.to_s : $KCODE).downcase.start_with?('u')
+      end
+
+      def split_as_bigrams(str)
+        str.split.map { |word| "##{word}#" }
+                 .map { |word| (0..word.length-2).map { |i| word[i,2] } }
+                 .flatten
       end
     end
   end
