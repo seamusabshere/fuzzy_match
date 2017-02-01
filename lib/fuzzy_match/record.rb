@@ -40,19 +40,33 @@ class FuzzyMatch
       Similarity.new self, other
     end
 
+    def interpret_record(read_field, record)
+      case read_field
+        when ::NilClass
+          record
+        when ::Numeric, ::String
+          record[read_field]
+        when ::Proc
+          read_field.call record
+        when ::Symbol
+          record.respond_to?(read_field) ? record.send(read_field) : record[read_field]
+        else
+          raise "Expected nil, a proc, or a symbol, got #{read_field.inspect}"
+        end
+    end
+
     def whole
-      @whole ||= case read
-      when ::NilClass
-        original
-      when ::Numeric, ::String
-        original[read]
-      when ::Proc
-        read.call original
-      when ::Symbol
-        original.respond_to?(read) ? original.send(read) : original[read]
+      @whole ||=
+      if read.is_a? Enumerable
+        # Read each field from the record specified
+        totalrecord = ''
+        read.each do |x|
+          totalrecord += interpret_record(x, original).to_s.strip
+        end
+        totalrecord
       else
-        raise "Expected nil, a proc, or a symbol, got #{read.inspect}"
-      end.to_s.strip.freeze
+        interpret_record(read, original).to_s.strip
+      end.freeze
     end
   end
 end

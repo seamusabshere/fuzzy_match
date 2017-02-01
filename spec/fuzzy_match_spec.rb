@@ -253,6 +253,21 @@ describe FuzzyMatch do
       by_first.find('b').should == ba
       by_last.find('a').should == ba
     end
+
+    MyStruct2 = Struct.new(:one, :two, :three)
+    it %{interpret a Enumerable selecting as a collection of read instructions} do
+      abc = MyStruct2.new('a', 'b', 'c')
+      cba = MyStruct2.new('c', 'b', 'a')
+      haystack = [abc, cba]
+      by_first = FuzzyMatch.new haystack, :read => [:one, :two]
+      by_last = FuzzyMatch.new haystack, :read => [:two, :one]
+      by_first.read.should == [:one, :two]
+      by_last.read.should == [:two, :one]
+      by_first.find('ab').should == abc
+      by_last.find('bc').should == cba
+      by_first.find('c').should == cba
+      by_last.find('a').should == abc
+    end
   end
   
   describe 'the :must_match_at_least_one_word option' do
