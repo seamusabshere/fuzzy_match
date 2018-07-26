@@ -157,7 +157,7 @@ The admittedly imperfect metaphor is "look for a needle in a haystack"
 
 ## Using amatch to make it faster
 
-You can optionally use [`amatch`](http://flori.github.com/amatch/) by [Florian Frank](https://github.com/flori) (thanks Flori!) to make string similarity calculations in a C extension.
+You can optionally use [`amatch`](https://github.com/flori/amatch) by [Florian Frank](https://github.com/flori) (thanks Flori!) to make string similarity calculations in a C extension.
 
     require 'fuzzy_match'
     require 'amatch' # note that you have to require this... fuzzy_match won't require it for you
