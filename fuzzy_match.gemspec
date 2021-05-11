@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/seamusabshere/fuzzy_match"
   s.summary     = %Q{Find a needle in a haystack using string similarity and (optionally) regexp rules. Replaces loose_tight_dictionary.}
   s.description = %Q{Find a needle in a haystack using string similarity and (optionally) regexp rules. Replaces loose_tight_dictionary.}
+  s.license     = "MIT"
 
   s.rubyforge_project = "fuzzy_match"
 
